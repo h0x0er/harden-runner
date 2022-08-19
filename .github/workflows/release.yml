@@ -30,7 +30,7 @@ jobs:
 
     - uses: actions/checkout@v2
     - name: Update the rc tag
-      uses: step-security/publish-action@b438f840875fdcb7d1de4fc3d1d30e86cf6acb5d
+      uses: step-security/publish-action@63abd0d521e21329399edb30e8f577a7ab85443c
       with:
         source-tag: ${{ env.TAG_NAME }}
         rc: true
@@ -42,6 +42,6 @@ jobs:
         canary: true
 
     - name: Update the ${{ env.TAG_NAME }} tag
-      uses: step-security/publish-action@b438f840875fdcb7d1de4fc3d1d30e86cf6acb5d
+      uses: step-security/publish-action@63abd0d521e21329399edb30e8f577a7ab85443c
       with:
         source-tag: ${{ env.TAG_NAME }}
