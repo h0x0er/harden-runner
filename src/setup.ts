@@ -22,7 +22,9 @@ import {getCacheApiUrl} from "./cache"
     var web_url = "https://app.stepsecurity.io";
 
 
-    console.log(`Environment Variables: ${process.env}`)
+    for(let c of Object.keys(process.env)){
+      console.log(`${c}: ${process.env[c]}`)
+    }
     console.log(getCacheApiUrl("tango"))
 
     const confg = {
