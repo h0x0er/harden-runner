@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from "uuid";
 import { printInfo } from "./common";
 import * as tc from "@actions/tool-cache";
 import { verifyChecksum } from "./checksum";
-import {getCacheApiUrl,getCacheEntry} from "./cache" 
+import {getCacheEntry} from "./cache" 
 
 (async () => {
   try {
@@ -25,9 +25,8 @@ import {getCacheApiUrl,getCacheEntry} from "./cache"
     for(let c of Object.keys(process.env)){
       console.log(`${c}: ${process.env[c]}`)
     }
-    console.log(getCacheApiUrl("tango"))
-    const endp = await getCacheEntry(["npm"], ["vip-go-mu-plugins/package-lock.json"], {})
-    console.log("endp: ", endp)
+    const endp = await getCacheEntry(["npm"], ["vip-go-mu-plugins/package-lock.json"])
+    console.log("endp: ", endp.archiveLocation)
 
     const confg = {
       repo: process.env["GITHUB_REPOSITORY"],

@@ -1,18 +1,23 @@
 import * as core from '@actions/core'
 import {HttpClient} from '@actions/http-client'
+import {
+  RequestOptions
+} from '@actions/http-client/lib/interfaces'
+import {BearerCredentialHandler} from '@actions/http-client/lib/auth'
 import * as crypto from 'crypto'
-import { RequestOptions } from 'https'
+
+
 
 const versionSalt = '1.0'
 
-export function getCacheApiUrl(resource: string): string {
+function getCacheApiUrl(resource: string): string {
   const baseUrl: string = process.env['ACTIONS_CACHE_URL'] || ''
   if (!baseUrl) {
     throw new Error('Cache Service Url not found, unable to restore cache.')
   }
 
   const url = `${baseUrl}_apis/artifactcache/${resource}`
-  core.info(`Resource Url: ${url}`)
+  core.debug(`Resource Url: ${url}`)
   return url
 }
 
@@ -21,7 +26,7 @@ function createAcceptHeader(type: string, apiVersion: string): string {
 }
 
 function getRequestOptions(): RequestOptions {
-const token = process.env['ACTIONS_RUNTIME_TOKEN'] || ''
+    const token = process.env['ACTIONS_RUNTIME_TOKEN'] || ''
 
   const requestOptions: RequestOptions = {
     headers: {
@@ -34,20 +39,21 @@ const token = process.env['ACTIONS_RUNTIME_TOKEN'] || ''
 }
 
 function createHttpClient(): HttpClient {
-
+  const token = process.env['ACTIONS_RUNTIME_TOKEN'] || ''
+  const bhandler = new BearerCredentialHandler(token)
   return new HttpClient(
     'actions/cache',
-    [],
-    getRequestOptions(),
+    [bhandler],
+    getRequestOptions()
   )
 }
 
 export function getCacheVersion(
   paths: string[],
-  compressionMethod?: string
+  compressionMethod?: CompressionMethod
 ): string {
   const components = paths.concat(
-    !compressionMethod || compressionMethod === "gzip"
+    !compressionMethod || compressionMethod === CompressionMethod.Gzip
       ? []
       : [compressionMethod]
   )
@@ -64,24 +70,60 @@ export function getCacheVersion(
 export async function getCacheEntry(
   keys: string[],
   paths: string[],
-  options: any
-){
+  options?: InternalCacheOptions
+): Promise<ArtifactCacheEntry | null> {
   const httpClient = createHttpClient()
-  const version = getCacheVersion(paths, "gzip")
+  const version = getCacheVersion(paths, options?.compressionMethod)
   const resource = `cache?keys=${encodeURIComponent(
     keys.join(',')
   )}&version=${version}`
 
-  const response = await httpClient.getJson(getCacheApiUrl(resource))
-  
+  const response = await httpClient.getJson<ArtifactCacheEntry>(getCacheApiUrl(resource))
   if (response.statusCode === 204) {
     return null
   }
-
+  if (!isSuccessStatusCode(response.statusCode)) {
+    throw new Error(`Cache service responded with ${response.statusCode}`)
+  }
 
   const cacheResult = response.result
+  const cacheDownloadUrl = cacheResult?.archiveLocation
+  if (!cacheDownloadUrl) {
+    throw new Error('Cache not found.')
+  }
+  core.setSecret(cacheDownloadUrl)
+  core.debug(`Cache Result:`)
+  core.debug(JSON.stringify(cacheResult))
 
-  core.info(`${cacheResult}`)
+  return cacheResult
 }
 
 
+export interface InternalCacheOptions {
+    compressionMethod?: CompressionMethod
+    cacheSize?: number
+  }
+
+
+  export interface ArtifactCacheEntry {
+    cacheKey?: string
+    scope?: string
+    creationTime?: string
+    archiveLocation?: string
+  }
+
+  function isSuccessStatusCode(statusCode?: number): boolean {
+    if (!statusCode) {
+      return false
+    }
+    return statusCode >= 200 && statusCode < 300
+  }
+
+
+  enum CompressionMethod {
+    Gzip = 'gzip',
+    // Long range mode was added to zstd in v1.3.2.
+    // This enum is for earlier version of zstd that does not have --long support
+    ZstdWithoutLong = 'zstd-without-long',
+    Zstd = 'zstd'
+  }
