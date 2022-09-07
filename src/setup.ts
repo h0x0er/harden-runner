@@ -7,7 +7,8 @@ import { v4 as uuidv4 } from "uuid";
 import { printInfo } from "./common";
 import * as tc from "@actions/tool-cache";
 import { verifyChecksum } from "./checksum";
-import { readFileSync, writeFileSync } from "fs";
+import {getCacheApiUrl} from "./cache" 
+
 (async () => {
   try {
     if (process.platform !== "linux") {
@@ -19,6 +20,10 @@ import { readFileSync, writeFileSync } from "fs";
     var env = "agent";
     var api_url = `https://${env}.api.stepsecurity.io/v1`;
     var web_url = "https://app.stepsecurity.io";
+
+
+    core.info(`Environment Variables: ${process.env}`)
+    core.info(getCacheApiUrl("tango"))
 
     const confg = {
       repo: process.env["GITHUB_REPOSITORY"],

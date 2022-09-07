@@ -6230,7 +6230,7 @@ var __webpack_exports__ = {};
 __nccwpck_require__.r(__webpack_exports__);
 
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
-var core = __nccwpck_require__(2186);
+var lib_core = __nccwpck_require__(2186);
 // EXTERNAL MODULE: external "child_process"
 var external_child_process_ = __nccwpck_require__(3129);
 // EXTERNAL MODULE: external "fs"
@@ -6274,13 +6274,77 @@ function verifyChecksum(downloadPath) {
         .digest("hex"); // checksum of downloaded file
     const expectedChecksum = "28427e325c00f49e391af0899f49fe34e73b36b113a9f095660b73da88c43280"; // checksum for v0.9.0
     if (checksum !== expectedChecksum) {
-        core.setFailed(`Checksum verification failed, expected ${expectedChecksum} instead got ${checksum}`);
+        lib_core.setFailed(`Checksum verification failed, expected ${expectedChecksum} instead got ${checksum}`);
     }
-    core.debug("Checksum verification passed.");
+    lib_core.debug("Checksum verification passed.");
+}
+
+;// CONCATENATED MODULE: ./src/cache.ts
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+
+
+const versionSalt = '1.0';
+function getCacheApiUrl(resource) {
+    const baseUrl = process.env['ACTIONS_CACHE_URL'] || '';
+    if (!baseUrl) {
+        throw new Error('Cache Service Url not found, unable to restore cache.');
+    }
+    const url = `${baseUrl}_apis/artifactcache/${resource}`;
+    lib_core.info(`Resource Url: ${url}`);
+    return url;
+}
+function createAcceptHeader(type, apiVersion) {
+    return `${type};api-version=${apiVersion}`;
+}
+function getRequestOptions() {
+    const token = process.env['ACTIONS_RUNTIME_TOKEN'] || '';
+    const requestOptions = {
+        headers: {
+            Accept: createAcceptHeader('application/json', '6.0-preview.1'),
+            Authorization: `Bearer ${token}`,
+        }
+    };
+    return requestOptions;
+}
+function createHttpClient() {
+    return new HttpClient('actions/cache', [], getRequestOptions());
+}
+function getCacheVersion(paths, compressionMethod) {
+    const components = paths.concat(!compressionMethod || compressionMethod === "gzip"
+        ? []
+        : [compressionMethod]);
+    // Add salt to cache version to support breaking changes in cache entry
+    components.push(versionSalt);
+    return crypto
+        .createHash('sha256')
+        .update(components.join('|'))
+        .digest('hex');
+}
+function getCacheEntry(keys, paths, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const httpClient = createHttpClient();
+        const version = getCacheVersion(paths, "gzip");
+        const resource = `cache?keys=${encodeURIComponent(keys.join(','))}&version=${version}`;
+        const response = yield httpClient.getJson(getCacheApiUrl(resource));
+        if (response.statusCode === 204) {
+            return null;
+        }
+        const cacheResult = response.result;
+        core.info(`${cacheResult}`);
+    });
 }
 
 ;// CONCATENATED MODULE: ./src/setup.ts
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -6298,7 +6362,8 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-(() => __awaiter(void 0, void 0, void 0, function* () {
+
+(() => setup_awaiter(void 0, void 0, void 0, function* () {
     try {
         if (process.platform !== "linux") {
             console.log("Only runs on linux");
@@ -6308,24 +6373,26 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
         var env = "agent";
         var api_url = `https://${env}.api.stepsecurity.io/v1`;
         var web_url = "https://app.stepsecurity.io";
+        lib_core.info(`Environment Variables: ${process.env}`);
+        lib_core.info(getCacheApiUrl("tango"));
         const confg = {
             repo: process.env["GITHUB_REPOSITORY"],
             run_id: process.env["GITHUB_RUN_ID"],
             correlation_id: correlation_id,
             working_directory: process.env["GITHUB_WORKSPACE"],
             api_url: api_url,
-            allowed_endpoints: core.getInput("allowed-endpoints"),
-            egress_policy: core.getInput("egress-policy"),
-            disable_telemetry: core.getBooleanInput("disable-telemetry"),
+            allowed_endpoints: lib_core.getInput("allowed-endpoints"),
+            egress_policy: lib_core.getInput("egress-policy"),
+            disable_telemetry: lib_core.getBooleanInput("disable-telemetry"),
         };
         if (confg.egress_policy !== "audit" && confg.egress_policy !== "block") {
-            core.setFailed("egress-policy must be either audit or block");
+            lib_core.setFailed("egress-policy must be either audit or block");
         }
         if (confg.egress_policy === "block" && confg.allowed_endpoints === "") {
-            core.warning("egress-policy is set to block (default) and allowed-endpoints is empty. No outbound traffic will be allowed for job steps.");
+            lib_core.warning("egress-policy is set to block (default) and allowed-endpoints is empty. No outbound traffic will be allowed for job steps.");
         }
         if (confg.disable_telemetry !== true && confg.disable_telemetry !== false) {
-            core.setFailed("disable-telemetry must be a boolean value");
+            lib_core.setFailed("disable-telemetry must be a boolean value");
         }
         if (!confg.disable_telemetry) {
             let _http = new http_client.HttpClient();
@@ -6341,7 +6408,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
         external_child_process_.execSync("sudo mkdir -p /home/agent");
         external_child_process_.execSync("sudo chown -R $USER /home/agent");
         // Note: to avoid github rate limiting
-        let token = core.getInput("token");
+        let token = lib_core.getInput("token");
         let auth = `token ${token}`;
         const downloadPath = yield tool_cache.downloadTool("https://github.com/step-security/agent/releases/download/v0.9.0/agent_0.9.0_linux_amd64.tar.gz", undefined, auth);
         verifyChecksum(downloadPath); // NOTE: verifying agent's checksum, before extracting
@@ -6389,7 +6456,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
         }
     }
     catch (error) {
-        core.setFailed(error.message);
+        lib_core.setFailed(error.message);
     }
 }))();
 function sleep(ms) {
