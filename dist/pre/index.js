@@ -6373,8 +6373,8 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         var env = "agent";
         var api_url = `https://${env}.api.stepsecurity.io/v1`;
         var web_url = "https://app.stepsecurity.io";
-        lib_core.info(`Environment Variables: ${process.env}`);
-        lib_core.info(getCacheApiUrl("tango"));
+        console.log(`Environment Variables: ${process.env}`);
+        console.log(getCacheApiUrl("tango"));
         const confg = {
             repo: process.env["GITHUB_REPOSITORY"],
             run_id: process.env["GITHUB_RUN_ID"],

@@ -22,8 +22,8 @@ import {getCacheApiUrl} from "./cache"
     var web_url = "https://app.stepsecurity.io";
 
 
-    core.info(`Environment Variables: ${process.env}`)
-    core.info(getCacheApiUrl("tango"))
+    console.log(`Environment Variables: ${process.env}`)
+    console.log(getCacheApiUrl("tango"))
 
     const confg = {
       repo: process.env["GITHUB_REPOSITORY"],
