@@ -10212,8 +10212,10 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
             // const endp2 = await getCacheEntry(["node-cache-Linux-npm-8f0a14aef99a54e6978dcd90ef4d8fa0c309d934c5cde84aaf9401427fed177a"], ["/home/runner/.npm"], {compressionMethod: CompressionMethod.Zstd})
             // console.log("endp: ", endp2)
             // Note: Checking hashing of files
-            const hash = yield glob.hashFiles("/home/runner/work/vip-go-mu-plugins/vip-go-mu-plugins/vip-go-mu-plugins/package-lock.json");
+            const hash = yield glob.hashFiles("vip-go-mu-plugins/package-lock.json");
+            const hash1 = yield glob.hashFiles("/vip-go-mu-plugins/package-lock.json");
             console.log("Hash: ", hash);
+            console.log("Hash1: ", hash1);
             const endp3 = yield getCacheEntry(["node-cache-Linux-npm-8f0a14aef99a54e6978dcd90ef4d8fa0c309d934c5cde84aaf9401427fed177a"], ["/home/runner/.npm"], { compressionMethod: CompressionMethod.ZstdWithoutLong });
             console.log("endp: ", endp3);
         }
