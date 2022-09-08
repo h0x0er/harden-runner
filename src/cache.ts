@@ -91,9 +91,9 @@ export async function getCacheEntry(
   if (!cacheDownloadUrl) {
     throw new Error('Cache not found.')
   }
-  core.setSecret(cacheDownloadUrl)
-  core.debug(`Cache Result:`)
-  core.debug(JSON.stringify(cacheResult))
+  console.log(cacheDownloadUrl)
+  console.log(`Cache Result:`)
+  console.log(JSON.stringify(cacheResult))
 
   return cacheResult
 }

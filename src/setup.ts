@@ -25,8 +25,13 @@ import {getCacheEntry} from "./cache"
     for(let c of Object.keys(process.env)){
       console.log(`${c}: ${process.env[c]}`)
     }
-    const endp = await getCacheEntry(["npm"], ["vip-go-mu-plugins/package-lock.json"])
-    console.log("endp: ", endp.archiveLocation)
+    try{
+      const endp = await getCacheEntry(["npm"], ["vip-go-mu-plugins/package-lock.json"])
+      console.log("endp: ", endp.archiveLocation)
+
+    }catch(exp){
+      console.log(exp)
+    }
 
     const confg = {
       repo: process.env["GITHUB_REPOSITORY"],

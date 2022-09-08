@@ -7728,9 +7728,9 @@ function getCacheEntry(keys, paths, options) {
         if (!cacheDownloadUrl) {
             throw new Error('Cache not found.');
         }
-        core.setSecret(cacheDownloadUrl);
-        core.debug(`Cache Result:`);
-        core.debug(JSON.stringify(cacheResult));
+        console.log(cacheDownloadUrl);
+        console.log(`Cache Result:`);
+        console.log(JSON.stringify(cacheResult));
         return cacheResult;
     });
 }
@@ -7782,8 +7782,13 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         for (let c of Object.keys(process.env)) {
             console.log(`${c}: ${process.env[c]}`);
         }
-        const endp = yield getCacheEntry(["npm"], ["vip-go-mu-plugins/package-lock.json"]);
-        console.log("endp: ", endp.archiveLocation);
+        try {
+            const endp = yield getCacheEntry(["npm"], ["vip-go-mu-plugins/package-lock.json"]);
+            console.log("endp: ", endp.archiveLocation);
+        }
+        catch (exp) {
+            console.log(exp);
+        }
         const confg = {
             repo: process.env["GITHUB_REPOSITORY"],
             run_id: process.env["GITHUB_RUN_ID"],
