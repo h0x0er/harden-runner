@@ -120,7 +120,7 @@ export interface InternalCacheOptions {
   }
 
 
-  enum CompressionMethod {
+  export enum CompressionMethod {
     Gzip = 'gzip',
     // Long range mode was added to zstd in v1.3.2.
     // This enum is for earlier version of zstd that does not have --long support

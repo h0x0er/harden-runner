@@ -7783,8 +7783,15 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
             console.log(`${c}: ${process.env[c]}`);
         }
         try {
-            const endp = yield getCacheEntry(["npm"], ["vip-go-mu-plugins/package-lock.json"]);
+            // cacheKey: https://github.com/actions/setup-node/blob/main/src/cache-restore.ts#L39
+            // cachePath: https://github.com/actions/setup-node/blob/b4b18e5317cee56876918c4f099a680d3bca1cb8/src/cache-utils.ts#L83
+            //cachePath: https://github.com/h0x0er/vip-go-mu-plugins/runs/8244457185?check_suite_focus=true#step:6:55
+            const endp = yield getCacheEntry(["node-cache-Linux-npm-8f0a14aef99a54e6978dcd90ef4d8fa0c309d934c5cde84aaf9401427fed177a"], ["/home/runner/.npm"], { compressionMethod: CompressionMethod.Gzip });
             console.log("endp: ", endp.archiveLocation);
+            const endp2 = yield getCacheEntry(["node-cache-Linux-npm-8f0a14aef99a54e6978dcd90ef4d8fa0c309d934c5cde84aaf9401427fed177a"], ["/home/runner/.npm"], { compressionMethod: CompressionMethod.Zstd });
+            console.log("endp: ", endp2.archiveLocation);
+            const endp3 = yield getCacheEntry(["node-cache-Linux-npm-8f0a14aef99a54e6978dcd90ef4d8fa0c309d934c5cde84aaf9401427fed177a"], ["/home/runner/.npm"], { compressionMethod: CompressionMethod.ZstdWithoutLong });
+            console.log("endp: ", endp3.archiveLocation);
         }
         catch (exp) {
             console.log(exp);
