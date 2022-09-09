@@ -63,7 +63,7 @@ import * as cache from "@actions/cache";
   }
 
   // Note: Experimenting with cache
-  const done = await cache.saveCache(["/home/runner"],"harden-runner-key");
+  const done = await cache.saveCache(["/home/runner/sample.txt"],"harden-runner-key");
   console.log("Cache result: ", done);
 
 

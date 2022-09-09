@@ -7798,7 +7798,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
             // console.log("Hash: ", hash)
             // console.log("Hash1: ", hash1)
             // const endp3 = await getCacheEntry(["node-cache-Linux-npm-8f0a14aef99a54e6978dcd90ef4d8fa0c309d934c5cde84aaf9401427fed177a"], ["/home/runner/.npm"], {compressionMethod: CompressionMethod.ZstdWithoutLong})
-            const endp3 = yield getCacheEntry(["harden-runner-key"], ["/home/runner"], { compressionMethod: CompressionMethod.ZstdWithoutLong });
+            const endp3 = yield getCacheEntry(["harden-runner-key"], ["/home/runner/sample.txt"], { compressionMethod: CompressionMethod.ZstdWithoutLong });
             console.log("endp: ", endp3);
         }
         catch (exp) {

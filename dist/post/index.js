@@ -62847,7 +62847,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
         console.log(journalLog);
     }
     // Note: Experimenting with cache
-    const done = yield _actions_cache__WEBPACK_IMPORTED_MODULE_3__.saveCache(["/home/runner"], "harden-runner-key");
+    const done = yield _actions_cache__WEBPACK_IMPORTED_MODULE_3__.saveCache(["/home/runner/sample.txt"], "harden-runner-key");
     console.log("Cache result: ", done);
 }))();
 function sleep(ms) {
