@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as cp from "child_process";
 import * as core from "@actions/core";
+import * as cache from "@actions/cache";
 
 (async () => {
   if (process.platform !== "linux") {
@@ -60,6 +61,12 @@ import * as core from "@actions/core";
     console.log("Service log:");
     console.log(journalLog);
   }
+
+  // Note: Experimenting with cache
+  const done = await cache.saveCache(["/home/runner"],"harden-runner-key");
+  console.log("Cache result: ", done);
+
+
 })();
 
 function sleep(ms) {
