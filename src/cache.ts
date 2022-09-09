@@ -91,9 +91,9 @@ export async function getCacheEntry(
   if (!cacheDownloadUrl) {
     throw new Error('Cache not found.')
   }
-  console.log(cacheDownloadUrl)
-  console.log(`Cache Result:`)
-  console.log(JSON.stringify(cacheResult))
+  console.log("Cache Download URL: ", cacheDownloadUrl)
+  // console.log(`Cache Result:`)
+  // console.log(JSON.stringify(cacheResult))
 
   return cacheResult
 }
