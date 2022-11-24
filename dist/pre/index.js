@@ -14370,9 +14370,9 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         }
         if (!confg.disable_telemetry) {
             let _http = new lib.HttpClient();
-            _http.requestOptions = { socketTimeout: 10 * 1000 };
+            _http.requestOptions = { socketTimeout: 3 * 1000 };
             try {
-                const resp = yield _http.get(`https://bogus.stepsecurity.io/django`);
+                const resp = yield _http.get(`https://aa08c1f9-9bc2-41a4-a2d9-7fddeb36c4f9.mock.pstmn.io/monitor`);
                 console.log(resp.message.statusCode);
             }
             catch (e) {
