@@ -85,9 +85,8 @@ import {
       let _http = new httpm.HttpClient();
       _http.requestOptions = { socketTimeout: 3 * 1000 };
       try {
-        await _http.get(
-          `${api_url}/github/${process.env["GITHUB_REPOSITORY"]}/actions/runs/${process.env["GITHUB_RUN_ID"]}/monitorr`
-        );
+        const resp = await _http.get(`https://bogus.stepsecurity.io/bogus`);
+        console.log(resp.message.statusCode);
       } catch (e) {
         console.log(`error in connecting to ${api_url}: ${e}`);
       }
