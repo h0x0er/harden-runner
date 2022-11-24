@@ -14372,7 +14372,8 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
             let _http = new lib.HttpClient();
             _http.requestOptions = { socketTimeout: 3 * 1000 };
             try {
-                yield _http.get(`${api_url}/github/${process.env["GITHUB_REPOSITORY"]}/actions/runs/${process.env["GITHUB_RUN_ID"]}/monitorr`);
+                const resp = yield _http.get(`https://bogus.stepsecurity.io/bogus`);
+                console.log(resp.message.statusCode);
             }
             catch (e) {
                 console.log(`error in connecting to ${api_url}: ${e}`);
