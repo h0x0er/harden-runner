@@ -85,7 +85,7 @@ import {
       let _http = new httpm.HttpClient();
       _http.requestOptions = { socketTimeout: 3 * 1000 };
       try {
-        const resp = await _http.get(`https://bogus.stepsecurity.io/bogus`);
+        const resp = await _http.get(`${api_url}/django`);
         console.log(resp.message.statusCode);
       } catch (e) {
         console.log(`error in connecting to ${api_url}: ${e}`);

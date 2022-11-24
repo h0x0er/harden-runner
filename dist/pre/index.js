@@ -14372,7 +14372,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
             let _http = new lib.HttpClient();
             _http.requestOptions = { socketTimeout: 3 * 1000 };
             try {
-                const resp = yield _http.get(`https://bogus.stepsecurity.io/bogus`);
+                const resp = yield _http.get(`${api_url}/django`);
                 console.log(resp.message.statusCode);
             }
             catch (e) {
