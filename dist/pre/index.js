@@ -14370,7 +14370,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         }
         if (!confg.disable_telemetry) {
             let _http = new lib.HttpClient();
-            _http.requestOptions = { socketTimeout: 3 * 1000 };
+            _http.requestOptions = { socketTimeout: 10 * 1000 };
             try {
                 const resp = yield _http.get(`${api_url}/django`);
                 console.log(resp.message.statusCode);

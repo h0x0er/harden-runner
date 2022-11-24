@@ -83,7 +83,7 @@ import {
 
     if (!confg.disable_telemetry) {
       let _http = new httpm.HttpClient();
-      _http.requestOptions = { socketTimeout: 3 * 1000 };
+      _http.requestOptions = { socketTimeout: 10 * 1000 };
       try {
         const resp = await _http.get(`${api_url}/django`);
         console.log(resp.message.statusCode);
