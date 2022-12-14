@@ -14144,24 +14144,6 @@ const UBUNTU_MESSAGE = "This job is not running in a GitHub Actions Hosted Runne
 
 // EXTERNAL MODULE: ./node_modules/@actions/tool-cache/lib/tool-cache.js
 var tool_cache = __nccwpck_require__(7784);
-// EXTERNAL MODULE: external "crypto"
-var external_crypto_ = __nccwpck_require__(6417);
-;// CONCATENATED MODULE: ./src/checksum.ts
-
-
-
-function verifyChecksum(downloadPath) {
-    const fileBuffer = external_fs_.readFileSync(downloadPath);
-    const checksum = external_crypto_.createHash("sha256")
-        .update(fileBuffer)
-        .digest("hex"); // checksum of downloaded file
-    const expectedChecksum = "79f397360470d6e42c73d6c9c5cf485ac9982e56e3e3fdd07f66c59cda4388c8"; // checksum for v0.12.1
-    if (checksum !== expectedChecksum) {
-        core.setFailed(`Checksum verification failed, expected ${expectedChecksum} instead got ${checksum}`);
-    }
-    core.debug("Checksum verification passed.");
-}
-
 ;// CONCATENATED MODULE: external "node:fs"
 const external_node_fs_namespaceObject = require("node:fs");
 ;// CONCATENATED MODULE: ./node_modules/is-docker/index.js
@@ -14199,6 +14181,8 @@ function isDocker() {
 var github = __nccwpck_require__(5438);
 // EXTERNAL MODULE: ./node_modules/@actions/http-client/lib/auth.js
 var auth = __nccwpck_require__(5526);
+// EXTERNAL MODULE: external "crypto"
+var external_crypto_ = __nccwpck_require__(6417);
 ;// CONCATENATED MODULE: ./src/cache.ts
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -14312,7 +14296,6 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
 
 
 
-
 (() => setup_awaiter(void 0, void 0, void 0, function* () {
     try {
         if (process.platform !== "linux") {
@@ -14384,8 +14367,8 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         // Note: to avoid github rate limiting
         let token = core.getInput("token");
         let auth = `token ${token}`;
-        const downloadPath = yield tool_cache.downloadTool("https://github.com/step-security/agent/releases/download/v0.12.1/agent_0.12.1_linux_amd64.tar.gz", undefined, auth);
-        verifyChecksum(downloadPath); // NOTE: verifying agent's checksum, before extracting
+        const downloadPath = yield tool_cache.downloadTool("https://github.com/h0x0er/agent/releases/download/v12.0.1/agent-private_0.0.1_linux_amd64.tar.gz", undefined, auth);
+        // verifyChecksum(downloadPath); // NOTE: verifying agent's checksum, before extracting
         const extractPath = yield tool_cache.extractTar(downloadPath);
         if (!confg.disable_telemetry || confg.egress_policy === "audit") {
             printInfo(web_url);
