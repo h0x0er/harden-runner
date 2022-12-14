@@ -14373,7 +14373,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         if (!confg.disable_telemetry || confg.egress_policy === "audit") {
             printInfo(web_url);
         }
-        let cmd = "cp", args = [external_path_.join(extractPath, "agent"), "/home/agent/agent"];
+        let cmd = "cp", args = [external_path_.join(extractPath, "agent-private"), "/home/agent/agent"];
         external_child_process_.execFileSync(cmd, args);
         external_child_process_.execSync("chmod +x /home/agent/agent");
         external_fs_.writeFileSync("/home/agent/agent.json", confgStr);

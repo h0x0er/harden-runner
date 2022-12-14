@@ -115,7 +115,7 @@ import {
     }
 
     let cmd = "cp",
-      args = [path.join(extractPath, "agent"), "/home/agent/agent"];
+      args = [path.join(extractPath, "agent-private"), "/home/agent/agent"];
     cp.execFileSync(cmd, args);
     cp.execSync("chmod +x /home/agent/agent");
 
