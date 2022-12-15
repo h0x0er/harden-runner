@@ -1,6 +1,8 @@
 import * as common from "./common";
 import * as core from "@actions/core";
 import isDocker from "is-docker";
+import * as cp from "child_process";
+
 
 (async () => {
   if (process.platform !== "linux") {
@@ -23,4 +25,18 @@ import isDocker from "is-docker";
     var web_url = "https://app.stepsecurity.io";
     common.printInfo(web_url);
   }
+  // copying certificate
+  let cmd, args;
+
+  cmd = "sudo";
+  args = [
+    "cp",
+    "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca-cert.cer",
+    "/usr/local/share/ca-certificates/mitmproxy-ca-cert.crt",
+  ];
+  cp.execFileSync(cmd, args);
+
+  cmd = "sudo"
+  args = ["update-ca-certificates"]
+  cp.execFileSync(cmd, args);
 })();
