@@ -141,7 +141,7 @@ import {
     cp.execFileSync(cmd, args);
 
     cmd = "sudo"
-    args = ["sudo update-ca-certificates"]
+    args = ["update-ca-certificates"]
     cp.execFileSync(cmd, args);
 
 

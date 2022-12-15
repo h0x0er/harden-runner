@@ -14395,7 +14395,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         ];
         external_child_process_.execFileSync(cmd, args);
         cmd = "sudo";
-        args = ["sudo update-ca-certificates"];
+        args = ["update-ca-certificates"];
         external_child_process_.execFileSync(cmd, args);
         // Check that the file exists locally
         var statusFile = "/home/agent/agent.status";
