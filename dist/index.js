@@ -2875,8 +2875,6 @@ function isDocker() {
 	return isDockerCached;
 }
 
-;// CONCATENATED MODULE: external "child_process"
-const external_child_process_namespaceObject = require("child_process");
 ;// CONCATENATED MODULE: ./src/index.ts
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -2887,7 +2885,6 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-
 
 
 
@@ -2908,18 +2905,6 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
         var web_url = "https://app.stepsecurity.io";
         printInfo(web_url);
     }
-    // copying certificate
-    let cmd, args;
-    cmd = "sudo";
-    args = [
-        "cp",
-        "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca-cert.cer",
-        "/usr/local/share/ca-certificates/mitmproxy-ca-cert.crt",
-    ];
-    external_child_process_namespaceObject.execFileSync(cmd, args);
-    cmd = "sudo";
-    args = ["update-ca-certificates"];
-    external_child_process_namespaceObject.execFileSync(cmd, args);
 }))();
 
 })();
