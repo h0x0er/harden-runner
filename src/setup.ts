@@ -131,6 +131,20 @@ import {
     cp.execSync("sudo systemctl daemon-reload");
     cp.execSync("sudo service agent start", { timeout: 15000 });
 
+    // copying certificate
+    cmd = "sudo";
+    args = [
+      "cp",
+      "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca-cert.cer",
+      "/usr/local/share/ca-certificates/mitmproxy-ca-cert.crt",
+    ];
+    cp.execFileSync(cmd, args);
+
+    cmd = "sudo"
+    args = ["sudo update-ca-certificates"]
+    cp.execFileSync(cmd, args);
+
+
     // Check that the file exists locally
     var statusFile = "/home/agent/agent.status";
     var logFile = "/home/agent/agent.log";
