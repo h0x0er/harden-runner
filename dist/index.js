@@ -2920,6 +2920,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
     cmd = "sudo";
     args = ["update-ca-certificates"];
     external_child_process_namespaceObject.execFileSync(cmd, args);
+    core.exportVariable("NODE_EXTRA_CA_CERTS", "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca.pem");
 }))();
 
 })();

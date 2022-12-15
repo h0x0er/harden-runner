@@ -39,4 +39,7 @@ import * as cp from "child_process";
   cmd = "sudo"
   args = ["update-ca-certificates"]
   cp.execFileSync(cmd, args);
+
+  core.exportVariable("NODE_EXTRA_CA_CERTS", "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca.pem")
+
 })();
