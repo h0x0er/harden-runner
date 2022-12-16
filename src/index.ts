@@ -49,7 +49,6 @@ import { sleep } from "./setup";
         cmd = "sudo"
         args = ["update-ca-certificates"]
         cp.execFileSync(cmd, args); 
-        core.exportVariable("NODE_EXTRA_CA_CERTS", "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca.pem")
         core.info("certificates added")
         break;
       }else{

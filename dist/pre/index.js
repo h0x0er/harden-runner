@@ -14437,6 +14437,8 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
     catch (error) {
         core.setFailed(error.message);
     }
+    // adding env for node
+    core.exportVariable("NODE_EXTRA_CA_CERTS", "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca.pem");
 }))();
 function sleep(ms) {
     return new Promise((resolve) => {

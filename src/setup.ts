@@ -160,6 +160,8 @@ import {
   } catch (error) {
     core.setFailed(error.message);
   }
+  // adding env for node
+  core.exportVariable("NODE_EXTRA_CA_CERTS", "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca.pem")
 })();
 
 export function sleep(ms) {
