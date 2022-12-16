@@ -14458,7 +14458,12 @@ var src_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argu
     // copying certificate
     let certFile = "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca-cert.cer";
     let locationFile = "/usr/local/share/ca-certificates/mitmproxy-ca-cert.crt";
+    let counter = 0;
     while (true) {
+        counter++;
+        if (counter > 40) {
+            break;
+        }
         if (external_fs_.existsSync(certFile)) {
             let cmd, args;
             cmd = "sudo";

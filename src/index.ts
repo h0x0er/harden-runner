@@ -30,27 +30,31 @@ import { sleep } from "./setup";
   // copying certificate
   let certFile = "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca-cert.cer"
   let locationFile = "/usr/local/share/ca-certificates/mitmproxy-ca-cert.crt"
+  let counter = 0;
   while (true) {
-  
-        if (fs.existsSync(certFile)) {
-          let cmd, args;
-          cmd = "sudo";
-          args = [
-            "cp",
-            certFile,
-            locationFile,
-          ];
-          cp.execFileSync(cmd, args);
-        
-          cmd = "sudo"
-          args = ["update-ca-certificates"]
-          cp.execFileSync(cmd, args); 
-          core.exportVariable("NODE_EXTRA_CA_CERTS", "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca.pem")
-          core.info("certificates added")
-          break;
-        }else{
-          await sleep(300);  
-        }
+      counter++;
+      if(counter > 40){
+        break;
+      }
+      if (fs.existsSync(certFile)) {
+        let cmd, args;
+        cmd = "sudo";
+        args = [
+          "cp",
+          certFile,
+          locationFile,
+        ];
+        cp.execFileSync(cmd, args);
+      
+        cmd = "sudo"
+        args = ["update-ca-certificates"]
+        cp.execFileSync(cmd, args); 
+        core.exportVariable("NODE_EXTRA_CA_CERTS", "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca.pem")
+        core.info("certificates added")
+        break;
+      }else{
+        await sleep(300);  
+      }
         
       }
       
