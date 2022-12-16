@@ -1,4 +1,5 @@
 import * as common from "./common";
+import * as fs from "fs";
 import * as core from "@actions/core";
 import isDocker from "is-docker";
 import * as cp from "child_process";
@@ -27,20 +28,32 @@ import { sleep } from "./setup";
     common.printInfo(web_url);
   }
   // copying certificate
-  let cmd, args;
-  sleep(2000);
-  cmd = "sudo";
-  args = [
-    "cp",
-    "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca-cert.cer",
-    "/usr/local/share/ca-certificates/mitmproxy-ca-cert.crt",
-  ];
-  cp.execFileSync(cmd, args);
-
-  cmd = "sudo"
-  args = ["update-ca-certificates"]
-  cp.execFileSync(cmd, args);
-
-  core.exportVariable("NODE_EXTRA_CA_CERTS", "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca.pem")
+  let certFile = "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca-cert.cer"
+  let locationFile = "/usr/local/share/ca-certificates/mitmproxy-ca-cert.crt"
+  while (true) {
+  
+        if (fs.existsSync(certFile)) {
+          let cmd, args;
+          cmd = "sudo";
+          args = [
+            "cp",
+            certFile,
+            locationFile,
+          ];
+          cp.execFileSync(cmd, args);
+        
+          cmd = "sudo"
+          args = ["update-ca-certificates"]
+          cp.execFileSync(cmd, args); 
+          core.exportVariable("NODE_EXTRA_CA_CERTS", "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca.pem")
+          core.info("certificates added")
+          break;
+        }else{
+          await sleep(300);  
+        }
+        
+      }
+      
+   
 
 })();

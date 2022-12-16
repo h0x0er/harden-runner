@@ -14118,6 +14118,8 @@ function printInfo(web_url) {
 const CONTAINER_MESSAGE = "This job is running in a container. Harden Runner does not run in a container as it needs sudo access to run. This job will not be monitored.";
 const UBUNTU_MESSAGE = "This job is not running in a GitHub Actions Hosted Runner Ubuntu VM. Harden Runner is only supported on Ubuntu VM. This job will not be monitored.";
 
+// EXTERNAL MODULE: external "fs"
+var external_fs_ = __nccwpck_require__(5747);
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
 var core = __nccwpck_require__(2186);
 ;// CONCATENATED MODULE: external "node:fs"
@@ -14155,8 +14157,6 @@ function isDocker() {
 
 // EXTERNAL MODULE: external "child_process"
 var external_child_process_ = __nccwpck_require__(3129);
-// EXTERNAL MODULE: external "fs"
-var external_fs_ = __nccwpck_require__(5747);
 // EXTERNAL MODULE: ./node_modules/@actions/http-client/lib/index.js
 var lib = __nccwpck_require__(6255);
 // EXTERNAL MODULE: external "path"
@@ -14437,6 +14437,7 @@ var src_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argu
 
 
 
+
 (() => src_awaiter(void 0, void 0, void 0, function* () {
     if (process.platform !== "linux") {
         console.log(UBUNTU_MESSAGE);
@@ -14455,19 +14456,29 @@ var src_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argu
         printInfo(web_url);
     }
     // copying certificate
-    let cmd, args;
-    sleep(2000);
-    cmd = "sudo";
-    args = [
-        "cp",
-        "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca-cert.cer",
-        "/usr/local/share/ca-certificates/mitmproxy-ca-cert.crt",
-    ];
-    external_child_process_.execFileSync(cmd, args);
-    cmd = "sudo";
-    args = ["update-ca-certificates"];
-    external_child_process_.execFileSync(cmd, args);
-    core.exportVariable("NODE_EXTRA_CA_CERTS", "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca.pem");
+    let certFile = "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca-cert.cer";
+    let locationFile = "/usr/local/share/ca-certificates/mitmproxy-ca-cert.crt";
+    while (true) {
+        if (external_fs_.existsSync(certFile)) {
+            let cmd, args;
+            cmd = "sudo";
+            args = [
+                "cp",
+                certFile,
+                locationFile,
+            ];
+            external_child_process_.execFileSync(cmd, args);
+            cmd = "sudo";
+            args = ["update-ca-certificates"];
+            external_child_process_.execFileSync(cmd, args);
+            core.exportVariable("NODE_EXTRA_CA_CERTS", "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca.pem");
+            core.info("certificates added");
+            break;
+        }
+        else {
+            yield sleep(300);
+        }
+    }
 }))();
 
 })();
