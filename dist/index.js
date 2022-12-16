@@ -14394,7 +14394,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         while (true) {
             if (!external_fs_.existsSync(statusFile)) {
                 counter++;
-                if (counter > 40) {
+                if (counter > 60) {
                     console.log("timed out");
                     if (external_fs_.existsSync(logFile)) {
                         var content = external_fs_.readFileSync(logFile, "utf-8");

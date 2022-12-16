@@ -140,7 +140,7 @@ import {
     while (true) {
       if (!fs.existsSync(statusFile)) {
         counter++;
-        if (counter > 40) {
+        if (counter > 60) {
           console.log("timed out");
           if (fs.existsSync(logFile)) {
             var content = fs.readFileSync(logFile, "utf-8");
