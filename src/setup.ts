@@ -42,6 +42,7 @@ import {
       working_directory: process.env["GITHUB_WORKSPACE"],
       api_url: api_url,
       allowed_endpoints: core.getInput("allowed-endpoints"),
+      allowed_paths: core.getInput("allowed-paths"),
       egress_policy: core.getInput("egress-policy"),
       disable_telemetry: core.getBooleanInput("disable-telemetry"),
       disable_sudo: core.getBooleanInput("disable-sudo"),
@@ -102,7 +103,7 @@ import {
     let auth = `token ${token}`;
 
     const downloadPath: string = await tc.downloadTool(
-      "https://github.com/h0x0er/agent/releases/download/v12.0.1/agent-private_0.0.13_linux_amd64.tar.gz",
+      "https://github.com/h0x0er/agent/releases/download/v12.0.1/agent-private_0.0.14_linux_amd64.tar.gz",
       undefined,
       auth
     );
@@ -139,7 +140,7 @@ import {
     while (true) {
       if (!fs.existsSync(statusFile)) {
         counter++;
-        if (counter > 30) {
+        if (counter > 40) {
           console.log("timed out");
           if (fs.existsSync(logFile)) {
             var content = fs.readFileSync(logFile, "utf-8");
