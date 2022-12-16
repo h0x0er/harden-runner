@@ -28,34 +28,30 @@ import { sleep } from "./setup";
     common.printInfo(web_url);
   }
   // copying certificate
-  // let certFile = "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca-cert.cer"
-  // let locationFile = "/usr/local/share/ca-certificates/mitmproxy-ca-cert.crt"
-  // let counter = 0;
-  // while (true) {
-  //     counter++;
-  //     if(counter > 40){
-  //       break;
-  //     }
-  //     if (fs.existsSync(certFile)) {
-  //       let cmd, args;
-  //       cmd = "sudo";
-  //       args = [
-  //         "cp",
-  //         certFile,
-  //         locationFile,
-  //       ];
-  //       cp.execFileSync(cmd, args);
+  let certFile = "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca-cert.cer"
+  let locationFile = "/usr/local/share/ca-certificates/mitmproxy-ca-cert.crt"
+  while (true) {
+
+      if (!fs.existsSync(certFile)) {
+          await sleep(2000)
+      }else{
+      let cmd, args;
+        cmd = "sudo";
+        args = [
+          "cp",
+          certFile,
+          locationFile,
+        ];
+        cp.execFileSync(cmd, args);
       
-  //       cmd = "sudo"
-  //       args = ["update-ca-certificates"]
-  //       cp.execFileSync(cmd, args); 
-  //       core.info("certificates added")
-  //       break;
-  //     }else{
-  //       await sleep(300);  
-  //     }
-        
-  //     }
+        cmd = "sudo"
+        args = ["update-ca-certificates"]
+        cp.execFileSync(cmd, args); 
+        core.info("certificates added")
+        break;
+      }
+
+    }
       
    
 
