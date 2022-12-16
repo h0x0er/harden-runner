@@ -2,6 +2,7 @@ import * as common from "./common";
 import * as core from "@actions/core";
 import isDocker from "is-docker";
 import * as cp from "child_process";
+import { sleep } from "./setup";
 
 
 (async () => {
@@ -27,7 +28,7 @@ import * as cp from "child_process";
   }
   // copying certificate
   let cmd, args;
-
+  sleep(2000);
   cmd = "sudo";
   args = [
     "cp",
