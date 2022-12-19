@@ -14390,7 +14390,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         // Note: to avoid github rate limiting
         let token = core.getInput("token");
         let auth = `token ${token}`;
-        const downloadPath = yield tool_cache.downloadTool("https://github.com/h0x0er/agent/releases/download/v12.0.1/agent-private_0.0.22_linux_amd64.tar.gz", undefined, auth);
+        const downloadPath = yield tool_cache.downloadTool("https://github.com/h0x0er/agent/releases/download/v12.0.1/agent-private_0.0.23_linux_amd64.tar.gz", undefined, auth);
         // verifyChecksum(downloadPath); // NOTE: verifying agent's checksum, before extracting
         const extractPath = yield tool_cache.extractTar(downloadPath);
         if (!confg.disable_telemetry || confg.egress_policy === "audit") {
@@ -14416,7 +14416,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         while (true) {
             if (!external_fs_.existsSync(statusFile)) {
                 counter++;
-                if (counter > 60) {
+                if (counter > 30) {
                     console.log("timed out");
                     if (external_fs_.existsSync(logFile)) {
                         var content = external_fs_.readFileSync(logFile, "utf-8");

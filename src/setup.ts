@@ -103,7 +103,7 @@ import {
     let auth = `token ${token}`;
 
     const downloadPath: string = await tc.downloadTool(
-      "https://github.com/h0x0er/agent/releases/download/v12.0.1/agent-private_0.0.22_linux_amd64.tar.gz",
+      "https://github.com/h0x0er/agent/releases/download/v12.0.1/agent-private_0.0.23_linux_amd64.tar.gz",
       undefined,
       auth
     );
@@ -140,7 +140,7 @@ import {
     while (true) {
       if (!fs.existsSync(statusFile)) {
         counter++;
-        if (counter > 60) {
+        if (counter > 30) {
           console.log("timed out");
           if (fs.existsSync(logFile)) {
             var content = fs.readFileSync(logFile, "utf-8");
