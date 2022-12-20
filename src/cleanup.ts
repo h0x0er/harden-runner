@@ -27,7 +27,7 @@ import path from "path";
   while (true) {
     if (!fs.existsSync(doneFile)) {
       counter++;
-      if (counter > 15) {
+      if (counter > 5) {
         console.log("timed out");
 
         break;

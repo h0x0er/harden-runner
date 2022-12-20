@@ -61182,7 +61182,7 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
     while (true) {
         if (!external_fs_.existsSync(doneFile)) {
             counter++;
-            if (counter > 15) {
+            if (counter > 5) {
                 console.log("timed out");
                 break;
             }
