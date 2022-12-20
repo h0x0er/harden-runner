@@ -29,7 +29,7 @@ import { sleep } from "./setup";
   }
   // copying certificate
 
-
+  await sleep(5000);
   let cmd, args;
     cmd = "sudo";
     args = [
