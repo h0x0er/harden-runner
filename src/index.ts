@@ -30,7 +30,17 @@ import { sleep } from "./setup";
 
 
   // starting mitmproxy
-    await startMitm()
+  let cmd1 = "sudo"
+  // sudo -u mitmproxyuser -H sh -c '/usr/local/bin/mitmdump --mode transparent -s %s&'", interceptorFile
+  let args1 = []
+  args1.push("-u")
+  args1.push("mitmproxyuser")
+  args1.push("-H")
+  args1.push("sh")
+  args1.push("-c")
+  args1.push("'/usr/local/bin/mitmdump --mode transparent -s /home/mitmproxyuser/interceptor.py&'")
+  
+  cp.execFile(cmd1, args1)
   // copying certificate
 
   // await sleep(5000);
