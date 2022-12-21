@@ -103,6 +103,7 @@ import {
     let auth = `token ${token}`;
 
     let agent_binary_path = `https://github.com/h0x0er/agent/releases/download/v12.0.1/agent-private_${core.getInput("agent-version")}_linux_amd64.tar.gz`;
+    core.info(`Agent URL: ${agent_binary_path}`)
     const downloadPath: string = await tc.downloadTool(
       agent_binary_path,
       undefined,
