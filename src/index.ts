@@ -28,24 +28,7 @@ import { sleep } from "./setup";
     common.printInfo(web_url);
   }
 
-
-  // starting mitmproxy
-  core.info("[Mitmproxy] Starting mitmproxy")
-  let cmd1 = "sudo"
-  // sudo -u mitmproxyuser -H sh -c '/usr/local/bin/mitmdump --mode transparent -s %s&'", interceptorFile
-  let args1 = []
-  args1.push("-u")
-  args1.push("mitmproxyuser")
-  args1.push("-H")
-  args1.push("sh")
-  args1.push("-c")
-  args1.push("'/usr/local/bin/mitmdump --mode transparent -s /home/mitmproxyuser/interceptor.py&'")
-  
-  cp.execFile(cmd1, args1)
-  core.info("[Mitmproxy] Command sent.. waiting for process to start...")
   // copying certificate
-
-  await sleep(7000);
   let cmd, args;
     cmd = "sudo";
     args = [
