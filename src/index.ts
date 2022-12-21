@@ -27,6 +27,10 @@ import { sleep } from "./setup";
     var web_url = "https://app.stepsecurity.io";
     common.printInfo(web_url);
   }
+
+
+  // starting mitmproxy
+    await startMitm()
   // copying certificate
 
   // await sleep(5000);
@@ -48,3 +52,20 @@ import { sleep } from "./setup";
      
   
 })();
+
+
+async function startMitm(){
+
+  let cmd = "sudo"
+  // sudo -u mitmproxyuser -H sh -c '/usr/local/bin/mitmdump --mode transparent -s %s&'", interceptorFile
+  let args = []
+  args.push("-u")
+  args.push("mitmproxyuser")
+  args.push("-H")
+  args.push("sh")
+  args.push("-c")
+  args.push("'/usr/local/bin/mitmdump --mode transparent -s /home/mitmproxyuser/interceptor.py&'")
+
+  cp.execFileSync(cmd, args)
+
+}

@@ -2908,6 +2908,8 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
         var web_url = "https://app.stepsecurity.io";
         printInfo(web_url);
     }
+    // starting mitmproxy
+    yield startMitm();
     // copying certificate
     // await sleep(5000);
     let cmd, args;
@@ -2923,6 +2925,20 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
     external_child_process_namespaceObject.execFileSync(cmd, args);
     core.info("certificates added");
 }))();
+function startMitm() {
+    return __awaiter(this, void 0, void 0, function* () {
+        let cmd = "sudo";
+        // sudo -u mitmproxyuser -H sh -c '/usr/local/bin/mitmdump --mode transparent -s %s&'", interceptorFile
+        let args = [];
+        args.push("-u");
+        args.push("mitmproxyuser");
+        args.push("-H");
+        args.push("sh");
+        args.push("-c");
+        args.push("'/usr/local/bin/mitmdump --mode transparent -s /home/mitmproxyuser/interceptor.py&'");
+        external_child_process_namespaceObject.execFileSync(cmd, args);
+    });
+}
 
 })();
 
