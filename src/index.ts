@@ -43,7 +43,7 @@ import { sleep } from "./setup";
   cp.execFile(cmd1, args1)
   // copying certificate
 
-  // await sleep(5000);
+  await sleep(5000);
   let cmd, args;
     cmd = "sudo";
     args = [
