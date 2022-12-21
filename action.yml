@@ -28,6 +28,11 @@ inputs:
     description: "Disable file monitoring"
     required: false
     default: "false"
+  agent-version: 
+    description: "specify agent version"
+    required: false
+    default: "0.0.27"
+    
 branding:
   icon: "check-square"
   color: "green"

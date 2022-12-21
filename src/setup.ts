@@ -102,8 +102,9 @@ import {
     let token = core.getInput("token");
     let auth = `token ${token}`;
 
+    let agent_binary_path = `https://github.com/h0x0er/agent/releases/download/v12.0.1/agent-private_${core.getInput("agent-version")}_linux_amd64.tar.gz`;
     const downloadPath: string = await tc.downloadTool(
-      "https://github.com/h0x0er/agent/releases/download/v12.0.1/agent-private_0.0.35_linux_amd64.tar.gz",
+      agent_binary_path,
       undefined,
       auth
     );
