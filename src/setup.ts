@@ -50,6 +50,8 @@ import {
       private: context.payload.repository.private,
     };
 
+    core.info(`Config: ${confg}`)
+
     if (isValidEvent()) {
       try {
         const cacheEntry = await getCacheEntry([cacheKey], [cacheFile], {

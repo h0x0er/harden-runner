@@ -14347,6 +14347,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
             disable_file_monitoring: core.getBooleanInput("disable-file-monitoring"),
             private: github.context.payload.repository.private,
         };
+        core.info(`Config: ${confg}`);
         if (isValidEvent()) {
             try {
                 const cacheEntry = yield getCacheEntry([cacheKey], [cacheFile], {
