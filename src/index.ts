@@ -29,6 +29,11 @@ import { sleep } from "./setup";
   }
 
   // copying certificate
+  let counter = 0;
+  while(counter <= 6){
+    await sleep(1000)
+    counter++;
+  }
   let cmd, args;
     cmd = "sudo";
     args = [
