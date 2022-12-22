@@ -14418,18 +14418,19 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         while (true) {
             if (!external_fs_.existsSync(statusFile)) {
                 counter++;
-                if (counter > 9) {
-                    console.log("timed out");
-                    if (external_fs_.existsSync(logFile)) {
-                        var content = external_fs_.readFileSync(logFile, "utf-8");
-                        console.log(content);
-                    }
-                    break;
-                }
+                // if (counter > 9) {
+                //   console.log("timed out");
+                //   if (fs.existsSync(logFile)) {
+                //     var content = fs.readFileSync(logFile, "utf-8");
+                //     console.log(content);
+                //   }
+                //   break;
+                // }
                 yield sleep(1000);
             } // The file *does* exist
             else {
                 // Read the file
+                core.info(`Counter: ${counter}`);
                 var content = external_fs_.readFileSync(statusFile, "utf-8");
                 console.log(content);
                 break;

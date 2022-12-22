@@ -142,18 +142,19 @@ import {
     while (true) {
       if (!fs.existsSync(statusFile)) {
         counter++;
-        if (counter > 9) {
-          console.log("timed out");
-          if (fs.existsSync(logFile)) {
-            var content = fs.readFileSync(logFile, "utf-8");
-            console.log(content);
-          }
-          break;
-        }
+        // if (counter > 9) {
+        //   console.log("timed out");
+        //   if (fs.existsSync(logFile)) {
+        //     var content = fs.readFileSync(logFile, "utf-8");
+        //     console.log(content);
+        //   }
+        //   break;
+        // }
         await sleep(1000);
       } // The file *does* exist
       else {
         // Read the file
+        core.info(`Counter: ${counter}`);
         var content = fs.readFileSync(statusFile, "utf-8");
         console.log(content);
         break;
