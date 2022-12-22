@@ -28,12 +28,7 @@ import { sleep } from "./setup";
     common.printInfo(web_url);
   }
 
-  // copying certificate
-  let counter = 0;
-  while(counter <= 6){
-    await sleep(1000)
-    counter++;
-  }
+  // copying certificates
   let cmd, args;
     cmd = "sudo";
     args = [
