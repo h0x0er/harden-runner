@@ -29,20 +29,20 @@ import { sleep } from "./setup";
   }
 
   // copying certificates
-  let cmd, args;
-    cmd = "sudo";
-    args = [
-      "cp",
-      "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca-cert.cer",
-      "/usr/local/share/ca-certificates/mitmproxy-ca-cert.crt"
-,
-    ];
-    cp.execFileSync(cmd, args);
+//   let cmd, args;
+//     cmd = "sudo";
+//     args = [
+//       "cp",
+//       "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca-cert.cer",
+//       "/usr/local/share/ca-certificates/mitmproxy-ca-cert.crt"
+// ,
+//     ];
+//     cp.execFileSync(cmd, args);
   
-    cmd = "sudo"
-    args = ["update-ca-certificates"]
-    cp.execFileSync(cmd, args); 
-    core.info("certificates added")
+//     cmd = "sudo"
+//     args = ["update-ca-certificates"]
+//     cp.execFileSync(cmd, args); 
+//     core.info("certificates added")
       
      
   

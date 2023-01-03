@@ -2909,18 +2909,19 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
         printInfo(web_url);
     }
     // copying certificates
-    let cmd, args;
-    cmd = "sudo";
-    args = [
-        "cp",
-        "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca-cert.cer",
-        "/usr/local/share/ca-certificates/mitmproxy-ca-cert.crt",
-    ];
-    external_child_process_namespaceObject.execFileSync(cmd, args);
-    cmd = "sudo";
-    args = ["update-ca-certificates"];
-    external_child_process_namespaceObject.execFileSync(cmd, args);
-    core.info("certificates added");
+    //   let cmd, args;
+    //     cmd = "sudo";
+    //     args = [
+    //       "cp",
+    //       "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca-cert.cer",
+    //       "/usr/local/share/ca-certificates/mitmproxy-ca-cert.crt"
+    // ,
+    //     ];
+    //     cp.execFileSync(cmd, args);
+    //     cmd = "sudo"
+    //     args = ["update-ca-certificates"]
+    //     cp.execFileSync(cmd, args); 
+    //     core.info("certificates added")
 }))();
 function startMitm() {
     return __awaiter(this, void 0, void 0, function* () {
