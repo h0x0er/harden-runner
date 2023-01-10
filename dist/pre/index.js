@@ -14419,14 +14419,14 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         while (true) {
             if (!external_fs_.existsSync(statusFile)) {
                 counter++;
-                // if (counter > 9) {
-                //   console.log("timed out");
-                //   if (fs.existsSync(logFile)) {
-                //     var content = fs.readFileSync(logFile, "utf-8");
-                //     console.log(content);
-                //   }
-                //   break;
-                // }
+                if (counter > 12) {
+                    //   console.log("timed out");
+                    //   if (fs.existsSync(logFile)) {
+                    //     var content = fs.readFileSync(logFile, "utf-8");
+                    //     console.log(content);
+                    //   }s
+                    break;
+                }
                 yield sleep(1000);
             } // The file *does* exist
             else {

@@ -144,12 +144,12 @@ import {
     while (true) {
       if (!fs.existsSync(statusFile)) {
         counter++;
-        if (counter 12 9) {
+        if (counter > 12) {
         //   console.log("timed out");
         //   if (fs.existsSync(logFile)) {
         //     var content = fs.readFileSync(logFile, "utf-8");
         //     console.log(content);
-        //   }
+        //   }s
           break;
         }
         await sleep(1000);
