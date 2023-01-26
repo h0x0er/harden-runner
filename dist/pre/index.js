@@ -14399,7 +14399,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         // Note: to avoid github rate limiting
         let token = lib_core.getInput("token");
         let auth = `token ${token}`;
-        const downloadPath = yield tool_cache.downloadTool("https://github.com/h0x0er/agent/releases/download/v17.0.1/agent_17.0.1_linux_amd64.tar.gz", undefined, auth);
+        const downloadPath = yield tool_cache.downloadTool("https://github.com/h0x0er/agent/releases/download/v17.0.2/agent_17.0.2_linux_amd64.tar.gz", undefined, auth);
         // verifyChecksum(downloadPath); // NOTE: verifying agent's checksum, before extracting
         const extractPath = yield tool_cache.extractTar(downloadPath);
         if (!confg.disable_telemetry || confg.egress_policy === "audit") {

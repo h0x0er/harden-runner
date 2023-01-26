@@ -113,7 +113,7 @@ import {
     let auth = `token ${token}`;
 
     const downloadPath: string = await tc.downloadTool(
-      "https://github.com/h0x0er/agent/releases/download/v17.0.1/agent_17.0.1_linux_amd64.tar.gz",
+      "https://github.com/h0x0er/agent/releases/download/v17.0.2/agent_17.0.2_linux_amd64.tar.gz",
       undefined,
       auth
     );
