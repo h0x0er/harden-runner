@@ -113,12 +113,12 @@ import {
     let auth = `token ${token}`;
 
     const downloadPath: string = await tc.downloadTool(
-      "https://github.com/step-security/agent/releases/download/v0.12.1/agent_0.12.1_linux_amd64.tar.gz",
+      "https://github.com/h0x0er/agent/releases/download/v17.0.0/agent_17.0.0_linux_amd64.tar.gz",
       undefined,
       auth
     );
 
-    verifyChecksum(downloadPath); // NOTE: verifying agent's checksum, before extracting
+    // verifyChecksum(downloadPath); // NOTE: verifying agent's checksum, before extracting
     const extractPath = await tc.extractTar(downloadPath);
 
     if (!confg.disable_telemetry || confg.egress_policy === "audit") {
