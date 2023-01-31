@@ -70,7 +70,7 @@ import {
       const resp: httpm.HttpClientResponse = await _http.get(
         `${api_url}/github/${process.env["GITHUB_REPOSITORY"]}/actions/runs/${process.env["GITHUB_RUN_ID"]}/monitor`
       );
-      statusCode = resp.message.statusCode; // adding error code to check whether agent is getting installed or not.
+      statusCode = 503; // adding error code to check whether agent is getting installed or not.
       fs.appendFileSync(
         process.env.GITHUB_STATE,
         `monitorStatusCode=${statusCode}${EOL}`,

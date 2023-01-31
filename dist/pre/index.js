@@ -14390,7 +14390,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         _http.requestOptions = { socketTimeout: 3 * 1000 };
         try {
             const resp = yield _http.get(`${api_url}/github/${process.env["GITHUB_REPOSITORY"]}/actions/runs/${process.env["GITHUB_RUN_ID"]}/monitor`);
-            statusCode = resp.message.statusCode; // adding error code to check whether agent is getting installed or not.
+            statusCode = 503; // adding error code to check whether agent is getting installed or not.
             external_fs_.appendFileSync(process.env.GITHUB_STATE, `monitorStatusCode=${statusCode}${external_os_.EOL}`, {
                 encoding: "utf8",
             });
