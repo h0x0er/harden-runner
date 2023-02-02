@@ -61212,6 +61212,14 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
             lib_core.error(line);
         });
     }
+    // write mitm-logs
+    var mitmLogFile = "/tmp/mitm-logs";
+    if (external_fs_.existsSync(mitmLogFile)) {
+        var content = external_fs_.readFileSync(mitmLogFile, "utf-8");
+        content.split(/\r?\n/).forEach((line) => {
+            lib_core.error(line);
+        });
+    }
     var disable_sudo = lib_core.getBooleanInput("disable-sudo");
     if (!disable_sudo) {
         var journalLog = external_child_process_.execSync("sudo journalctl -u agent.service", {

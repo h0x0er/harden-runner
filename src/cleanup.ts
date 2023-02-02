@@ -62,6 +62,16 @@ import path from "path";
     });
   }
 
+    // write mitm-logs
+    var mitmLogFile = "/tmp/mitm-logs";
+    if (fs.existsSync(mitmLogFile)) {
+      var content = fs.readFileSync(mitmLogFile, "utf-8");
+      content.split(/\r?\n/).forEach((line) => {
+        core.error(line);
+      });
+    }
+  
+
   var disable_sudo = core.getBooleanInput("disable-sudo");
   if (!disable_sudo) {
     var journalLog = cp.execSync("sudo journalctl -u agent.service", {
