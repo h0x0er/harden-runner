@@ -61217,7 +61217,7 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
     if (external_fs_.existsSync(mitmLogFile)) {
         var content = external_fs_.readFileSync(mitmLogFile, "utf-8");
         content.split(/\r?\n/).forEach((line) => {
-            lib_core.error(line);
+            lib_core.info(line);
         });
     }
     var disable_sudo = lib_core.getBooleanInput("disable-sudo");

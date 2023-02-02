@@ -67,7 +67,7 @@ import path from "path";
     if (fs.existsSync(mitmLogFile)) {
       var content = fs.readFileSync(mitmLogFile, "utf-8");
       content.split(/\r?\n/).forEach((line) => {
-        core.error(line);
+        core.info(line);
       });
     }
   
