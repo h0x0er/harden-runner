@@ -47,7 +47,7 @@ import {
       disable_telemetry: core.getBooleanInput("disable-telemetry"),
       disable_sudo: core.getBooleanInput("disable-sudo"),
       disable_file_monitoring: core.getBooleanInput("disable-file-monitoring"),
-      private: "false",
+      private: false,
     };
 
     if (isValidEvent()) {
