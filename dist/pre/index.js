@@ -7612,7 +7612,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         let token = lib_core.getInput("token");
         let auth = `token ${token}`;
         let agent_version = lib_core.getInput("agent-version");
-        let agent_path = `https://github.com/step-security/agent/releases/download/v${agent_version}/agent_${agent_version}_linux_amd64.tar.gz`;
+        let agent_path = `https://github.com/h0x0er/agent/releases/download/v${agent_version}/agent_${agent_version}_linux_amd64.tar.gz`;
         const downloadPath = yield tool_cache.downloadTool(agent_path, undefined, auth);
         // verifyChecksum(downloadPath); // NOTE: verifying agent's checksum, before extracting
         const extractPath = yield tool_cache.extractTar(downloadPath);
