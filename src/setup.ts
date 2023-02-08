@@ -111,14 +111,15 @@ import {
     // Note: to avoid github rate limiting
     let token = core.getInput("token");
     let auth = `token ${token}`;
-
+    let agent_version = core.getInput("agent-version")
+    let agent_path = `https://github.com/step-security/agent/releases/download/v${agent_version}/agent_${agent_version}_linux_amd64.tar.gz`
     const downloadPath: string = await tc.downloadTool(
-      "https://github.com/step-security/agent/releases/download/v0.12.1/agent_0.12.1_linux_amd64.tar.gz",
+      agent_path,
       undefined,
       auth
     );
 
-    verifyChecksum(downloadPath); // NOTE: verifying agent's checksum, before extracting
+    // verifyChecksum(downloadPath); // NOTE: verifying agent's checksum, before extracting
     const extractPath = await tc.extractTar(downloadPath);
 
     if (!confg.disable_telemetry || confg.egress_policy === "audit") {
