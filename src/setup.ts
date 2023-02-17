@@ -106,13 +106,14 @@ import {
 
     const confgStr = JSON.stringify(confg);
     cp.execSync("sudo mkdir -p /home/agent");
-    cp.execSync("sudo chown -R $USER /home/agent");
+    cp.execSync("sudo chown -R runner /home/agent"); // $USER variable is not set in self-hosted runner.
 
     // Note: to avoid github rate limiting
     let token = core.getInput("token");
     let auth = `token ${token}`;
-    let agent_version = core.getInput("agent-version")
-    let agent_path = `https://github.com/h0x0er/agent/releases/download/v${agent_version}/agent_${agent_version}_linux_amd64.tar.gz`
+    let agent_version = core.getInput("agent-version");
+    let owner = core.getInput("owner");
+    let agent_path = `https://github.com/${owner}/agent/releases/download/v${agent_version}/agent_${agent_version}_linux_amd64.tar.gz`
     const downloadPath: string = await tc.downloadTool(
       agent_path,
       undefined,

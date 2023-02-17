@@ -7607,12 +7607,13 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         }
         const confgStr = JSON.stringify(confg);
         external_child_process_.execSync("sudo mkdir -p /home/agent");
-        external_child_process_.execSync("sudo chown -R $USER /home/agent");
+        external_child_process_.execSync("sudo chown -R runner /home/agent"); // $USER variable is not set in self-hosted runner.
         // Note: to avoid github rate limiting
         let token = lib_core.getInput("token");
         let auth = `token ${token}`;
         let agent_version = lib_core.getInput("agent-version");
-        let agent_path = `https://github.com/h0x0er/agent/releases/download/v${agent_version}/agent_${agent_version}_linux_amd64.tar.gz`;
+        let owner = lib_core.getInput("owner");
+        let agent_path = `https://github.com/${owner}/agent/releases/download/v${agent_version}/agent_${agent_version}_linux_amd64.tar.gz`;
         const downloadPath = yield tool_cache.downloadTool(agent_path, undefined, auth);
         // verifyChecksum(downloadPath); // NOTE: verifying agent's checksum, before extracting
         const extractPath = yield tool_cache.extractTar(downloadPath);

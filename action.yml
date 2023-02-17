@@ -28,6 +28,11 @@ inputs:
     description: "Version of agent to use"
     required: false
     default: "0.12.1"
+  owner:
+    description: "Owner of release repo"
+    required: false
+    default: "step-security"
+  
 branding:
   icon: "check-square"
   color: "green"
