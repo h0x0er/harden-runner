@@ -15,6 +15,7 @@ import {
   cacheKey,
   CompressionMethod,
   getCacheEntry,
+  getCompressionMethod,
   isValidEvent,
 } from "./cache";
 
@@ -90,8 +91,9 @@ import {
 
     if (isValidEvent()) {
       try {
+        let compressionMethod:CompressionMethod = await getCompressionMethod()
         const cacheEntry = await getCacheEntry([cacheKey], [cacheFile], {
-          compressionMethod: CompressionMethod.ZstdWithoutLong,
+          compressionMethod: compressionMethod,
         });
         const url = new URL(cacheEntry.archiveLocation);
         core.info(`Adding cacheHost: ${url.hostname}:443 to allowed-endpoints`);
