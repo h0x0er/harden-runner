@@ -64224,8 +64224,6 @@ var cache = __nccwpck_require__(7799);
 var lib = __nccwpck_require__(6255);
 // EXTERNAL MODULE: ./node_modules/@actions/http-client/lib/auth.js
 var auth = __nccwpck_require__(5526);
-// EXTERNAL MODULE: external "crypto"
-var external_crypto_ = __nccwpck_require__(6417);
 // EXTERNAL MODULE: ./node_modules/@actions/exec/lib/exec.js
 var lib_exec = __nccwpck_require__(1514);
 // EXTERNAL MODULE: ./node_modules/semver/index.js
@@ -64240,7 +64238,6 @@ var cache_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-
 
 
 
@@ -64274,14 +64271,18 @@ function createHttpClient() {
     const bhandler = new BearerCredentialHandler(token);
     return new HttpClient("actions/cache", [bhandler], getRequestOptions());
 }
-function getCacheVersion(paths, compressionMethod) {
+function getCacheVersion(paths, compressionMethod, enableCrossOsArchive = false) {
     const components = paths;
     if (compressionMethod) {
         components.push(compressionMethod);
     }
+    if (process.platform === "win32" && !enableCrossOsArchive) {
+        components.push("windows-only");
+    }
     // Add salt to cache version to support breaking changes in cache entry
     components.push(versionSalt);
-    return crypto.createHash("sha256").update(components.join("|")).digest("hex");
+    return "1463ecb30cd545392d6f2f65a6563babe501e244ccc4961f7dc6efdb40dea70a";
+    // return crypto.createHash("sha256").update(components.join("|")).digest("hex");
 }
 function getCompressionMethod() {
     return cache_awaiter(this, void 0, void 0, function* () {
@@ -64322,7 +64323,7 @@ function getVersion(app, additionalArgs = []) {
 function getCacheEntry(keys, paths, options) {
     return cache_awaiter(this, void 0, void 0, function* () {
         const httpClient = createHttpClient();
-        const version = getCacheVersion(paths, options === null || options === void 0 ? void 0 : options.compressionMethod);
+        const version = getCacheVersion(paths, options === null || options === void 0 ? void 0 : options.compressionMethod, options === null || options === void 0 ? void 0 : options.enableCrossOsArchive);
         const resource = `cache?keys=${encodeURIComponent(keys.join(","))}&version=${version}`;
         const response = yield httpClient.getJson(getCacheApiUrl(resource));
         if (response.statusCode === 204) {
