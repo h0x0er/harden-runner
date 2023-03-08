@@ -32,6 +32,7 @@
     "ansi-regex": ">=5.0.1",
     "is-docker": "^3.0.0",
     "node-fetch": ">=3.2.0",
+    "semver": "^7.3.8",
     "uuid": "^8.3.2"
   },
   "devDependencies": {

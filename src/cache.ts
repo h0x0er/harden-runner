@@ -3,6 +3,8 @@ import { HttpClient } from "@actions/http-client";
 import { RequestOptions } from "@actions/http-client/lib/interfaces";
 import { BearerCredentialHandler } from "@actions/http-client/lib/auth";
 import * as crypto from "crypto";
+import * as exec from "@actions/exec";
+import * as semver from "semver";
 
 const versionSalt = "1.0";
 export const cacheKey = "harden-runner-cacheKey";
@@ -57,6 +59,44 @@ export function getCacheVersion(
   return crypto.createHash("sha256").update(components.join("|")).digest("hex");
 }
 
+export async function getCompressionMethod(): Promise<CompressionMethod> {
+  const versionOutput = await getVersion('zstd', ['--quiet'])
+  const version = semver.clean(versionOutput)
+  core.debug(`zstd version: ${version}`)
+
+  if (versionOutput === '') {
+    return CompressionMethod.Gzip
+  } else {
+    return CompressionMethod.ZstdWithoutLong
+  }
+}
+
+
+async function getVersion(
+  app: string,
+  additionalArgs: string[] = []
+): Promise<string> {
+  let versionOutput = ''
+  additionalArgs.push('--version')
+  core.debug(`Checking ${app} ${additionalArgs.join(' ')}`)
+  try {
+    await exec.exec(`${app}`, additionalArgs, {
+      ignoreReturnCode: true,
+      silent: true,
+      listeners: {
+        stdout: (data: Buffer): string => (versionOutput += data.toString()),
+        stderr: (data: Buffer): string => (versionOutput += data.toString())
+      }
+    })
+  } catch (err) {
+    core.debug(err.message)
+  }
+
+  versionOutput = versionOutput.trim()
+  core.debug(versionOutput)
+  return versionOutput
+}
+
 export async function getCacheEntry(
   keys: string[],
   paths: string[],
@@ -64,6 +104,7 @@ export async function getCacheEntry(
 ): Promise<ArtifactCacheEntry | null> {
   const httpClient = createHttpClient();
   const version = getCacheVersion(paths, options?.compressionMethod);
+  
   const resource = `cache?keys=${encodeURIComponent(
     keys.join(",")
   )}&version=${version}`;
