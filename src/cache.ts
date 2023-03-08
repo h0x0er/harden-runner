@@ -24,12 +24,10 @@ function createAcceptHeader(type: string, apiVersion: string): string {
 }
 
 function getRequestOptions(): RequestOptions {
-  const token = process.env["ACTIONS_RUNTIME_TOKEN"] || "";
 
   const requestOptions: RequestOptions = {
     headers: {
       Accept: createAcceptHeader("application/json", "6.0-preview.1"),
-      Authorization: `Bearer ${token}`,
     },
   };
 
@@ -46,11 +44,12 @@ export function getCacheVersion(
   paths: string[],
   compressionMethod?: CompressionMethod
 ): string {
-  const components = paths.concat(
-    !compressionMethod || compressionMethod === CompressionMethod.Gzip
-      ? []
-      : [compressionMethod]
-  );
+
+  const components = paths;
+
+  if(compressionMethod){
+    components.push(compressionMethod);
+  }
 
   // Add salt to cache version to support breaking changes in cache entry
   components.push(versionSalt);
