@@ -61109,11 +61109,9 @@ function createAcceptHeader(type, apiVersion) {
     return `${type};api-version=${apiVersion}`;
 }
 function getRequestOptions() {
-    const token = process.env["ACTIONS_RUNTIME_TOKEN"] || "";
     const requestOptions = {
         headers: {
             Accept: createAcceptHeader("application/json", "6.0-preview.1"),
-            Authorization: `Bearer ${token}`,
         },
     };
     return requestOptions;
@@ -61124,9 +61122,10 @@ function createHttpClient() {
     return new HttpClient("actions/cache", [bhandler], getRequestOptions());
 }
 function getCacheVersion(paths, compressionMethod) {
-    const components = paths.concat(!compressionMethod || compressionMethod === CompressionMethod.Gzip
-        ? []
-        : [compressionMethod]);
+    const components = paths;
+    if (compressionMethod) {
+        components.push(compressionMethod);
+    }
     // Add salt to cache version to support breaking changes in cache entry
     components.push(versionSalt);
     return crypto.createHash("sha256").update(components.join("|")).digest("hex");
