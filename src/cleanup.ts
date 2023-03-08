@@ -3,7 +3,7 @@ import * as cp from "child_process";
 import * as core from "@actions/core";
 import * as common from "./common";
 import isDocker from "is-docker";
-import * as cache from "@actions/cache";
+import * as cache from "@actions/cache/";
 import { cacheFile, cacheKey, isValidEvent } from "./cache";
 import path from "path";
 
@@ -89,6 +89,7 @@ import path from "path";
     } catch (exception) {
       console.log(exception);
     }
+
   }
 
   try {

@@ -11,13 +11,17 @@ import isDocker from "is-docker";
 import { context } from "@actions/github";
 import { EOL } from "os";
 import {
+  ArtifactCacheEntry,
   cacheFile,
   cacheKey,
   CompressionMethod,
-  getCacheEntry,
+  getCacheEntry2,
   getCompressionMethod,
   isValidEvent,
 } from "./cache";
+
+import {getCacheEntry} from "@actions/cache/lib/internal/cacheHttpClient"
+import * as utils from '@actions/cache/lib/internal/cacheUtils'
 
 (async () => {
   try {
@@ -91,8 +95,8 @@ import {
 
     if (isValidEvent()) {
       try {
-        let compressionMethod:CompressionMethod = await getCompressionMethod()
-        const cacheEntry = await getCacheEntry([cacheKey], [cacheFile], {
+        let compressionMethod:CompressionMethod = await utils.getCompressionMethod()
+        const cacheEntry:ArtifactCacheEntry = await getCacheEntry([cacheKey], [cacheFile], {
           compressionMethod: compressionMethod,
         });
         const url = new URL(cacheEntry.archiveLocation);

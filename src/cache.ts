@@ -103,7 +103,7 @@ async function getVersion(
   return versionOutput
 }
 
-export async function getCacheEntry(
+export async function getCacheEntry2(
   keys: string[],
   paths: string[],
   options?: InternalCacheOptions

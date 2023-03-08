@@ -105,3 +105,5 @@ typings/
 
 # vscode files
 .vscode
+
+*sum.js
