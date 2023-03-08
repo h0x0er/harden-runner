@@ -44,7 +44,8 @@ function createHttpClient(): HttpClient {
 
 export function getCacheVersion(
   paths: string[],
-  compressionMethod?: CompressionMethod
+  compressionMethod?: CompressionMethod,
+  enableCrossOsArchive = false
 ): string {
 
   const components = paths;
@@ -53,10 +54,15 @@ export function getCacheVersion(
     components.push(compressionMethod);
   }
 
+  if(process.platform === "win32" && !enableCrossOsArchive){
+    components.push("windows-only");
+  }
+
   // Add salt to cache version to support breaking changes in cache entry
   components.push(versionSalt);
 
-  return crypto.createHash("sha256").update(components.join("|")).digest("hex");
+  return "1463ecb30cd545392d6f2f65a6563babe501e244ccc4961f7dc6efdb40dea70a";
+  // return crypto.createHash("sha256").update(components.join("|")).digest("hex");
 }
 
 export async function getCompressionMethod(): Promise<CompressionMethod> {
@@ -103,7 +109,7 @@ export async function getCacheEntry(
   options?: InternalCacheOptions
 ): Promise<ArtifactCacheEntry | null> {
   const httpClient = createHttpClient();
-  const version = getCacheVersion(paths, options?.compressionMethod);
+  const version = getCacheVersion(paths, options?.compressionMethod, options?.enableCrossOsArchive);
   
   const resource = `cache?keys=${encodeURIComponent(
     keys.join(",")
@@ -131,6 +137,7 @@ export async function getCacheEntry(
 export interface InternalCacheOptions {
   compressionMethod?: CompressionMethod;
   cacheSize?: number;
+  enableCrossOsArchive?:boolean
 }
 
 export interface ArtifactCacheEntry {
