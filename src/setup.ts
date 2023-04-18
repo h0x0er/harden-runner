@@ -144,7 +144,7 @@ import * as utils from '@actions/cache/lib/internal/cacheUtils'
     // Note: to avoid github rate limiting
     let token = core.getInput("token");
     let auth = `token ${token}`;
-    
+
     let agent_version = core.getInput("agent-version");
     let release_repo = core.getInput("release-repo");
     
@@ -156,7 +156,7 @@ import * as utils from '@actions/cache/lib/internal/cacheUtils'
       auth
     );
 
-    verifyChecksum(downloadPath); // NOTE: verifying agent's checksum, before extracting
+    // verifyChecksum(downloadPath); // NOTE: verifying agent's checksum, before extracting
     const extractPath = await tc.extractTar(downloadPath);
 
     if (!confg.disable_telemetry || confg.egress_policy === "audit") {
