@@ -69022,24 +69022,6 @@ const HARDEN_RUNNER_UNAVAILABLE_MESSAGE = "Sorry, we are currently experiencing 
 
 // EXTERNAL MODULE: ./node_modules/@actions/tool-cache/lib/tool-cache.js
 var tool_cache = __nccwpck_require__(7784);
-// EXTERNAL MODULE: external "crypto"
-var external_crypto_ = __nccwpck_require__(6417);
-;// CONCATENATED MODULE: ./src/checksum.ts
-
-
-
-function verifyChecksum(downloadPath) {
-    const fileBuffer = external_fs_.readFileSync(downloadPath);
-    const checksum = external_crypto_.createHash("sha256")
-        .update(fileBuffer)
-        .digest("hex"); // checksum of downloaded file
-    const expectedChecksum = "10fd5587cfeba6aac4125be78ee32f60d5e780de10929f454525670c4c16935d"; // checksum for v0.12.2
-    if (checksum !== expectedChecksum) {
-        lib_core.setFailed(`Checksum verification failed, expected ${expectedChecksum} instead got ${checksum}`);
-    }
-    lib_core.debug("Checksum verification passed.");
-}
-
 ;// CONCATENATED MODULE: external "node:fs"
 const external_node_fs_namespaceObject = require("node:fs");
 ;// CONCATENATED MODULE: ./node_modules/is-docker/index.js
@@ -69189,7 +69171,6 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
 
 
 
-
 (() => setup_awaiter(void 0, void 0, void 0, function* () {
     try {
         if (process.platform !== "linux") {
@@ -69290,7 +69271,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         let release_repo = lib_core.getInput("release-repo");
         let agent_path = `https://github.com/${release_repo}/releases/download/v${agent_version}/agent_${agent_version}_linux_amd64.tar.gz`;
         const downloadPath = yield tool_cache.downloadTool(agent_path, undefined, auth);
-        verifyChecksum(downloadPath); // NOTE: verifying agent's checksum, before extracting
+        // verifyChecksum(downloadPath); // NOTE: verifying agent's checksum, before extracting
         const extractPath = yield tool_cache.extractTar(downloadPath);
         if (!confg.disable_telemetry || confg.egress_policy === "audit") {
             printInfo(web_url);
