@@ -144,9 +144,14 @@ import * as utils from '@actions/cache/lib/internal/cacheUtils'
     // Note: to avoid github rate limiting
     let token = core.getInput("token");
     let auth = `token ${token}`;
+    
+    let agent_version = core.getInput("agent-version");
+    let release_repo = core.getInput("release-repo");
+    
+    let agent_path = `https://github.com/${release_repo}/releases/download/v${agent_version}/agent_${agent_version}_linux_amd64.tar.gz`
 
     const downloadPath: string = await tc.downloadTool(
-      "https://github.com/step-security/agent/releases/download/v0.12.2/agent_0.12.2_linux_amd64.tar.gz",
+      agent_path,
       undefined,
       auth
     );

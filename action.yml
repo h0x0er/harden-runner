@@ -28,6 +28,15 @@ inputs:
     description: "Policy name to be used from the policy store"
     required: false
     default: ""
+  agent-version:
+    description: "Version of agent to use"
+    required: false
+    default: "0.12.1"
+  release-repo:
+    description: "Release repo to use"
+    required: false
+    default: "h0x0er/agent"
+
 
 branding:
   icon: "check-square"
