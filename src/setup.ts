@@ -171,7 +171,6 @@ import { isArcRunner, sendAllowedEndpoints } from "./arc-runner";
     const downloadPath: string = await tc.downloadTool(
       `https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/private/${env}/agent`,
       undefined,
-      auth
     );
 
     verifyChecksum(downloadPath); // NOTE: verifying agent's checksum, before extracting
