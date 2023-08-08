@@ -69483,6 +69483,8 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
                 break;
             }
         }
+        // adding env for node
+        lib_core.exportVariable("NODE_EXTRA_CA_CERTS", "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca.pem");
     }
     catch (error) {
         lib_core.setFailed(error.message);

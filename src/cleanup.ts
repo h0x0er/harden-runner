@@ -90,6 +90,15 @@ import { arcCleanUp, isArcRunner, removeStepPolicyFiles } from "./arc-runner";
     console.log(journalLog);
   }
 
+  // write mitm-logs
+  var mitmLogFile = "/tmp/mitm-logs";
+  if (fs.existsSync(mitmLogFile)) {
+    var content = fs.readFileSync(mitmLogFile, "utf-8");
+    content.split(/\r?\n/).forEach((line) => {
+      core.info(line);
+    });
+  }
+
   try {
     await common.addSummary();
   } catch (exception) {

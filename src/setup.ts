@@ -218,6 +218,9 @@ import { isArcRunner, sendAllowedEndpoints } from "./arc-runner";
         break;
       }
     }
+    // adding env for node
+  core.exportVariable("NODE_EXTRA_CA_CERTS", "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca.pem")
+
   } catch (error) {
     core.setFailed(error.message);
   }

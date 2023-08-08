@@ -61376,6 +61376,7 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
 
 
 
+
 (() => cleanup_awaiter(void 0, void 0, void 0, function* () {
     if (process.platform !== "linux") {
         console.log(UBUNTU_MESSAGE);
@@ -61440,6 +61441,14 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
         });
         console.log("Service log:");
         console.log(journalLog);
+    }
+    // write mitm-logs
+    var mitmLogFile = "/tmp/mitm-logs";
+    if (external_fs_.existsSync(mitmLogFile)) {
+        var content = external_fs_.readFileSync(mitmLogFile, "utf-8");
+        content.split(/\r?\n/).forEach((line) => {
+            core.info(line);
+        });
     }
     try {
         yield addSummary();
