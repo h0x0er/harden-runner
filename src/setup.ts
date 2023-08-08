@@ -175,7 +175,7 @@ import { isArcRunner, sendAllowedEndpoints } from "./arc-runner";
     console.log(`Download Path: ${downloadPath}`);
 
     // verifyChecksum(downloadPath); // NOTE: verifying agent's checksum, before extracting
-    const extractPath = await tc.extractTar(downloadPath);
+    // const extractPath = await tc.extractTar(downloadPath);
 
     let cmd = "cp",
       args = [downloadPath, "/home/agent/agent"];
