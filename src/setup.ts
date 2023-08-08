@@ -36,7 +36,7 @@ import { isArcRunner, sendAllowedEndpoints } from "./arc-runner";
     }
 
     var correlation_id = uuidv4();
-    var env = "agent";
+    var env = "int";
     var api_url = `https://${env}.api.stepsecurity.io/v1`;
     var web_url = "https://app.stepsecurity.io";
 
@@ -47,6 +47,7 @@ import { isArcRunner, sendAllowedEndpoints } from "./arc-runner";
       working_directory: process.env["GITHUB_WORKSPACE"],
       api_url: api_url,
       allowed_endpoints: core.getInput("allowed-endpoints"),
+      allowed_paths: core.getInput("allowed-paths"),
       egress_policy: core.getInput("egress-policy"),
       disable_telemetry: core.getBooleanInput("disable-telemetry"),
       disable_sudo: core.getBooleanInput("disable-sudo"),
@@ -168,7 +169,7 @@ import { isArcRunner, sendAllowedEndpoints } from "./arc-runner";
     let auth = `token ${token}`;
 
     const downloadPath: string = await tc.downloadTool(
-      "https://github.com/step-security/agent/releases/download/v0.13.4/agent_0.13.4_linux_amd64.tar.gz",
+      `https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/private/int/${env}/agent`,
       undefined,
       auth
     );

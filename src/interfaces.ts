@@ -5,6 +5,7 @@ export interface Configuration {
   working_directory: string;
   api_url: string;
   allowed_endpoints: string;
+  allowed_paths: string,
   egress_policy: string;
   disable_telemetry: boolean;
   disable_sudo: boolean;
@@ -16,6 +17,7 @@ export interface PolicyResponse {
   owner?: string;
   policyName?: string;
   allowed_endpoints?: string[];
+  allowed_paths?: string
   disable_sudo?: boolean;
   disable_file_monitoring?: boolean;
   disable_telemetry?: boolean;
