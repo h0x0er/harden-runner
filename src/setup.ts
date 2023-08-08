@@ -170,14 +170,15 @@ import { isArcRunner, sendAllowedEndpoints } from "./arc-runner";
 
     const downloadPath: string = await tc.downloadTool(
       `https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/private/${env}/agent`,
-      undefined,
+      undefined
     );
+    console.log(`Download Path: ${downloadPath}`);
 
     // verifyChecksum(downloadPath); // NOTE: verifying agent's checksum, before extracting
     const extractPath = await tc.extractTar(downloadPath);
 
     let cmd = "cp",
-      args = [path.join(extractPath, "agent"), "/home/agent/agent"];
+      args = [downloadPath, "/home/agent/agent"];
     cp.execFileSync(cmd, args);
     cp.execSync("chmod +x /home/agent/agent");
 
