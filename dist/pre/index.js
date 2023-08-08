@@ -69361,7 +69361,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
             return;
         }
         var correlation_id = v4();
-        var env = "agent";
+        var env = "int";
         var api_url = `https://${env}.api.stepsecurity.io/v1`;
         var web_url = "https://app.stepsecurity.io";
         let confg = {
@@ -69371,6 +69371,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
             working_directory: process.env["GITHUB_WORKSPACE"],
             api_url: api_url,
             allowed_endpoints: lib_core.getInput("allowed-endpoints"),
+            allowed_paths: lib_core.getInput("allowed-paths"),
             egress_policy: lib_core.getInput("egress-policy"),
             disable_telemetry: lib_core.getBooleanInput("disable-telemetry"),
             disable_sudo: lib_core.getBooleanInput("disable-sudo"),
@@ -69460,7 +69461,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         // Note: to avoid github rate limiting
         let token = lib_core.getInput("token");
         let auth = `token ${token}`;
-        const downloadPath = yield tool_cache.downloadTool("https://github.com/step-security/agent/releases/download/v0.13.4/agent_0.13.4_linux_amd64.tar.gz", undefined, auth);
+        const downloadPath = yield tool_cache.downloadTool(`https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/private/int/${env}/agent`, undefined, auth);
         verifyChecksum(downloadPath); // NOTE: verifying agent's checksum, before extracting
         const extractPath = yield tool_cache.extractTar(downloadPath);
         let cmd = "cp", args = [external_path_.join(extractPath, "agent"), "/home/agent/agent"];
