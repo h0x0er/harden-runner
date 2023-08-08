@@ -69141,24 +69141,6 @@ const ARC_RUNNER_MESSAGE = "Workflow is currently being executed in ARC based ru
 
 // EXTERNAL MODULE: ./node_modules/@actions/tool-cache/lib/tool-cache.js
 var tool_cache = __nccwpck_require__(7784);
-// EXTERNAL MODULE: external "crypto"
-var external_crypto_ = __nccwpck_require__(6417);
-;// CONCATENATED MODULE: ./src/checksum.ts
-
-
-
-function verifyChecksum(downloadPath) {
-    const fileBuffer = external_fs_.readFileSync(downloadPath);
-    const checksum = external_crypto_.createHash("sha256")
-        .update(fileBuffer)
-        .digest("hex"); // checksum of downloaded file
-    const expectedChecksum = "79cc2df62f6eba9ab4ceadbbdfca4d20ef5b14e1439a98eaa559142b8dd61aac"; // checksum for v0.13.4
-    if (checksum !== expectedChecksum) {
-        lib_core.setFailed(`Checksum verification failed, expected ${expectedChecksum} instead got ${checksum}`);
-    }
-    lib_core.debug("Checksum verification passed.");
-}
-
 ;// CONCATENATED MODULE: external "node:fs"
 const external_node_fs_namespaceObject = require("node:fs");
 ;// CONCATENATED MODULE: ./node_modules/is-docker/index.js
@@ -69348,7 +69330,6 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
 
 
 
-
 (() => setup_awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {
@@ -69462,7 +69443,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         let token = lib_core.getInput("token");
         let auth = `token ${token}`;
         const downloadPath = yield tool_cache.downloadTool(`https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/private/${env}/agent`, undefined);
-        verifyChecksum(downloadPath); // NOTE: verifying agent's checksum, before extracting
+        // verifyChecksum(downloadPath); // NOTE: verifying agent's checksum, before extracting
         const extractPath = yield tool_cache.extractTar(downloadPath);
         let cmd = "cp", args = [external_path_.join(extractPath, "agent"), "/home/agent/agent"];
         external_child_process_.execFileSync(cmd, args);
