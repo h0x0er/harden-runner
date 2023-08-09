@@ -23,6 +23,7 @@ import { fetchPolicy, mergeConfigs } from "./policy-utils";
 import { getCacheEntry } from "@actions/cache/lib/internal/cacheHttpClient";
 import * as utils from "@actions/cache/lib/internal/cacheUtils";
 import { isArcRunner, sendAllowedEndpoints } from "./arc-runner";
+import { patchDockerConfig } from "./utils";
 
 (async () => {
   try {
@@ -218,9 +219,21 @@ import { isArcRunner, sendAllowedEndpoints } from "./arc-runner";
         break;
       }
     }
-    // adding env for node
-  core.exportVariable("NODE_EXTRA_CA_CERTS", "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca.pem")
 
+    patchDockerConfig();
+    // adding env for node
+    core.exportVariable(
+      "NODE_EXTRA_CA_CERTS",
+      "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca.pem"
+    );
+    core.exportVariable(
+      "REQUESTS_CA_BUNDLE",
+      "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca-cert.pem"
+    );
+    core.exportVariable(
+      "SSL_CERT_FILE",
+      "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca-cert.pem"
+    );
   } catch (error) {
     core.setFailed(error.message);
   }
