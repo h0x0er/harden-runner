@@ -69307,7 +69307,7 @@ function arcCleanUp() {
 ;// CONCATENATED MODULE: ./src/utils.ts
 
 function patchDockerConfig() {
-    let docker_config_file = "/home/.docker/config.json";
+    let docker_config_file = "/home/runner/.docker/config.json";
     let rawdata = external_fs_.readFileSync(docker_config_file);
     let config = JSON.parse(rawdata.toString());
     config["proxies"]["default"]["httpProxy"] = "http://127.0.0.1:8080";
