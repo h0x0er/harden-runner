@@ -7,8 +7,12 @@ export function patchDockerConfig() {
 
   let config = JSON.parse(rawdata.toString());
 
-  config["proxies"]["default"]["httpProxy"] = "http://127.0.0.1:8080";
-  config["proxies"]["default"]["httpsProxy"] = "https://127.0.0.1:8080";
+  config["proxies"] = {
+    default: {
+      httpProxy: "http://127.0.0.1:8080",
+      httpsProxy: "https://127.0.0.1:8080",
+    },
+  };
 
   let new_config = JSON.stringify(config);
   console.log(`Docker Config: ${new_config}`);
