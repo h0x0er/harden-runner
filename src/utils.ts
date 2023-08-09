@@ -1,7 +1,7 @@
 import * as fs from "fs";
 
 export function patchDockerConfig() {
-  let docker_config_file = "~/.docker/config.json";
+  let docker_config_file = "/home/.docker/config.json";
 
   let rawdata = fs.readFileSync(docker_config_file);
 
