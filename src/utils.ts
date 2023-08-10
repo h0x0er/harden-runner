@@ -9,8 +9,8 @@ export function patchDockerConfig() {
 
   config["proxies"] = {
     default: {
-      httpProxy: "http://127.0.0.1:8080",
-      httpsProxy: "https://127.0.0.1:8080",
+      httpProxy: "http://0.0.0.0:8080",
+      httpsProxy: "https://0.0.0.0:8080",
     },
   };
 
