@@ -69306,19 +69306,22 @@ function arcCleanUp() {
 
 ;// CONCATENATED MODULE: ./src/utils.ts
 
+
+
 function patchDockerConfig() {
     let docker_config_file = "/home/runner/.docker/config.json";
     let rawdata = external_fs_.readFileSync(docker_config_file);
     let config = JSON.parse(rawdata.toString());
     config["proxies"] = {
         default: {
-            httpProxy: "http://0.0.0.0:8080",
-            httpsProxy: "https://0.0.0.0:8080",
+            httpProxy: "http://127.0.0.1:8080",
+            httpsProxy: "http://127.0.0.1:8080",
         },
     };
     let new_config = JSON.stringify(config);
-    console.log(`Docker Config: ${new_config}`);
     external_fs_.writeFileSync(docker_config_file, new_config);
+    external_child_process_.execSync("sudo service docker restart");
+    lib_core.info("[!] Docker config patched");
 }
 
 ;// CONCATENATED MODULE: ./src/setup.ts
