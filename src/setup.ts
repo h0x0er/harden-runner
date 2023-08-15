@@ -224,15 +224,15 @@ import { patchDockerConfig } from "./utils";
     // adding env for node
     core.exportVariable(
       "NODE_EXTRA_CA_CERTS",
-      "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca-cert.pem"
+      "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca-cert.cer"
     );
     core.exportVariable(
       "REQUESTS_CA_BUNDLE",
-      "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca-cert.pem"
+      "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca-cert.cer"
     );
     core.exportVariable(
       "SSL_CERT_FILE",
-      "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca-cert.pem"
+      "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca-cert.cer"
     );
   } catch (error) {
     core.setFailed(error.message);
