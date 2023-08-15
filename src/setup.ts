@@ -228,11 +228,11 @@ import { patchDockerConfig } from "./utils";
     );
     core.exportVariable(
       "REQUESTS_CA_BUNDLE",
-      "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca-cert.pem"
+      "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca.pem"
     );
     core.exportVariable(
       "SSL_CERT_FILE",
-      "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca-cert.pem"
+      "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca.pem"
     );
   } catch (error) {
     core.setFailed(error.message);

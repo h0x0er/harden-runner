@@ -69507,8 +69507,8 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         patchDockerConfig();
         // adding env for node
         lib_core.exportVariable("NODE_EXTRA_CA_CERTS", "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca.pem");
-        lib_core.exportVariable("REQUESTS_CA_BUNDLE", "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca-cert.pem");
-        lib_core.exportVariable("SSL_CERT_FILE", "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca-cert.pem");
+        lib_core.exportVariable("REQUESTS_CA_BUNDLE", "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca.pem");
+        lib_core.exportVariable("SSL_CERT_FILE", "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca.pem");
     }
     catch (error) {
         lib_core.setFailed(error.message);
