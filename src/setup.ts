@@ -218,8 +218,8 @@ import { patchDockerConfig } from "./utils";
         var content = fs.readFileSync(statusFile, "utf-8");
         console.log(content);
         break;
-      }}
-
+      }
+    }
 
     patchDockerConfig();
     // adding env for node
@@ -235,10 +235,7 @@ import { patchDockerConfig } from "./utils";
       "SSL_CERT_FILE",
       "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca.pem"
     );
-    core.exportVariable(
-      "SSL_CERT_DIR",
-      "/home/mitmproxyuser/.mitmproxy"
-    );
+    core.exportVariable("SSL_CERT_DIR", "/home/mitmproxyuser/.mitmproxy");
   } catch (error) {
     core.setFailed(error.message);
   }
