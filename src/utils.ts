@@ -24,3 +24,20 @@ export function patchDockerConfig() {
 
   core.info("[!] Docker config patched");
 }
+
+export function addCertEnvs() {
+  let cert_path = "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca-cert.pem";
+  
+  // adding env for node
+  core.exportVariable("NODE_EXTRA_CA_CERTS", cert_path);
+
+  // adding env for python requests
+  core.exportVariable("REQUESTS_CA_BUNDLE", cert_path);
+
+  // adding env for golang
+  core.exportVariable("SSL_CERT_FILE", cert_path);
+  core.exportVariable("SSL_CERT_DIR", "/home/mitmproxyuser/.mitmproxy");
+
+  core.info("[!] Added Cert Envs");
+
+}

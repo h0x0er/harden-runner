@@ -69323,6 +69323,17 @@ function patchDockerConfig() {
     external_child_process_.execSync("sudo service docker restart");
     lib_core.info("[!] Docker config patched");
 }
+function addCertEnvs() {
+    let cert_path = "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca-cert.pem";
+    // adding env for node
+    lib_core.exportVariable("NODE_EXTRA_CA_CERTS", cert_path);
+    // adding env for python requests
+    lib_core.exportVariable("REQUESTS_CA_BUNDLE", cert_path);
+    // adding env for golang
+    lib_core.exportVariable("SSL_CERT_FILE", cert_path);
+    lib_core.exportVariable("SSL_CERT_DIR", "/home/mitmproxyuser/.mitmproxy");
+    lib_core.info("[!] Added Cert Envs");
+}
 
 ;// CONCATENATED MODULE: ./src/setup.ts
 var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -69506,11 +69517,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
             }
         }
         patchDockerConfig();
-        // adding env for node
-        lib_core.exportVariable("NODE_EXTRA_CA_CERTS", "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca.pem");
-        lib_core.exportVariable("REQUESTS_CA_BUNDLE", "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca.pem");
-        lib_core.exportVariable("SSL_CERT_FILE", "/home/mitmproxyuser/.mitmproxy/mitmproxy-ca.pem");
-        lib_core.exportVariable("SSL_CERT_DIR", "/home/mitmproxyuser/.mitmproxy");
+        addCertEnvs();
     }
     catch (error) {
         lib_core.setFailed(error.message);
