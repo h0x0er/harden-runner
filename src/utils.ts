@@ -3,7 +3,7 @@ import * as cp from "child_process";
 import * as core from "@actions/core";
 
 export function patchDockerConfig() {
-  let docker_config_file = "/etc/docker/daemon.json";
+  let docker_config_file = "/home/runner/.docker/config.json";
 
   let rawdata = fs.readFileSync(docker_config_file);
 
