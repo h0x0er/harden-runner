@@ -221,7 +221,7 @@ import { addCertEnvs, patchDockerConfig } from "./utils";
       }
     }
 
-    patchDockerConfig();
+    // patchDockerConfig();
     addCertEnvs();
   } catch (error) {
     core.setFailed(error.message);
