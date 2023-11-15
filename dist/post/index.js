@@ -63223,9 +63223,8 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
     var httpsLog = "/home/runner/work/_temp/network_events.log";
     if (external_fs_.existsSync(httpsLog)) {
         console.log("httpsLog:");
-        // var content = fs.readFileSync(status, "utf-8");
-        // console.log(content);
-        external_child_process_.execSync(`cat ${httpsLog}`);
+        var content = external_fs_.readFileSync(httpsLog, "utf-8");
+        console.log(content);
     }
     var disable_sudo = process.env.STATE_disableSudo;
     if (disable_sudo !== "true") {
