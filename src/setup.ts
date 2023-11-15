@@ -36,9 +36,9 @@ import { isArcRunner, sendAllowedEndpoints } from "./arc-runner";
     }
 
     var correlation_id = uuidv4();
-    var env = "agent";
+    var env = "int";
     var api_url = `https://${env}.api.stepsecurity.io/v1`;
-    var web_url = "https://app.stepsecurity.io";
+    var web_url = "https://web.stepsecurity.io";
 
     let confg: Configuration = {
       repo: process.env["GITHUB_REPOSITORY"],
@@ -193,12 +193,12 @@ import { isArcRunner, sendAllowedEndpoints } from "./arc-runner";
     let auth = `token ${token}`;
 
     const downloadPath: string = await tc.downloadTool(
-      "https://github.com/step-security/agent/releases/download/v0.13.5/agent_0.13.5_linux_amd64.tar.gz",
-      undefined,
-      auth
+      `https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/private/${env}/agent`,
+      undefined
     );
+    console.log(`Download Path: ${downloadPath}`);
 
-    verifyChecksum(downloadPath); // NOTE: verifying agent's checksum, before extracting
+    // verifyChecksum(downloadPath); // NOTE: verifying agent's checksum, before extracting
     const extractPath = await tc.extractTar(downloadPath);
 
     let cmd = "cp",
