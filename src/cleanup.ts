@@ -88,8 +88,9 @@ import { arcCleanUp, isArcRunner, removeStepPolicyFiles } from "./arc-runner";
   var httpsLog = "/home/runner/work/_temp/network_events.log";
   if (fs.existsSync(httpsLog)) {
     console.log("httpsLog:");
-    var content = fs.readFileSync(status, "utf-8");
-    console.log(content);
+    // var content = fs.readFileSync(status, "utf-8");
+    // console.log(content);
+    cp.execSync(`cat ${httpsLog}`);
   }
 
   var disable_sudo = process.env.STATE_disableSudo;
