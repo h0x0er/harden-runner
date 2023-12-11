@@ -7,6 +7,7 @@ import * as cache from "@actions/cache";
 import { cacheFile, cacheKey, isValidEvent } from "./cache";
 import path from "path";
 import { arcCleanUp, isArcRunner, removeStepPolicyFiles } from "./arc-runner";
+import { getRelevantEvents } from "./cleanup-utils";
 
 (async () => {
   if (process.platform !== "linux") {
@@ -88,8 +89,14 @@ import { arcCleanUp, isArcRunner, removeStepPolicyFiles } from "./arc-runner";
   var httpsLog = "/home/runner/work/_temp/network_events.log";
   if (fs.existsSync(httpsLog)) {
     console.log("httpsLog:");
-    var content = fs.readFileSync(httpsLog, "utf-8");
-    console.log(content);
+
+    let events = fs.readFileSync(httpsLog, "utf-8").split("\n");
+    if (events.length > 0) {
+      let relevant_events = getRelevantEvents(events);
+      for (let event of relevant_events) {
+        console.log(event);
+      }
+    }
   }
 
   var disable_sudo = process.env.STATE_disableSudo;
