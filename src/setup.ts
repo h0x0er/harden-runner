@@ -193,7 +193,7 @@ import { isArcRunner, sendAllowedEndpoints } from "./arc-runner";
     let auth = `token ${token}`;
 
     const downloadPath: string = await tc.downloadTool(
-      `https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/private/${env}/agent`,
+      `https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/${env}/agent`,
       undefined
     );
     console.log(`Download Path: ${downloadPath}`);
