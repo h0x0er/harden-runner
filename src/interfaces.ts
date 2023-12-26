@@ -10,6 +10,7 @@ export interface Configuration {
   disable_sudo: boolean;
   disable_file_monitoring: boolean;
   private: string;
+  is_self_hosted: boolean;
 }
 
 export interface PolicyResponse {

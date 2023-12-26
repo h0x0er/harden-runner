@@ -71141,6 +71141,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
             disable_sudo: lib_core.getBooleanInput("disable-sudo"),
             disable_file_monitoring: lib_core.getBooleanInput("disable-file-monitoring"),
             private: ((_b = (_a = github.context === null || github.context === void 0 ? void 0 : github.context.payload) === null || _a === void 0 ? void 0 : _a.repository) === null || _b === void 0 ? void 0 : _b.private) || false,
+            is_self_hosted: !isGithubHosted(),
         };
         let policyName = lib_core.getInput("policy");
         if (policyName !== "") {
@@ -71203,7 +71204,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         }
         const runnerName = process.env.RUNNER_NAME || "";
         lib_core.info(`RUNNER_NAME: ${runnerName}`);
-        if (!runnerName.startsWith("GitHub Actions")) {
+        if (!isGithubHosted()) {
             external_fs_.appendFileSync(process.env.GITHUB_STATE, `selfHosted=true${external_os_.EOL}`, {
                 encoding: "utf8",
             });
@@ -71300,6 +71301,10 @@ function setup_sleep(ms) {
     return new Promise((resolve) => {
         setTimeout(resolve, ms);
     });
+}
+function isGithubHosted() {
+    const runnerName = process.env.RUNNER_NAME || "";
+    return runnerName.startsWith("GitHub Actions");
 }
 
 })();

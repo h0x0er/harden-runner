@@ -52,6 +52,7 @@ import { isArcRunner, sendAllowedEndpoints } from "./arc-runner";
       disable_sudo: core.getBooleanInput("disable-sudo"),
       disable_file_monitoring: core.getBooleanInput("disable-file-monitoring"),
       private: context?.payload?.repository?.private || false,
+      is_self_hosted: !isGithubHosted(),
     };
 
     let policyName = core.getInput("policy");
@@ -136,7 +137,7 @@ import { isArcRunner, sendAllowedEndpoints } from "./arc-runner";
 
     const runnerName = process.env.RUNNER_NAME || "";
     core.info(`RUNNER_NAME: ${runnerName}`);
-    if (!runnerName.startsWith("GitHub Actions")) {
+    if (!isGithubHosted()) {
       fs.appendFileSync(process.env.GITHUB_STATE, `selfHosted=true${EOL}`, {
         encoding: "utf8",
       });
@@ -251,4 +252,9 @@ export function sleep(ms) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
+}
+
+function isGithubHosted() {
+  const runnerName = process.env.RUNNER_NAME || "";
+  return runnerName.startsWith("GitHub Actions");
 }
