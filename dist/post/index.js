@@ -63142,19 +63142,6 @@ function arcCleanUp() {
     external_child_process_.execSync(`echo "cleanup" > "${getRunnerTempDir()}/step_policy_cleanup"`);
 }
 
-;// CONCATENATED MODULE: ./src/cleanup-utils.ts
-function getRelevantEvents(events) {
-    // Mon, 11 Dec 2023 06:29:36 GMT:{"timestamp":1702276176,"exe":"git-remote-http","host":"github.com","path":"/harden-runner-canary/agent-ecapture/info/refs?service=git-upload-pack","method":"GET"}
-    let output;
-    let filtered_events = events.filter((val, _) => {
-        return val.indexOf("github.com") > -1 || val.indexOf("api.github.com") > -1;
-    });
-    output = filtered_events.map((val, _) => {
-        return val.replace("GMT:", "GMT:[Github Request] ");
-    });
-    return output;
-}
-
 ;// CONCATENATED MODULE: ./src/cleanup.ts
 var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -63165,7 +63152,6 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-
 
 
 
@@ -63233,17 +63219,6 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
         console.log("status:");
         var content = external_fs_.readFileSync(status, "utf-8");
         console.log(content);
-    }
-    var httpsLog = "/home/runner/work/_temp/network_events.log";
-    if (external_fs_.existsSync(httpsLog)) {
-        console.log("httpsLog:");
-        let events = external_fs_.readFileSync(httpsLog, "utf-8").split("\n");
-        if (events.length > 0) {
-            let relevant_events = getRelevantEvents(events);
-            for (let event of relevant_events) {
-                console.log(event);
-            }
-        }
     }
     var disable_sudo = process.env.STATE_disableSudo;
     if (disable_sudo !== "true") {
