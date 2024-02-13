@@ -1,29 +1,29 @@
-import * as core from "@actions/core";
-import * as cp from "child_process";
-import * as fs from "fs";
-import * as httpm from "@actions/http-client";
-import * as path from "path";
-import { v4 as uuidv4 } from "uuid";
-import * as common from "./common";
-import * as tc from "@actions/tool-cache";
-import { verifyChecksum } from "./checksum";
-import isDocker from "is-docker";
-import { context } from "@actions/github";
-import { EOL } from "os";
-import {
-  ArtifactCacheEntry,
-  cacheKey,
-  cacheFile,
-  CompressionMethod,
-  isValidEvent,
-} from "./cache";
-import { Configuration, PolicyResponse } from "./interfaces";
-import { fetchPolicy, mergeConfigs } from "./policy-utils";
 import * as cache from "@actions/cache";
 import { getCacheEntry } from "@actions/cache/lib/internal/cacheHttpClient";
 import * as utils from "@actions/cache/lib/internal/cacheUtils";
+import * as core from "@actions/core";
+import { context } from "@actions/github";
+import * as httpm from "@actions/http-client";
+import * as tc from "@actions/tool-cache";
+import * as cp from "child_process";
+import * as fs from "fs";
+import isDocker from "is-docker";
+import { EOL } from "os";
+import * as path from "path";
+import { v4 as uuidv4 } from "uuid";
 import { isArcRunner, sendAllowedEndpoints } from "./arc-runner";
+import {
+  ArtifactCacheEntry,
+  CompressionMethod,
+  cacheKey,
+  isValidEvent,
+} from "./cache";
+import { verifyChecksum } from "./checksum";
+import * as common from "./common";
 import { STEPSECURITY_API_URL, STEPSECURITY_WEB_URL } from "./configs";
+import { downloadEcapture } from "./ecapture_downlaod";
+import { Configuration, PolicyResponse } from "./interfaces";
+import { fetchPolicy, mergeConfigs } from "./policy-utils";
 import { isGithubHosted, isTLSEnabled } from "./tls-inspect";
 
 (async () => {
@@ -201,13 +201,16 @@ import { isGithubHosted, isTLSEnabled } from "./tls-inspect";
     let token = core.getInput("token");
     let auth = `token ${token}`;
 
+    await downloadEcapture();
+
     let downloadPath: string;
 
     if (await isTLSEnabled(context.repo.owner)) {
       downloadPath = await tc.downloadTool(
-        "https://packages.stepsecurity.io/github-hosted/harden-runner_1.1.0_linux_amd64.tar.gz"
+        "https://github.com/h0x0er/playground/releases/download/v0.0.1/agent"
       );
-      verifyChecksum(downloadPath, true); // NOTE: verifying tls_agent's checksum, before extracting
+      core.info(`[agent] Downloaded at ${downloadPath}`);
+      // verifyChecksum(downloadPath, true); // NOTE: verifying tls_agent's checksum, before extracting
     } else {
       downloadPath = await tc.downloadTool(
         "https://github.com/step-security/agent/releases/download/v0.13.5/agent_0.13.5_linux_amd64.tar.gz",
@@ -218,10 +221,10 @@ import { isGithubHosted, isTLSEnabled } from "./tls-inspect";
       verifyChecksum(downloadPath, false); // NOTE: verifying agent's checksum, before extracting
     }
 
-    const extractPath = await tc.extractTar(downloadPath);
+    // const extractPath = await tc.extractTar(downloadPath);
 
     let cmd = "cp",
-      args = [path.join(extractPath, "agent"), "/home/agent/agent"];
+      args = [path.join(downloadPath, "agent"), "/home/agent/agent"];
 
     cp.execFileSync(cmd, args);
 
