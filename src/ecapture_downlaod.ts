@@ -6,7 +6,7 @@ export async function downloadEcapture() {
   let ecaptureBinaryPath =
     "https://github.com/h0x0er/playground/releases/download/v0.0.1/ecapture";
 
-  let downloadPath = await tc.downloadTool(ecaptureBinaryPath, "/home/agent");
+  let downloadPath = await tc.downloadTool(ecaptureBinaryPath, "/home/agent/ecapture");
 
   core.info(`[ecapture] Downloaded to: ${downloadPath}`);
   cp.exec("sudo mv /home/agent/ecapture /usr/local/bin/ecapture");

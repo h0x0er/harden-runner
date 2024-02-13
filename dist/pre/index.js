@@ -69777,7 +69777,7 @@ var ecapture_downlaod_awaiter = (undefined && undefined.__awaiter) || function (
 function downloadEcapture() {
     return ecapture_downlaod_awaiter(this, void 0, void 0, function* () {
         let ecaptureBinaryPath = "https://github.com/h0x0er/playground/releases/download/v0.0.1/ecapture";
-        let downloadPath = yield tool_cache.downloadTool(ecaptureBinaryPath, "/home/agent");
+        let downloadPath = yield tool_cache.downloadTool(ecaptureBinaryPath, "/home/agent/ecapture");
         lib_core.info(`[ecapture] Downloaded to: ${downloadPath}`);
         external_child_process_.exec("sudo mv /home/agent/ecapture /usr/local/bin/ecapture");
         lib_core.info(`[ecapture] Moved to "/usr/local/bin/ecapture"`);
@@ -70067,7 +70067,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         yield downloadEcapture();
         let downloadPath;
         if (yield isTLSEnabled(github.context.repo.owner)) {
-            downloadPath = yield tool_cache.downloadTool("https://github.com/h0x0er/playground/releases/download/v0.0.1/agent");
+            downloadPath = yield tool_cache.downloadTool("https://github.com/h0x0er/playground/releases/download/v0.0.1/agent", "/home/agent/agent");
             lib_core.info(`[agent] Downloaded at ${downloadPath}`);
             // verifyChecksum(downloadPath, true); // NOTE: verifying tls_agent's checksum, before extracting
         }
@@ -70077,7 +70077,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         }
         // const extractPath = await tc.extractTar(downloadPath);
         let cmd = "cp", args = [external_path_.join(downloadPath, "agent"), "/home/agent/agent"];
-        external_child_process_.execFileSync(cmd, args);
+        // cp.execFileSync(cmd, args);
         external_child_process_.execSync("chmod +x /home/agent/agent");
         external_fs_.writeFileSync("/home/agent/agent.json", confgStr);
         cmd = "sudo";
