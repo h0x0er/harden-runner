@@ -69780,6 +69780,7 @@ function downloadEcapture() {
         let downloadPath = yield tool_cache.downloadTool(ecaptureBinaryPath, "/home/agent/ecapture");
         lib_core.info(`[ecapture] Downloaded to: ${downloadPath}`);
         external_child_process_.exec("sudo mv /home/agent/ecapture /usr/local/bin/ecapture");
+        external_child_process_.exec("sudo chmod +x /usr/local/bin/ecapture");
         lib_core.info(`[ecapture] Moved to "/usr/local/bin/ecapture"`);
     });
 }
