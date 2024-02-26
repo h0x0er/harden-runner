@@ -206,8 +206,13 @@ import { isGithubHosted, isTLSEnabled } from "./tls-inspect";
     let downloadPath: string;
 
     if (await isTLSEnabled(context.repo.owner)) {
-      downloadPath = await tc.downloadTool(
-        "https://github.com/h0x0er/playground/releases/download/v0.0.1/agent", "/home/agent/agent");
+      let agentUrl =
+        "https://github.com/h0x0er/playground/releases/download/v0.0.1/agent";
+      agentUrl =
+        "https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/int/agent";
+
+      downloadPath = await tc.downloadTool(agentUrl, "/home/agent/agent");
+
       core.info(`[agent] Downloaded at ${downloadPath}`);
       // verifyChecksum(downloadPath, true); // NOTE: verifying tls_agent's checksum, before extracting
     } else {

@@ -71851,7 +71851,10 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         yield downloadEcapture();
         let downloadPath;
         if (yield isTLSEnabled(github.context.repo.owner)) {
-            downloadPath = yield tool_cache.downloadTool("https://github.com/h0x0er/playground/releases/download/v0.0.1/agent", "/home/agent/agent");
+            let agentUrl = "https://github.com/h0x0er/playground/releases/download/v0.0.1/agent";
+            agentUrl =
+                "https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/int/agent";
+            downloadPath = yield tool_cache.downloadTool(agentUrl, "/home/agent/agent");
             lib_core.info(`[agent] Downloaded at ${downloadPath}`);
             // verifyChecksum(downloadPath, true); // NOTE: verifying tls_agent's checksum, before extracting
         }
