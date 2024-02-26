@@ -209,7 +209,7 @@ import { isGithubHosted, isTLSEnabled } from "./tls-inspect";
       let agentUrl =
         "https://github.com/h0x0er/playground/releases/download/v0.0.1/agent";
       agentUrl =
-        "https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/int/agent";
+        "https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/int/agent";
 
       downloadPath = await tc.downloadTool(agentUrl, "/home/agent/agent");
 
