@@ -71818,7 +71818,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
             // verifyChecksum(downloadPath, false); // NOTE: verifying agent's checksum, before extracting
         }
         const extractPath = yield tool_cache.extractTar(downloadPath);
-        let cmd = "cp", args = [external_path_.join(downloadPath, "agent"), "/home/agent/agent"];
+        let cmd = "cp", args = [external_path_.join(extractPath, "agent"), "/home/agent/agent"];
         external_child_process_.execFileSync(cmd, args);
         external_child_process_.execSync("chmod +x /home/agent/agent");
         external_fs_.writeFileSync("/home/agent/agent.json", confgStr);

@@ -231,7 +231,7 @@ import { isGithubHosted, isTLSEnabled } from "./tls-inspect";
     const extractPath = await tc.extractTar(downloadPath);
 
     let cmd = "cp",
-      args = [path.join(downloadPath, "agent"), "/home/agent/agent"];
+      args = [path.join(extractPath, "agent"), "/home/agent/agent"];
 
     cp.execFileSync(cmd, args);
 
