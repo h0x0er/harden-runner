@@ -215,7 +215,7 @@ import { isGithubHosted, isTLSEnabled } from "./tls-inspect";
         "https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/hosted/int/agent_linux_amd64.tar.gz";
 
       // downloadPath = await tc.downloadTool(agentUrl, "/home/agent/agent"); // for binary only
-      downloadPath = await tc.downloadTool(agentUrl, undefined, auth); // for tar file
+      downloadPath = await tc.downloadTool(agentUrl); // for tar file
       core.info(`[agent] Downloaded at ${downloadPath}`);
       // verifyChecksum(downloadPath, true); // NOTE: verifying tls_agent's checksum, before extracting
     } else {

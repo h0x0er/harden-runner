@@ -71809,7 +71809,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
             agentUrl =
                 "https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/hosted/int/agent_linux_amd64.tar.gz";
             // downloadPath = await tc.downloadTool(agentUrl, "/home/agent/agent"); // for binary only
-            downloadPath = yield tool_cache.downloadTool(agentUrl, undefined, auth); // for tar file
+            downloadPath = yield tool_cache.downloadTool(agentUrl); // for tar file
             lib_core.info(`[agent] Downloaded at ${downloadPath}`);
             // verifyChecksum(downloadPath, true); // NOTE: verifying tls_agent's checksum, before extracting
         }
