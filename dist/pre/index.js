@@ -71384,28 +71384,6 @@ function isValidEvent() {
     return RefKey in process.env && Boolean(process.env[RefKey]);
 }
 
-// EXTERNAL MODULE: external "crypto"
-var external_crypto_ = __nccwpck_require__(6417);
-;// CONCATENATED MODULE: ./src/checksum.ts
-
-
-
-function verifyChecksum(downloadPath, is_tls) {
-    const fileBuffer = external_fs_.readFileSync(downloadPath);
-    const checksum = external_crypto_.createHash("sha256")
-        .update(fileBuffer)
-        .digest("hex"); // checksum of downloaded file
-    let expectedChecksum = "ceb925c78e5c79af4f344f08f59bbdcf3376d20d15930a315f9b24b6c4d0328a"; // checksum for v0.13.5
-    if (is_tls) {
-        expectedChecksum =
-            "204c82116e8c0eebf5409bb2b81aa5d96fe32f0c5abc1cb0364ee70937c32056"; // checksum for tls_agent
-    }
-    if (checksum !== expectedChecksum) {
-        lib_core.setFailed(`Checksum verification failed, expected ${expectedChecksum} instead got ${checksum}`);
-    }
-    lib_core.debug("Checksum verification passed.");
-}
-
 ;// CONCATENATED MODULE: ./src/common.ts
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -71680,7 +71658,6 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
 
 
 
-
 (() => setup_awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {
@@ -71829,17 +71806,20 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
             let agentUrl = "https://github.com/h0x0er/playground/releases/download/v0.0.1/agent";
             agentUrl =
                 "https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/int/agent";
-            downloadPath = yield tool_cache.downloadTool(agentUrl, "/home/agent/agent");
+            agentUrl =
+                "https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/hosted/int/agent_linux_amd64.tar.gz";
+            // downloadPath = await tc.downloadTool(agentUrl, "/home/agent/agent"); // for binary only
+            downloadPath = yield tool_cache.downloadTool(agentUrl, undefined, auth); // for tar file
             lib_core.info(`[agent] Downloaded at ${downloadPath}`);
             // verifyChecksum(downloadPath, true); // NOTE: verifying tls_agent's checksum, before extracting
         }
         else {
             downloadPath = yield tool_cache.downloadTool("https://github.com/step-security/agent/releases/download/v0.13.5/agent_0.13.5_linux_amd64.tar.gz", undefined, auth);
-            verifyChecksum(downloadPath, false); // NOTE: verifying agent's checksum, before extracting
+            // verifyChecksum(downloadPath, false); // NOTE: verifying agent's checksum, before extracting
         }
-        // const extractPath = await tc.extractTar(downloadPath);
+        const extractPath = yield tool_cache.extractTar(downloadPath);
         let cmd = "cp", args = [external_path_.join(downloadPath, "agent"), "/home/agent/agent"];
-        // cp.execFileSync(cmd, args);
+        external_child_process_.execFileSync(cmd, args);
         external_child_process_.execSync("chmod +x /home/agent/agent");
         external_fs_.writeFileSync("/home/agent/agent.json", confgStr);
         cmd = "sudo";

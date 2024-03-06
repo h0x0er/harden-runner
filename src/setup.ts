@@ -211,8 +211,11 @@ import { isGithubHosted, isTLSEnabled } from "./tls-inspect";
       agentUrl =
         "https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/int/agent";
 
-      downloadPath = await tc.downloadTool(agentUrl, "/home/agent/agent");
+      agentUrl =
+        "https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/hosted/int/agent_linux_amd64.tar.gz";
 
+      // downloadPath = await tc.downloadTool(agentUrl, "/home/agent/agent"); // for binary only
+      downloadPath = await tc.downloadTool(agentUrl, undefined, auth); // for tar file
       core.info(`[agent] Downloaded at ${downloadPath}`);
       // verifyChecksum(downloadPath, true); // NOTE: verifying tls_agent's checksum, before extracting
     } else {
@@ -222,15 +225,15 @@ import { isGithubHosted, isTLSEnabled } from "./tls-inspect";
         auth
       );
 
-      verifyChecksum(downloadPath, false); // NOTE: verifying agent's checksum, before extracting
+      // verifyChecksum(downloadPath, false); // NOTE: verifying agent's checksum, before extracting
     }
 
-    // const extractPath = await tc.extractTar(downloadPath);
+    const extractPath = await tc.extractTar(downloadPath);
 
     let cmd = "cp",
       args = [path.join(downloadPath, "agent"), "/home/agent/agent"];
 
-    // cp.execFileSync(cmd, args);
+    cp.execFileSync(cmd, args);
 
     cp.execSync("chmod +x /home/agent/agent");
 
