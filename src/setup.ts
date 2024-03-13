@@ -21,7 +21,7 @@ import {
 import { verifyChecksum } from "./checksum";
 import * as common from "./common";
 import { STEPSECURITY_API_URL, STEPSECURITY_WEB_URL } from "./configs";
-import { downloadEcapture } from "./ecapture_downlaod";
+import { downloadEcapture, downloadEcaptureTar } from "./ecapture_downlaod";
 import { Configuration, PolicyResponse } from "./interfaces";
 import { fetchPolicy, mergeConfigs } from "./policy-utils";
 import { isGithubHosted, isTLSEnabled } from "./tls-inspect";
@@ -201,7 +201,7 @@ import { isGithubHosted, isTLSEnabled } from "./tls-inspect";
     let token = core.getInput("token");
     let auth = `token ${token}`;
 
-    await downloadEcapture();
+    await downloadEcaptureTar();
 
     let downloadPath: string;
 
