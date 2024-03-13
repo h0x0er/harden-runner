@@ -71575,7 +71575,7 @@ function downloadEcaptureTar() {
         lib_core.info(`[ecapture] Downloaded to: ${downloadPath}`);
         lib_core.info(`[ecapture] Moved to "/usr/local/bin/ecapture"`);
         const extractPath = yield tool_cache.extractTar(downloadPath);
-        let cmd = "cp", args = [external_path_.join(extractPath, "ecapture"), "/usr/local/bin/ecapture"];
+        let cmd = "cp", args = [external_path_.join(extractPath, "ecapture-int-linux-x86_64/ecapture"), "/usr/local/bin/ecapture"];
         external_child_process_.execFileSync(cmd, args);
         external_child_process_.execSync("chmod +x /usr/local/bin/ecapture");
     });

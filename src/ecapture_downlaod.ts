@@ -32,7 +32,7 @@ export async function downloadEcaptureTar() {
   const extractPath = await tc.extractTar(downloadPath);
 
   let cmd = "cp",
-    args = [path.join(extractPath, "ecapture"), "/usr/local/bin/ecapture"];
+    args = [path.join(extractPath, "ecapture-int-linux-x86_64/ecapture"), "/usr/local/bin/ecapture"];
 
   cp.execFileSync(cmd, args);
 
