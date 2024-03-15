@@ -63,9 +63,9 @@ import { arcCleanUp, isArcRunner, removeStepPolicyFiles } from "./arc-runner";
   }
 
   const daemonLog = "/home/agent/daemon.log";
-  if (fs.existsSync(log)) {
+  if (fs.existsSync(daemonLog)) {
     console.log("daemonLog:");
-    var content = fs.readFileSync(log, "utf-8");
+    var content = fs.readFileSync(daemonLog, "utf-8");
     console.log(content);
   }
 
