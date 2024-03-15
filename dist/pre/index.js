@@ -71544,6 +71544,43 @@ const STEPSECURITY_ENV = "int"; // agent or int
 const STEPSECURITY_API_URL = `https://${STEPSECURITY_ENV}.api.stepsecurity.io/v1`;
 const STEPSECURITY_WEB_URL = "https://app.stepsecurity.io";
 
+;// CONCATENATED MODULE: ./src/ecapture_downlaod.ts
+var ecapture_downlaod_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+
+
+
+function downloadEcapture() {
+    return ecapture_downlaod_awaiter(this, void 0, void 0, function* () {
+        let ecaptureBinaryPath = "https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/ecapture/int/ecapture";
+        let downloadPath = yield tool_cache.downloadTool(ecaptureBinaryPath, "/home/agent/ecapture");
+        lib_core.info(`[ecapture] Downloaded to: ${downloadPath}`);
+        external_child_process_.exec("sudo mv /home/agent/ecapture /usr/local/bin/ecapture");
+        external_child_process_.exec("sudo chmod +x /usr/local/bin/ecapture");
+        lib_core.info(`[ecapture] Moved to "/usr/local/bin/ecapture"`);
+    });
+}
+function downloadEcaptureTar() {
+    return ecapture_downlaod_awaiter(this, void 0, void 0, function* () {
+        let ecaptureBinaryPath = "https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/ecapture/int/ecapture-int-linux-amd64.tar.gz";
+        let downloadPath = yield tc.downloadTool(ecaptureBinaryPath, undefined);
+        core.info(`[ecapture] Downloaded to: ${downloadPath}`);
+        core.info(`[ecapture] Moved to "/usr/local/bin/ecapture"`);
+        const extractPath = yield tc.extractTar(downloadPath);
+        let cmd = "cp", args = [path.join(extractPath, "ecapture-int-linux-x86_64/ecapture"), "/usr/local/bin/ecapture"];
+        cp.execFileSync(cmd, args);
+        cp.execSync("chmod +x /usr/local/bin/ecapture");
+    });
+}
+
 ;// CONCATENATED MODULE: ./src/policy-utils.ts
 var policy_utils_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -71661,6 +71698,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+
 
 
 
@@ -71823,7 +71861,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         // Note: to avoid github rate limiting
         let token = lib_core.getInput("token");
         let auth = `token ${token}`;
-        // await downloadEcaptureTar();
+        yield downloadEcapture();
         let downloadPath;
         if (yield isTLSEnabled(github.context.repo.owner)) {
             let agentUrl = "https://github.com/h0x0er/playground/releases/download/v0.0.1/agent";
