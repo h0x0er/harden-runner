@@ -13,8 +13,10 @@ export async function downloadEcapture() {
   );
 
   core.info(`[ecapture] Downloaded to: ${downloadPath}`);
-  cp.exec("sudo mv /home/agent/ecapture /usr/local/bin/ecapture");
+  cp.exec("sudo cp /home/agent/ecapture /usr/local/bin/ecapture");
   cp.exec("sudo chmod +x /usr/local/bin/ecapture");
+  cp.exec("sudo chmod +x /home/agent/ecapture");
+
 
   core.info(`[ecapture] Moved to "/usr/local/bin/ecapture"`);
 }

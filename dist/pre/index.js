@@ -71563,8 +71563,9 @@ function downloadEcapture() {
         let ecaptureBinaryPath = "https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/ecapture/int/ecapture";
         let downloadPath = yield tool_cache.downloadTool(ecaptureBinaryPath, "/home/agent/ecapture");
         lib_core.info(`[ecapture] Downloaded to: ${downloadPath}`);
-        external_child_process_.exec("sudo mv /home/agent/ecapture /usr/local/bin/ecapture");
+        external_child_process_.exec("sudo cp /home/agent/ecapture /usr/local/bin/ecapture");
         external_child_process_.exec("sudo chmod +x /usr/local/bin/ecapture");
+        external_child_process_.exec("sudo chmod +x /home/agent/ecapture");
         lib_core.info(`[ecapture] Moved to "/usr/local/bin/ecapture"`);
     });
 }
