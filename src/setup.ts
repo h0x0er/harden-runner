@@ -18,10 +18,8 @@ import {
   cacheKey,
   isValidEvent,
 } from "./cache";
-import { verifyChecksum } from "./checksum";
 import * as common from "./common";
-import { STEPSECURITY_API_URL, STEPSECURITY_WEB_URL } from "./configs";
-import { downloadEcapture } from "./ecapture_downlaod";
+import { IS_DEBUG, STEPSECURITY_API_URL, STEPSECURITY_WEB_URL } from "./configs";
 import { Configuration, PolicyResponse } from "./interfaces";
 import { fetchPolicy, mergeConfigs } from "./policy-utils";
 import { isGithubHosted, isTLSEnabled } from "./tls-inspect";
@@ -54,6 +52,7 @@ import { isGithubHosted, isTLSEnabled } from "./tls-inspect";
       disable_file_monitoring: core.getBooleanInput("disable-file-monitoring"),
       private: context?.payload?.repository?.private || false,
       is_github_hosted: isGithubHosted(),
+      is_debug: IS_DEBUG
     };
 
     let policyName = core.getInput("policy");

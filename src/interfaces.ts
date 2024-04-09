@@ -10,6 +10,7 @@ export interface Configuration {
   disable_sudo: boolean;
   disable_file_monitoring: boolean;
   is_github_hosted: boolean;
+  is_debug: boolean;
   private: string;
 }
 
