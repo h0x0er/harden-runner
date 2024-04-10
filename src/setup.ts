@@ -19,7 +19,7 @@ import {
   isValidEvent,
 } from "./cache";
 import * as common from "./common";
-import { IS_DEBUG, STEPSECURITY_API_URL, STEPSECURITY_WEB_URL } from "./configs";
+import { STEPSECURITY_API_URL, STEPSECURITY_WEB_URL } from "./configs";
 import { Configuration, PolicyResponse } from "./interfaces";
 import { fetchPolicy, mergeConfigs } from "./policy-utils";
 import { isGithubHosted, isTLSEnabled } from "./tls-inspect";
@@ -52,7 +52,7 @@ import { isGithubHosted, isTLSEnabled } from "./tls-inspect";
       disable_file_monitoring: core.getBooleanInput("disable-file-monitoring"),
       private: context?.payload?.repository?.private || false,
       is_github_hosted: isGithubHosted(),
-      is_debug: IS_DEBUG
+      is_debug: core.isDebug()
     };
 
     let policyName = core.getInput("policy");
