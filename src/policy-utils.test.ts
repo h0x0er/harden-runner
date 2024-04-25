@@ -40,6 +40,7 @@ test("merge configs", async () => {
     private: "true",
     is_github_hosted: true,
     is_debug: false,
+    is_agent_int: false,
   };
   let policyResponse: PolicyResponse = {
     owner: "h0x0er",
@@ -65,6 +66,7 @@ test("merge configs", async () => {
     private: "true",
     is_github_hosted: true,
     is_debug: false,
+    is_agent_int: false,
   };
 
   localConfig = mergeConfigs(localConfig, policyResponse);

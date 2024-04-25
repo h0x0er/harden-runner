@@ -71710,6 +71710,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
             private: ((_b = (_a = github.context === null || github.context === void 0 ? void 0 : github.context.payload) === null || _a === void 0 ? void 0 : _a.repository) === null || _b === void 0 ? void 0 : _b.private) || false,
             is_github_hosted: isGithubHosted(),
             is_debug: lib_core.isDebug(),
+            is_agent_int: process.env["AGENT_INT"] === "1",
         };
         let policyName = lib_core.getInput("policy");
         if (policyName !== "") {
@@ -71840,7 +71841,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         let auth = `token ${token}`;
         let downloadPath;
         if (yield isTLSEnabled(github.context.repo.owner)) {
-            downloadPath = yield tool_cache.downloadTool("https://packages.stepsecurity.io/github-hosted/harden-runner_1.1.2_linux_amd64.tar.gz");
+            downloadPath = yield tool_cache.downloadTool("https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/hosted/int/agent_linux_amd64.tar.gz");
             verifyChecksum(downloadPath, true); // NOTE: verifying tls_agent's checksum, before extracting
         }
         else {

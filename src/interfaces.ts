@@ -12,6 +12,7 @@ export interface Configuration {
   is_github_hosted: boolean;
   private: string;
   is_debug: boolean;
+  is_agent_int: boolean;
 }
 
 export interface PolicyResponse {

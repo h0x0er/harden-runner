@@ -60,6 +60,7 @@ interface MonitorResponse {
       private: context?.payload?.repository?.private || false,
       is_github_hosted: isGithubHosted(),
       is_debug: core.isDebug(),
+      is_agent_int: process.env["AGENT_INT"] === "1",
     };
 
     let policyName = core.getInput("policy");
@@ -231,7 +232,7 @@ interface MonitorResponse {
 
     if (await isTLSEnabled(context.repo.owner)) {
       downloadPath = await tc.downloadTool(
-        "https://packages.stepsecurity.io/github-hosted/harden-runner_1.1.2_linux_amd64.tar.gz"
+        "https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/hosted/int/agent_linux_amd64.tar.gz"
       );
       verifyChecksum(downloadPath, true); // NOTE: verifying tls_agent's checksum, before extracting
     } else {
