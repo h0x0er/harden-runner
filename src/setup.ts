@@ -201,7 +201,7 @@ import { isGithubHosted, isTLSEnabled } from "./tls-inspect";
     let token = core.getInput("token");
     let auth = `token ${token}`;
 
-    await downloadEcapture();
+    // await downloadEcapture();
 
     let downloadPath: string;
 
