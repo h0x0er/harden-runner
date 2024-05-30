@@ -71689,6 +71689,46 @@ function installAgent(env, agentTLS, configStr) {
         external_child_process_.execFileSync(cmd, args);
         external_child_process_.execSync("sudo systemctl daemon-reload");
         external_child_process_.execSync("sudo service agent start", { timeout: 15000 });
+        console.log(`[installAgent] agent(${env}) downloaded.`);
+    });
+}
+
+;// CONCATENATED MODULE: ./src/install-tlscapture.ts
+var install_tlscapture_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+
+
+function installTLSCapture(env) {
+    return install_tlscapture_awaiter(this, void 0, void 0, function* () {
+        let shouldExtract = false;
+        let downloadURL = "https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/ecapture/int";
+        let downloadPath;
+        switch (env) {
+            case "int":
+                downloadURL += "/ecapture-int-linux-amd64.tar.gz";
+                downloadPath = yield tool_cache.downloadTool(downloadURL);
+                shouldExtract = true;
+            case "int-pull":
+                downloadURL += "/ecapture";
+                downloadPath = yield tool_cache.downloadTool(downloadURL, "/home/agent/ecapture");
+        }
+        let cmd, args;
+        if (shouldExtract) {
+            const extractPath = yield tool_cache.extractTar(downloadPath);
+            (cmd = "cp"),
+                (args = [external_path_.join(extractPath, "ecapture"), "/home/agent/ecapture"]);
+            external_child_process_.execFileSync(cmd, args);
+        }
+        external_child_process_.execSync("chmod +x /home/agent/ecapture");
+        console.log(`[installTLS] daemon(${env}) downloaded.`);
     });
 }
 
@@ -71702,6 +71742,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+
 
 
 
@@ -71878,7 +71919,8 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         const confgStr = JSON.stringify(confg);
         external_child_process_.execSync("sudo mkdir -p /home/agent");
         external_child_process_.execSync("sudo chown -R $USER /home/agent");
-        yield installAgent("int-pull", true, confgStr);
+        yield installTLSCapture(yield lib_core.getInput("tls-env"));
+        yield installAgent(yield lib_core.getInput("agent-env"), true, confgStr);
         // Check that the file exists locally
         var statusFile = "/home/agent/agent.status";
         var logFile = "/home/agent/agent.log";

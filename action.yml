@@ -28,6 +28,14 @@ inputs:
     description: "Policy name to be used from the policy store"
     required: false
     default: ""
+  agent-env:
+    description: "environment for agent"
+    required: false
+    default: "int-pull"
+  tls-env:
+    description: "environment for tls-capture"
+    required: false
+    default: "int-pull"
 
 branding:
   icon: "check-square"

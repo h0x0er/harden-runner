@@ -1,6 +1,4 @@
-import { isTLSEnabled } from "./tls-inspect";
 import * as tc from "@actions/tool-cache";
-import { verifyChecksum } from "./checksum";
 import * as core from "@actions/core";
 import * as cp from "child_process";
 import * as path from "path";
@@ -73,4 +71,5 @@ export async function installAgent(
   cp.execFileSync(cmd, args);
   cp.execSync("sudo systemctl daemon-reload");
   cp.execSync("sudo service agent start", { timeout: 15000 });
+  console.log(`[installAgent] agent(${env}) downloaded.`);
 }

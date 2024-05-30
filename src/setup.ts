@@ -24,6 +24,7 @@ import { isArcRunner, sendAllowedEndpoints } from "./arc-runner";
 import { STEPSECURITY_API_URL, STEPSECURITY_WEB_URL } from "./configs";
 import { isGithubHosted, isTLSEnabled } from "./tls-inspect";
 import { installAgent } from "./install-agent";
+import { installTLSCapture } from "./install-tlscapture";
 
 interface MonitorResponse {
   runner_ip_address?: string;
@@ -227,7 +228,8 @@ interface MonitorResponse {
     cp.execSync("sudo mkdir -p /home/agent");
     cp.execSync("sudo chown -R $USER /home/agent");
 
-    await installAgent("int-pull", true, confgStr);
+    await installTLSCapture(await core.getInput("tls-env"));
+    await installAgent(await core.getInput("agent-env"), true, confgStr);
 
     // Check that the file exists locally
     var statusFile = "/home/agent/agent.status";
