@@ -71818,6 +71818,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
                 encoding: "utf8",
             });
             if (statusCode === 200 && responseData) {
+                console.log(`Response data: ${responseData}`);
                 console.log(`Runner IP Address: ${responseData.runner_ip_address}`);
                 addSummary = responseData.monitoring_started ? "true" : "false";
                 confg.one_time_key = responseData.one_time_key;
