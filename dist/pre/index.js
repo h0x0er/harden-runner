@@ -71276,7 +71276,7 @@ const parse = dist.parse;
 
 ;// CONCATENATED MODULE: ./src/configs.ts
 const STEPSECURITY_ENV = "int"; // agent or int
-const STEPSECURITY_API_URL = `https://${STEPSECURITY_ENV}.api.stepsecurity.io/v1`;
+const configs_STEPSECURITY_API_URL = `https://${STEPSECURITY_ENV}.api.stepsecurity.io/v1`;
 const configs_STEPSECURITY_WEB_URL = `https://${STEPSECURITY_ENV === "int" ? "int1" : "app"}.stepsecurity.io`;
 
 ;// CONCATENATED MODULE: ./src/common.ts
@@ -71413,30 +71413,6 @@ const SELF_HOSTED_NO_AGENT_MESSAGE = "This job is running on a self-hosted runne
 const HARDEN_RUNNER_UNAVAILABLE_MESSAGE = "Sorry, we are currently experiencing issues with the Harden Runner installation process. It is currently unavailable.";
 const ARC_RUNNER_MESSAGE = "Workflow is currently being executed in ARC based runner";
 
-// EXTERNAL MODULE: ./node_modules/@actions/tool-cache/lib/tool-cache.js
-var tool_cache = __nccwpck_require__(7784);
-// EXTERNAL MODULE: external "crypto"
-var external_crypto_ = __nccwpck_require__(6417);
-;// CONCATENATED MODULE: ./src/checksum.ts
-
-
-
-function verifyChecksum(downloadPath, is_tls) {
-    const fileBuffer = external_fs_.readFileSync(downloadPath);
-    const checksum = external_crypto_.createHash("sha256")
-        .update(fileBuffer)
-        .digest("hex"); // checksum of downloaded file
-    let expectedChecksum = "ceb925c78e5c79af4f344f08f59bbdcf3376d20d15930a315f9b24b6c4d0328a"; // checksum for v0.13.5
-    if (is_tls) {
-        expectedChecksum =
-            "846ae66c6cfab958fe61736cec0b58bdb7651b36af04c279405c7114675d7033"; // checksum for tls_agent
-    }
-    if (checksum !== expectedChecksum) {
-        lib_core.setFailed(`Checksum verification failed, expected ${expectedChecksum} instead got ${checksum}`);
-    }
-    lib_core.debug("Checksum verification passed.");
-}
-
 ;// CONCATENATED MODULE: external "node:fs"
 const external_node_fs_namespaceObject = require("node:fs");
 ;// CONCATENATED MODULE: ./node_modules/is-docker/index.js
@@ -71508,7 +71484,7 @@ function fetchPolicy(owner, policyName, idToken) {
         if (idToken === "") {
             throw new Error("[PolicyFetch]: id-token in empty");
         }
-        let policyEndpoint = `${STEPSECURITY_API_URL}/github/${owner}/actions/policies/${policyName}`;
+        let policyEndpoint = `${configs_STEPSECURITY_API_URL}/github/${owner}/actions/policies/${policyName}`;
         let httpClient = new lib.HttpClient();
         let headers = {};
         headers["Authorization"] = `Bearer ${idToken}`;
@@ -71627,22 +71603,22 @@ var tls_inspect_awaiter = (undefined && undefined.__awaiter) || function (thisAr
 function isTLSEnabled(owner) {
     return tls_inspect_awaiter(this, void 0, void 0, function* () {
         let tlsStatusEndpoint = `${STEPSECURITY_API_URL}/github/${owner}/actions/tls-inspection-status`;
-        let httpClient = new lib.HttpClient();
+        let httpClient = new HttpClient();
         httpClient.requestOptions = { socketTimeout: 3 * 1000 };
-        lib_core.info(`[!] Checking TLS_STATUS: ${owner}`);
+        core.info(`[!] Checking TLS_STATUS: ${owner}`);
         let isEnabled = false;
         try {
             let resp = yield httpClient.get(tlsStatusEndpoint);
             if (resp.message.statusCode === 200) {
                 isEnabled = true;
-                lib_core.info(`[!] TLS_ENABLED: ${owner}`);
+                core.info(`[!] TLS_ENABLED: ${owner}`);
             }
             else {
-                lib_core.info(`[!] TLS_NOT_ENABLED: ${owner}`);
+                core.info(`[!] TLS_NOT_ENABLED: ${owner}`);
             }
         }
         catch (e) {
-            lib_core.info(`[!] Unable to check TLS_STATUS`);
+            core.info(`[!] Unable to check TLS_STATUS`);
         }
         return isEnabled;
     });
@@ -71650,6 +71626,70 @@ function isTLSEnabled(owner) {
 function isGithubHosted() {
     const runnerName = process.env.RUNNER_NAME || "";
     return runnerName.startsWith("GitHub Actions");
+}
+
+// EXTERNAL MODULE: ./node_modules/@actions/tool-cache/lib/tool-cache.js
+var tool_cache = __nccwpck_require__(7784);
+;// CONCATENATED MODULE: ./src/install-agent.ts
+var install_agent_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+
+
+
+
+function installAgent(env, agentTLS, configStr) {
+    return install_agent_awaiter(this, void 0, void 0, function* () {
+        // Note: to avoid github rate limiting
+        let token = lib_core.getInput("token");
+        let auth = `token ${token}`;
+        let isTLS = agentTLS;
+        let shouldExtract = false;
+        let downloadPath;
+        if (isTLS) {
+            switch (env) {
+                case "prod":
+                    downloadPath = yield tool_cache.downloadTool("https://packages.stepsecurity.io/github-hosted/harden-runner_1.2.0_linux_amd64.tar.gz");
+                    shouldExtract = true;
+                case "int":
+                    downloadPath = yield tool_cache.downloadTool("https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/int/agent_linux_amd64.tar.gz");
+                    shouldExtract = true;
+                case "int-pull":
+                    downloadPath = yield tool_cache.downloadTool("https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/int/agent", "/home/agent/agent");
+                    shouldExtract = false;
+            }
+            // verifyChecksum(downloadPath, true); // NOTE: verifying tls_agent's checksum, before extracting
+        }
+        else {
+            downloadPath = yield tool_cache.downloadTool("https://github.com/step-security/agent/releases/download/v0.13.5/agent_0.13.5_linux_amd64.tar.gz", undefined, auth);
+            // verifyChecksum(downloadPath, false); // NOTE: verifying agent's checksum, before extracting
+        }
+        let cmd, args;
+        if (shouldExtract) {
+            const extractPath = yield tool_cache.extractTar(downloadPath);
+            (cmd = "cp"),
+                (args = [external_path_.join(extractPath, "agent"), "/home/agent/agent"]);
+            external_child_process_.execFileSync(cmd, args);
+        }
+        external_child_process_.execSync("chmod +x /home/agent/agent");
+        external_fs_.writeFileSync("/home/agent/agent.json", configStr);
+        cmd = "sudo";
+        args = [
+            "cp",
+            external_path_.join(__dirname, "agent.service"),
+            "/etc/systemd/system/agent.service",
+        ];
+        external_child_process_.execFileSync(cmd, args);
+        external_child_process_.execSync("sudo systemctl daemon-reload");
+        external_child_process_.execSync("sudo service agent start", { timeout: 15000 });
+    });
 }
 
 ;// CONCATENATED MODULE: ./src/setup.ts
@@ -71681,7 +71721,6 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
 
 
 
-
 (() => setup_awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {
@@ -71694,7 +71733,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
             return;
         }
         var correlation_id = v4();
-        var api_url = STEPSECURITY_API_URL;
+        var api_url = configs_STEPSECURITY_API_URL;
         var web_url = configs_STEPSECURITY_WEB_URL;
         let confg = {
             repo: process.env["GITHUB_REPOSITORY"],
@@ -71839,32 +71878,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         const confgStr = JSON.stringify(confg);
         external_child_process_.execSync("sudo mkdir -p /home/agent");
         external_child_process_.execSync("sudo chown -R $USER /home/agent");
-        // Note: to avoid github rate limiting
-        let token = lib_core.getInput("token");
-        let auth = `token ${token}`;
-        let downloadPath;
-        if (yield isTLSEnabled(github.context.repo.owner)) {
-            downloadPath = yield tool_cache.downloadTool("https://packages.stepsecurity.io/github-hosted/harden-runner_1.2.0_linux_amd64.tar.gz");
-            verifyChecksum(downloadPath, true); // NOTE: verifying tls_agent's checksum, before extracting
-        }
-        else {
-            downloadPath = yield tool_cache.downloadTool("https://github.com/step-security/agent/releases/download/v0.13.5/agent_0.13.5_linux_amd64.tar.gz", undefined, auth);
-            verifyChecksum(downloadPath, false); // NOTE: verifying agent's checksum, before extracting
-        }
-        const extractPath = yield tool_cache.extractTar(downloadPath);
-        let cmd = "cp", args = [external_path_.join(extractPath, "agent"), "/home/agent/agent"];
-        external_child_process_.execFileSync(cmd, args);
-        external_child_process_.execSync("chmod +x /home/agent/agent");
-        external_fs_.writeFileSync("/home/agent/agent.json", confgStr);
-        cmd = "sudo";
-        args = [
-            "cp",
-            external_path_.join(__dirname, "agent.service"),
-            "/etc/systemd/system/agent.service",
-        ];
-        external_child_process_.execFileSync(cmd, args);
-        external_child_process_.execSync("sudo systemctl daemon-reload");
-        external_child_process_.execSync("sudo service agent start", { timeout: 15000 });
+        yield installAgent("int-pull", true, confgStr);
         // Check that the file exists locally
         var statusFile = "/home/agent/agent.status";
         var logFile = "/home/agent/agent.log";
