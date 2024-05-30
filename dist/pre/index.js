@@ -71821,6 +71821,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
                 console.log(`Runner IP Address: ${responseData.runner_ip_address}`);
                 addSummary = responseData.monitoring_started ? "true" : "false";
                 confg.one_time_key = responseData.one_time_key;
+                console.log(`OTK: ${confg.one_time_key}`);
             }
         }
         catch (e) {
