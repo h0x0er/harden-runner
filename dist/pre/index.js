@@ -71277,7 +71277,7 @@ const parse = dist.parse;
 ;// CONCATENATED MODULE: ./src/configs.ts
 const STEPSECURITY_ENV = "int"; // agent or int
 const STEPSECURITY_API_URL = `https://${STEPSECURITY_ENV}.api.stepsecurity.io/v1`;
-const configs_STEPSECURITY_WEB_URL = "https://int1.stepsecurity.io";
+const configs_STEPSECURITY_WEB_URL = `https://${STEPSECURITY_ENV === "int" ? "int1" : "app"}.stepsecurity.io`;
 
 ;// CONCATENATED MODULE: ./src/common.ts
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -71710,6 +71710,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
             private: ((_b = (_a = github.context === null || github.context === void 0 ? void 0 : github.context.payload) === null || _a === void 0 ? void 0 : _a.repository) === null || _b === void 0 ? void 0 : _b.private) || false,
             is_github_hosted: isGithubHosted(),
             is_debug: lib_core.isDebug(),
+            one_time_key: "",
         };
         let policyName = lib_core.getInput("policy");
         if (policyName !== "") {
@@ -71819,6 +71820,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
             if (statusCode === 200 && responseData) {
                 console.log(`Runner IP Address: ${responseData.runner_ip_address}`);
                 addSummary = responseData.monitoring_started ? "true" : "false";
+                confg.one_time_key = responseData.one_time_key;
             }
         }
         catch (e) {

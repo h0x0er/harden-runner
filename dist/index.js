@@ -2839,7 +2839,7 @@ var external_fs_ = __nccwpck_require__(747);
 ;// CONCATENATED MODULE: ./src/configs.ts
 const STEPSECURITY_ENV = "int"; // agent or int
 const STEPSECURITY_API_URL = `https://${STEPSECURITY_ENV}.api.stepsecurity.io/v1`;
-const configs_STEPSECURITY_WEB_URL = "https://int1.stepsecurity.io";
+const configs_STEPSECURITY_WEB_URL = `https://${STEPSECURITY_ENV === "int" ? "int1" : "app"}.stepsecurity.io`;
 
 ;// CONCATENATED MODULE: ./src/common.ts
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {

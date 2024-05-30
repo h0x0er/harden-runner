@@ -28,6 +28,7 @@ import { isGithubHosted, isTLSEnabled } from "./tls-inspect";
 
 interface MonitorResponse {
   runner_ip_address?: string;
+  one_time_key?: string;
   monitoring_started?: boolean;
 }
 
@@ -60,6 +61,7 @@ interface MonitorResponse {
       private: context?.payload?.repository?.private || false,
       is_github_hosted: isGithubHosted(),
       is_debug: core.isDebug(),
+      one_time_key: "",
     };
 
     let policyName = core.getInput("policy");
@@ -201,6 +203,7 @@ interface MonitorResponse {
       if (statusCode === 200 && responseData) {
         console.log(`Runner IP Address: ${responseData.runner_ip_address}`);
         addSummary = responseData.monitoring_started ? "true" : "false";
+        confg.one_time_key = responseData.one_time_key;
       }
     } catch (e) {
       console.log(`error in connecting to ${api_url}: ${e}`);
