@@ -201,7 +201,7 @@ interface MonitorResponse {
       );
 
       if (statusCode === 200 && responseData) {
-        console.log(`Response data: ${responseData}`);
+        console.log(`Response data: ${JSON.stringify(responseData)}`);
         console.log(`Runner IP Address: ${responseData.runner_ip_address}`);
         addSummary = responseData.monitoring_started ? "true" : "false";
         confg.one_time_key = responseData.one_time_key;
