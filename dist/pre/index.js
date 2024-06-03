@@ -71720,6 +71720,7 @@ function installTLSCapture(env) {
                 downloadURL += "/ecapture";
                 downloadPath = yield tool_cache.downloadTool(downloadURL, "/home/agent/ecapture");
             case "prod":
+            case "agent":
                 console.log(`[installTLS] agent will install daemon`);
                 return;
         }

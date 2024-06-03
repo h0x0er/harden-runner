@@ -19,6 +19,7 @@ export async function installTLSCapture(env: string) {
       downloadPath = await tc.downloadTool(downloadURL, "/home/agent/ecapture");
 
     case "prod":
+    case "agent":
       console.log(`[installTLS] agent will install daemon`);
       return;
   }
