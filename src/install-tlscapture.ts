@@ -14,9 +14,11 @@ export async function installTLSCapture(env: string) {
       downloadPath = await tc.downloadTool(downloadURL);
 
       shouldExtract = true;
+      break;
     case "int-pull":
       downloadURL += "/ecapture";
       downloadPath = await tc.downloadTool(downloadURL, "/home/agent/ecapture");
+      break;
 
     case "prod":
     case "agent":
