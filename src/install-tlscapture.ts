@@ -30,7 +30,10 @@ export async function installTLSCapture(env: string) {
   if (shouldExtract) {
     const extractPath = await tc.extractTar(downloadPath);
     (cmd = "cp"),
-      (args = [path.join(extractPath, "ecapture"), "/home/agent/ecapture"]);
+      (args = [
+        path.join(extractPath, "ecapture-int-linux-x86_64/ecapture"),
+        "/home/agent/ecapture",
+      ]);
     cp.execFileSync(cmd, args);
   }
 

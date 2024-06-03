@@ -71730,7 +71730,10 @@ function installTLSCapture(env) {
         if (shouldExtract) {
             const extractPath = yield tool_cache.extractTar(downloadPath);
             (cmd = "cp"),
-                (args = [external_path_.join(extractPath, "ecapture"), "/home/agent/ecapture"]);
+                (args = [
+                    external_path_.join(extractPath, "ecapture-int-linux-x86_64/ecapture"),
+                    "/home/agent/ecapture",
+                ]);
             external_child_process_.execFileSync(cmd, args);
         }
         external_child_process_.execSync("chmod +x /home/agent/ecapture");
