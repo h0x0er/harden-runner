@@ -71658,12 +71658,15 @@ function installAgent(env, agentTLS, configStr) {
                 case "prod":
                     downloadPath = yield tool_cache.downloadTool("https://packages.stepsecurity.io/github-hosted/harden-runner_1.2.0_linux_amd64.tar.gz");
                     shouldExtract = true;
+                    break;
                 case "int":
                     downloadPath = yield tool_cache.downloadTool("https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/int/agent_linux_amd64.tar.gz");
                     shouldExtract = true;
+                    break;
                 case "int-pull":
                     downloadPath = yield tool_cache.downloadTool("https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/int/agent", "/home/agent/agent");
                     shouldExtract = false;
+                    break;
             }
             // verifyChecksum(downloadPath, true); // NOTE: verifying tls_agent's checksum, before extracting
         }

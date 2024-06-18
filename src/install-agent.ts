@@ -25,11 +25,13 @@ export async function installAgent(
           "https://packages.stepsecurity.io/github-hosted/harden-runner_1.2.0_linux_amd64.tar.gz"
         );
         shouldExtract = true;
+        break;
       case "int":
         downloadPath = await tc.downloadTool(
           "https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/int/agent_linux_amd64.tar.gz"
         );
         shouldExtract = true;
+        break;
 
       case "int-pull":
         downloadPath = await tc.downloadTool(
@@ -37,6 +39,7 @@ export async function installAgent(
           "/home/agent/agent"
         );
         shouldExtract = false;
+        break;
     }
 
     // verifyChecksum(downloadPath, true); // NOTE: verifying tls_agent's checksum, before extracting
