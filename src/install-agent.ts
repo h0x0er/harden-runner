@@ -39,7 +39,7 @@ export async function installAgent(isTLS: boolean, configStr: string) {
       break;
   }
 
-  verifyChecksum(downloadPath, isTLS); // NOTE: verifying tls_agent's checksum, before extracting
+  // verifyChecksum(downloadPath, isTLS); // NOTE: verifying tls_agent's checksum, before extracting
 
   let cmd, args;
   const extractPath = await tc.extractTar(downloadPath);

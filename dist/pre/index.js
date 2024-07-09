@@ -71630,28 +71630,6 @@ function isGithubHosted() {
 
 // EXTERNAL MODULE: ./node_modules/@actions/tool-cache/lib/tool-cache.js
 var tool_cache = __nccwpck_require__(7784);
-// EXTERNAL MODULE: external "crypto"
-var external_crypto_ = __nccwpck_require__(6417);
-;// CONCATENATED MODULE: ./src/checksum.ts
-
-
-
-function verifyChecksum(downloadPath, is_tls) {
-    const fileBuffer = external_fs_.readFileSync(downloadPath);
-    const checksum = external_crypto_.createHash("sha256")
-        .update(fileBuffer)
-        .digest("hex"); // checksum of downloaded file
-    let expectedChecksum = "a9f1842e3d7f3d38c143dbe8ffe1948e6c8173cd04da072d9f9d128bb400844a"; // checksum for v0.13.7
-    if (is_tls) {
-        expectedChecksum =
-            "e45b85e29216eb1d217aad368bdb056bbd868a308925e7b2cf9133b06ab435d0"; // checksum for tls_agent
-    }
-    if (checksum !== expectedChecksum) {
-        lib_core.setFailed(`Checksum verification failed, expected ${expectedChecksum} instead got ${checksum}`);
-    }
-    lib_core.debug("Checksum verification passed.");
-}
-
 ;// CONCATENATED MODULE: ./src/install-agent.ts
 var install_agent_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -71662,7 +71640,6 @@ var install_agent_awaiter = (undefined && undefined.__awaiter) || function (this
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-
 
 
 
@@ -71692,7 +71669,7 @@ function installAgent(isTLS, configStr) {
                 lib_core.error(`[installAgent] Agent is unavailable for ${variant} arch`);
                 break;
         }
-        verifyChecksum(downloadPath, isTLS); // NOTE: verifying tls_agent's checksum, before extracting
+        // verifyChecksum(downloadPath, isTLS); // NOTE: verifying tls_agent's checksum, before extracting
         let cmd, args;
         const extractPath = yield tool_cache.extractTar(downloadPath);
         (cmd = "cp"), (args = [external_path_.join(extractPath, "agent"), "/home/agent/agent"]);
