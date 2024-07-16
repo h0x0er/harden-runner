@@ -22,7 +22,7 @@ export async function installAgent(
     switch (env) {
       case "prod":
         downloadPath = await tc.downloadTool(
-          "https://packages.stepsecurity.io/github-hosted/harden-runner_1.2.0_linux_amd64.tar.gz"
+          "https://packages.stepsecurity.io/github-hosted/harden-runner_1.2.2_linux_amd64.tar.gz"
         );
         shouldExtract = true;
         break;

@@ -71624,8 +71624,8 @@ function isTLSEnabled(owner) {
     });
 }
 function isGithubHosted() {
-    const runnerName = process.env.RUNNER_NAME || "";
-    return runnerName.startsWith("GitHub Actions");
+    const runnerEnvironment = process.env.RUNNER_ENVIRONMENT || "";
+    return runnerEnvironment === "github-hosted";
 }
 
 // EXTERNAL MODULE: ./node_modules/@actions/tool-cache/lib/tool-cache.js
@@ -71656,7 +71656,7 @@ function installAgent(env, agentTLS, configStr) {
         if (isTLS) {
             switch (env) {
                 case "prod":
-                    downloadPath = yield tool_cache.downloadTool("https://packages.stepsecurity.io/github-hosted/harden-runner_1.2.0_linux_amd64.tar.gz");
+                    downloadPath = yield tool_cache.downloadTool("https://packages.stepsecurity.io/github-hosted/harden-runner_1.2.2_linux_amd64.tar.gz");
                     shouldExtract = true;
                     break;
                 case "int":
