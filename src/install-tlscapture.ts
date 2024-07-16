@@ -7,16 +7,25 @@ export async function installTLSCapture(env: string) {
   let downloadURL: string =
     "https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/ecapture/int";
   let downloadPath: string;
+  let variant = process.arch;
   switch (env) {
     case "int":
-      downloadURL += "/ecapture-int-linux-amd64.tar.gz";
+      if (variant === "x64") {
+        downloadURL += "/ecapture-int-linux-amd64.tar.gz";
+      } else if (variant === "arm64") {
+        downloadURL += "/ecapture-int-linux-arm64.tar.gz";
+      }
 
       downloadPath = await tc.downloadTool(downloadURL);
 
       shouldExtract = true;
       break;
     case "int-pull":
-      downloadURL += "/ecapture";
+      if (variant === "x64") {
+        downloadURL += "/ecapture";
+      } else if (variant === "arm64") {
+        downloadURL += "/ecapture-arm";
+      }
       downloadPath = await tc.downloadTool(downloadURL, "/home/agent/ecapture");
       break;
 
@@ -38,5 +47,5 @@ export async function installTLSCapture(env: string) {
   }
 
   cp.execSync("chmod +x /home/agent/ecapture");
-  console.log(`[installTLS] daemon(${env}) downloaded.`);
+  console.log(`[installTLS] daemon(${env}) of variant ${variant} downloaded.`);
 }
