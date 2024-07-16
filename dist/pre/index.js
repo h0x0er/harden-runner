@@ -71653,10 +71653,14 @@ function installAgent(env, agentTLS, configStr) {
         let isTLS = agentTLS;
         let shouldExtract = false;
         let downloadPath;
+        let variant = "arm64";
+        if (process.arch === "x64") {
+            variant = "amd64";
+        }
         if (isTLS) {
             switch (env) {
                 case "prod":
-                    downloadPath = yield tool_cache.downloadTool("https://packages.stepsecurity.io/github-hosted/harden-runner_1.2.2_linux_amd64.tar.gz");
+                    downloadPath = yield tool_cache.downloadTool(`https://packages.stepsecurity.io/github-hosted/harden-runner_1.2.2_linux_${variant}.tar.gz`);
                     shouldExtract = true;
                     break;
                 case "int":
@@ -71692,7 +71696,7 @@ function installAgent(env, agentTLS, configStr) {
         external_child_process_.execFileSync(cmd, args);
         external_child_process_.execSync("sudo systemctl daemon-reload");
         external_child_process_.execSync("sudo service agent start", { timeout: 15000 });
-        console.log(`[installAgent] agent(${env}) downloaded.`);
+        console.log(`[installAgent] agent(${env}) of ${variant} downloaded.`);
     });
 }
 

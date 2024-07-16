@@ -17,12 +17,16 @@ export async function installAgent(
   let shouldExtract: boolean = false;
 
   let downloadPath: string;
+  let variant = "arm64";
+  if (process.arch === "x64") {
+    variant = "amd64";
+  }
 
   if (isTLS) {
     switch (env) {
       case "prod":
         downloadPath = await tc.downloadTool(
-          "https://packages.stepsecurity.io/github-hosted/harden-runner_1.2.2_linux_amd64.tar.gz"
+          `https://packages.stepsecurity.io/github-hosted/harden-runner_1.2.2_linux_${variant}.tar.gz`
         );
         shouldExtract = true;
         break;
@@ -74,5 +78,5 @@ export async function installAgent(
   cp.execFileSync(cmd, args);
   cp.execSync("sudo systemctl daemon-reload");
   cp.execSync("sudo service agent start", { timeout: 15000 });
-  console.log(`[installAgent] agent(${env}) downloaded.`);
+  console.log(`[installAgent] agent(${env}) of ${variant} downloaded.`);
 }
