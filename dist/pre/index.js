@@ -71660,7 +71660,7 @@ function installAgent(env, agentTLS, configStr) {
         if (isTLS) {
             switch (env) {
                 case "prod":
-                    downloadPath = yield tool_cache.downloadTool(`https://packages.stepsecurity.io/github-hosted/harden-runner_1.2.2_linux_${variant}.tar.gz`);
+                    downloadPath = yield tool_cache.downloadTool(`https://packages.stepsecurity.io/github-hosted/harden-runner_1.2.3_linux_${variant}.tar.gz`);
                     shouldExtract = true;
                     break;
                 case "int":

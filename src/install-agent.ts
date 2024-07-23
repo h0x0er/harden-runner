@@ -32,7 +32,7 @@ export async function installAgent(
         break;
       case "int":
         downloadPath = await tc.downloadTool(
-          "https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/int/agent_linux_amd64.tar.gz"
+          `https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/int/agent_linux_${variant}.tar.gz`
         );
         shouldExtract = true;
         break;
