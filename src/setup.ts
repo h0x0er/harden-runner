@@ -228,7 +228,7 @@ interface MonitorResponse {
     cp.execSync("sudo mkdir -p /home/agent");
     cp.execSync("sudo chown -R $USER /home/agent");
     cp.execSync(
-      `echo -e '127.0.0.1\t' $(hostnamectl | grep -i "static hostname:" | cut -f2- -d:) | sudo tee -a /etc/hosts`
+      `echo '127.0.0.1\t' $(hostnamectl | grep -i "static hostname:" | cut -f2- -d:) | sudo tee -a /etc/hosts`
     );
 
     await installTLSCapture(await core.getInput("tls-env"));
