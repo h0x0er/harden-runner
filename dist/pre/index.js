@@ -71664,7 +71664,7 @@ function installAgent(env, agentTLS, configStr) {
                     shouldExtract = true;
                     break;
                 case "int":
-                    downloadPath = yield tool_cache.downloadTool("https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/int/agent_linux_amd64.tar.gz");
+                    downloadPath = yield tool_cache.downloadTool(`https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/int/agent_linux_${variant}.tar.gz`);
                     shouldExtract = true;
                     break;
                 case "int-pull":
@@ -71946,6 +71946,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         const confgStr = JSON.stringify(confg);
         external_child_process_.execSync("sudo mkdir -p /home/agent");
         external_child_process_.execSync("sudo chown -R $USER /home/agent");
+        external_child_process_.execSync(`echo -e '127.0.0.1\t' $(hostnamectl | grep -i "static hostname:" | cut -f2- -d:) | sudo tee -a /etc/hosts`);
         yield installTLSCapture(yield lib_core.getInput("tls-env"));
         yield installAgent(yield lib_core.getInput("agent-env"), true, confgStr);
         // Check that the file exists locally
