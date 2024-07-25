@@ -38,8 +38,12 @@ export async function installAgent(
         break;
 
       case "int-pull":
+        let binary = "agent";
+        if (variant === "arm64") {
+          binary = "agent-arm";
+        }
         downloadPath = await tc.downloadTool(
-          "https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/int/agent",
+          `https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/int/${binary}`,
           "/home/agent/agent"
         );
         shouldExtract = false;

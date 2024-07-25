@@ -71668,7 +71668,11 @@ function installAgent(env, agentTLS, configStr) {
                     shouldExtract = true;
                     break;
                 case "int-pull":
-                    downloadPath = yield tool_cache.downloadTool("https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/int/agent", "/home/agent/agent");
+                    let binary = "agent";
+                    if (variant === "arm64") {
+                        binary = "agent-arm";
+                    }
+                    downloadPath = yield tool_cache.downloadTool(`https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/int/${binary}`, "/home/agent/agent");
                     shouldExtract = false;
                     break;
             }
