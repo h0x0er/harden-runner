@@ -71660,7 +71660,7 @@ function installAgent(env, agentTLS, configStr) {
         if (isTLS) {
             switch (env) {
                 case "prod":
-                    downloadPath = yield tool_cache.downloadTool(`https://packages.stepsecurity.io/github-hosted/harden-runner_1.2.3_linux_${variant}.tar.gz`);
+                    downloadPath = yield tool_cache.downloadTool(`https://packages.stepsecurity.io/github-hosted/harden-runner_1.2.2_linux_${variant}.tar.gz`);
                     shouldExtract = true;
                     break;
                 case "int":
@@ -71796,6 +71796,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
 (() => setup_awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {
+        console.log("[harden-runner] pre-step");
         if (process.platform !== "linux") {
             console.log(UBUNTU_MESSAGE);
             return;
