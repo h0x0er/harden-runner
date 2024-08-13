@@ -35,25 +35,28 @@ import { arcCleanUp, isArcRunner, removeStepPolicyFiles } from "./arc-runner";
     return;
   }
 
-  fs.writeFileSync(
-    "/home/agent/post_event.json",
-    JSON.stringify({ event: "post" })
-  );
+  if (process.env.STATE_selfHosted !== "true") {
 
-  const doneFile = "/home/agent/done.json";
-  let counter = 0;
-  while (true) {
-    if (!fs.existsSync(doneFile)) {
-      counter++;
-      if (counter > 10) {
-        console.log("timed out");
+    fs.writeFileSync(
+      "/home/agent/post_event.json",
+      JSON.stringify({ event: "post" })
+    );
 
+    const doneFile = "/home/agent/done.json";
+    let counter = 0;
+    while (true) {
+      if (!fs.existsSync(doneFile)) {
+        counter++;
+        if (counter > 10) {
+          console.log("timed out");
+
+          break;
+        }
+        await sleep(1000);
+      } // The file *does* exist
+      else {
         break;
       }
-      await sleep(1000);
-    } // The file *does* exist
-    else {
-      break;
     }
   }
 

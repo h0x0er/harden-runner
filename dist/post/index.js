@@ -3094,20 +3094,22 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
         console.log(HARDEN_RUNNER_UNAVAILABLE_MESSAGE);
         return;
     }
-    external_fs_.writeFileSync("/home/agent/post_event.json", JSON.stringify({ event: "post" }));
-    const doneFile = "/home/agent/done.json";
-    let counter = 0;
-    while (true) {
-        if (!external_fs_.existsSync(doneFile)) {
-            counter++;
-            if (counter > 10) {
-                console.log("timed out");
+    if (process.env.STATE_selfHosted !== "true") {
+        external_fs_.writeFileSync("/home/agent/post_event.json", JSON.stringify({ event: "post" }));
+        const doneFile = "/home/agent/done.json";
+        let counter = 0;
+        while (true) {
+            if (!external_fs_.existsSync(doneFile)) {
+                counter++;
+                if (counter > 10) {
+                    console.log("timed out");
+                    break;
+                }
+                yield sleep(1000);
+            } // The file *does* exist
+            else {
                 break;
             }
-            yield sleep(1000);
-        } // The file *does* exist
-        else {
-            break;
         }
     }
     const log = "/home/agent/agent.log";
