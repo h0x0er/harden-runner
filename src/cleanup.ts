@@ -63,7 +63,6 @@ import { arcCleanUp, isArcRunner, removeStepPolicyFiles } from "./arc-runner";
     var content = fs.readFileSync(log, "utf-8");
     console.log(content);
   }
-  fs.unlinkSync(log);
 
   const daemonLog = "/home/agent/daemon.log";
   if (fs.existsSync(daemonLog)) {
@@ -71,7 +70,6 @@ import { arcCleanUp, isArcRunner, removeStepPolicyFiles } from "./arc-runner";
     var content = fs.readFileSync(daemonLog, "utf-8");
     console.log(content);
   }
-  fs.unlinkSync(daemonLog);
 
   var status = "/home/agent/agent.status";
   if (fs.existsSync(status)) {

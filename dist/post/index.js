@@ -3116,14 +3116,12 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
         var content = external_fs_.readFileSync(log, "utf-8");
         console.log(content);
     }
-    external_fs_.unlinkSync(log);
     const daemonLog = "/home/agent/daemon.log";
     if (external_fs_.existsSync(daemonLog)) {
         console.log("daemonLog:");
         var content = external_fs_.readFileSync(daemonLog, "utf-8");
         console.log(content);
     }
-    external_fs_.unlinkSync(daemonLog);
     var status = "/home/agent/agent.status";
     if (external_fs_.existsSync(status)) {
         console.log("status:");
