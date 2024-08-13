@@ -1,6 +1,6 @@
 [Unit]
 Description=Agent
-After=network.target
+After=network.target docker.service
 
 [Service]
 Type=simple
