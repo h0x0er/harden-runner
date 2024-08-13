@@ -35,10 +35,7 @@ import { arcCleanUp, isArcRunner, removeStepPolicyFiles } from "./arc-runner";
     return;
   }
 
-  fs.writeFileSync(
-    "/home/agent/post_event.json",
-    JSON.stringify({ event: "post" })
-  );
+  fs.writeFileSync("/tmp/post_event.json", JSON.stringify({ event: "post" }));
 
   const doneFile = "/home/agent/done.json";
   let counter = 0;
