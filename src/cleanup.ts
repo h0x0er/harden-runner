@@ -36,7 +36,7 @@ import { arcCleanUp, isArcRunner, removeStepPolicyFiles } from "./arc-runner";
   }
 
   fs.writeFileSync(
-    "/home/agent/post_event.json",
+    "/opt/actions-runner/post_event.json",
     JSON.stringify({ event: "post" })
   );
 

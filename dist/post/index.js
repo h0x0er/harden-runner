@@ -3094,7 +3094,7 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
         console.log(HARDEN_RUNNER_UNAVAILABLE_MESSAGE);
         return;
     }
-    external_fs_.writeFileSync("/home/agent/post_event.json", JSON.stringify({ event: "post" }));
+    external_fs_.writeFileSync("/opt/actions-runner/post_event.json", JSON.stringify({ event: "post" }));
     const doneFile = "/home/agent/done.json";
     let counter = 0;
     while (true) {
