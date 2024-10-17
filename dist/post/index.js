@@ -3060,8 +3060,9 @@ function applyPolicy(count) {
     echoWrite(applyPolicyStr, fileName);
 }
 function echoWrite(content, fileName) {
-    let c = ["echo", content, ">", fileName];
-    cp.execSync(c.join(" "));
+    // let c = ["echo", content, ">", fileName];
+    // cp.execSync(c.join(" "));
+    cp.execFileSync("echo", [fileName]);
 }
 
 ;// CONCATENATED MODULE: ./src/cleanup.ts

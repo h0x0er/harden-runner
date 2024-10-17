@@ -71603,8 +71603,9 @@ function applyPolicy(count) {
     echoWrite(applyPolicyStr, fileName);
 }
 function echoWrite(content, fileName) {
-    let c = ["echo", content, ">", fileName];
-    external_child_process_.execSync(c.join(" "));
+    // let c = ["echo", content, ">", fileName];
+    // cp.execSync(c.join(" "));
+    external_child_process_.execFileSync("echo", [fileName]);
 }
 
 ;// CONCATENATED MODULE: ./src/tls-inspect.ts
