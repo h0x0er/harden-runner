@@ -71578,16 +71578,19 @@ function isSecondaryPod() {
     return external_fs_.existsSync(workDir);
 }
 function getRunnerTempDir() {
+    const isTest = process.env["isTest"];
+    if (isTest === "1") {
+        return "/tmp";
+    }
     return process.env["RUNNER_TEMP"] || "/tmp";
 }
 function sendAllowedEndpoints(endpoints) {
     const allowedEndpoints = endpoints.split(" "); // endpoints are space separated
     for (const endpoint of allowedEndpoints) {
         if (endpoint) {
-            let cmdArgs = [];
             let encodedEndpoint = Buffer.from(endpoint).toString("base64");
-            cmdArgs.push(external_path_default().join(getRunnerTempDir(), `step_policy_endpoint_${encodedEndpoint}`));
-            echo(cmdArgs);
+            let fileName = external_path_default().join(getRunnerTempDir(), `step_policy_endpoint_${encodedEndpoint}`);
+            echoWrite(encodedEndpoint, fileName);
         }
     }
     if (allowedEndpoints.length > 0) {
@@ -71595,13 +71598,13 @@ function sendAllowedEndpoints(endpoints) {
     }
 }
 function applyPolicy(count) {
-    const fileName = `step_policy_apply_${count}`;
-    let cmdArgs = [];
-    cmdArgs.push(external_path_default().join(getRunnerTempDir(), `step_policy_endpoint_${fileName}`));
-    echo(cmdArgs);
+    let applyPolicyStr = `step_policy_apply_${count}`;
+    let fileName = external_path_default().join(getRunnerTempDir(), applyPolicyStr);
+    echoWrite(applyPolicyStr, fileName);
 }
-function echo(args) {
-    external_child_process_.execFileSync("echo", args);
+function echoWrite(content, fileName) {
+    let c = ["echo", content, ">", fileName];
+    external_child_process_.execSync(c.join(" "));
 }
 
 ;// CONCATENATED MODULE: ./src/tls-inspect.ts
@@ -71875,7 +71878,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
             if (confg.egress_policy === "block") {
                 try {
                     if (process.env.USER) {
-                        external_child_process_.execSync(`sudo chown -R ${process.env.USER} /home/agent`);
+                        chownForFolder(process.env.USER, "/home/agent");
                     }
                     const confgStr = JSON.stringify(confg);
                     external_fs_.writeFileSync("/home/agent/block_event.json", confgStr);
@@ -71921,7 +71924,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         }
         const confgStr = JSON.stringify(confg);
         external_child_process_.execSync("sudo mkdir -p /home/agent");
-        external_child_process_.execSync("sudo chown -R $USER /home/agent");
+        chownForFolder("$USER", "/home/agent");
         let isTLS = yield isTLSEnabled(github.context.repo.owner);
         const agentInstalled = yield installAgent(isTLS, confgStr);
         if (agentInstalled) {
@@ -71961,6 +71964,11 @@ function setup_sleep(ms) {
     return new Promise((resolve) => {
         setTimeout(resolve, ms);
     });
+}
+function chownForFolder(newOwner, target) {
+    let cmd = "sudo";
+    let args = ["chown", "-R", newOwner, target];
+    external_child_process_.execFileSync(cmd, args);
 }
 
 })();

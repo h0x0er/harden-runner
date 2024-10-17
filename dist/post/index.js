@@ -3035,16 +3035,19 @@ function isSecondaryPod() {
     return external_fs_.existsSync(workDir);
 }
 function getRunnerTempDir() {
+    const isTest = process.env["isTest"];
+    if (isTest === "1") {
+        return "/tmp";
+    }
     return process.env["RUNNER_TEMP"] || "/tmp";
 }
 function sendAllowedEndpoints(endpoints) {
     const allowedEndpoints = endpoints.split(" "); // endpoints are space separated
     for (const endpoint of allowedEndpoints) {
         if (endpoint) {
-            let cmdArgs = [];
             let encodedEndpoint = Buffer.from(endpoint).toString("base64");
-            cmdArgs.push(path.join(getRunnerTempDir(), `step_policy_endpoint_${encodedEndpoint}`));
-            echo(cmdArgs);
+            let fileName = path.join(getRunnerTempDir(), `step_policy_endpoint_${encodedEndpoint}`);
+            echoWrite(encodedEndpoint, fileName);
         }
     }
     if (allowedEndpoints.length > 0) {
@@ -3052,13 +3055,13 @@ function sendAllowedEndpoints(endpoints) {
     }
 }
 function applyPolicy(count) {
-    const fileName = `step_policy_apply_${count}`;
-    let cmdArgs = [];
-    cmdArgs.push(path.join(getRunnerTempDir(), `step_policy_endpoint_${fileName}`));
-    echo(cmdArgs);
+    let applyPolicyStr = `step_policy_apply_${count}`;
+    let fileName = path.join(getRunnerTempDir(), applyPolicyStr);
+    echoWrite(applyPolicyStr, fileName);
 }
-function echo(args) {
-    cp.execFileSync("echo", args);
+function echoWrite(content, fileName) {
+    let c = ["echo", content, ">", fileName];
+    cp.execSync(c.join(" "));
 }
 
 ;// CONCATENATED MODULE: ./src/cleanup.ts

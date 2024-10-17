@@ -22,6 +22,11 @@ function isSecondaryPod(): boolean {
 }
 
 function getRunnerTempDir(): string {
+  const isTest = process.env["isTest"];
+
+  if (isTest === "1") {
+    return "/tmp";
+  }
   return process.env["RUNNER_TEMP"] || "/tmp";
 }
 
@@ -30,12 +35,14 @@ export function sendAllowedEndpoints(endpoints: string): void {
 
   for (const endpoint of allowedEndpoints) {
     if (endpoint) {
-      let cmdArgs = [];
       let encodedEndpoint = Buffer.from(endpoint).toString("base64");
-      cmdArgs.push(
-        path.join(getRunnerTempDir(), `step_policy_endpoint_${encodedEndpoint}`)
+
+      let fileName = path.join(
+        getRunnerTempDir(),
+        `step_policy_endpoint_${encodedEndpoint}`
       );
-      echo(cmdArgs);
+
+      echoWrite(encodedEndpoint, fileName);
     }
   }
 
@@ -45,16 +52,13 @@ export function sendAllowedEndpoints(endpoints: string): void {
 }
 
 function applyPolicy(count: number): void {
-  const fileName = `step_policy_apply_${count}`;
+  let applyPolicyStr = `step_policy_apply_${count}`;
+  let fileName = path.join(getRunnerTempDir(), applyPolicyStr);
 
-  let cmdArgs = [];
-  cmdArgs.push(
-    path.join(getRunnerTempDir(), `step_policy_endpoint_${fileName}`)
-  );
-
-  echo(cmdArgs);
+  echoWrite(applyPolicyStr, fileName);
 }
 
-function echo(args: string[]) {
-  cp.execFileSync("echo", args);
+function echoWrite(content: string, fileName: string) {
+  let c = ["echo", content, ">", fileName];
+  cp.execSync(c.join(" "));
 }
