@@ -226,7 +226,7 @@ interface MonitorResponse {
 
     const confgStr = JSON.stringify(confg);
     cp.execSync("sudo mkdir -p /home/agent");
-    chownForFolder("$USER", "/home/agent");
+    chownForFolder(process.env.USER, "/home/agent");
 
     let isTLS = await isTLSEnabled(context.repo.owner);
 

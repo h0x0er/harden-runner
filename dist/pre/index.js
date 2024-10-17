@@ -71924,7 +71924,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         }
         const confgStr = JSON.stringify(confg);
         external_child_process_.execSync("sudo mkdir -p /home/agent");
-        chownForFolder("$USER", "/home/agent");
+        chownForFolder(process.env.USER, "/home/agent");
         let isTLS = yield isTLSEnabled(github.context.repo.owner);
         const agentInstalled = yield installAgent(isTLS, confgStr);
         if (agentInstalled) {
