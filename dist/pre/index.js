@@ -71590,7 +71590,7 @@ function sendAllowedEndpoints(endpoints) {
         if (endpoint) {
             let encodedEndpoint = Buffer.from(endpoint).toString("base64");
             let fileName = external_path_default().join(getRunnerTempDir(), `step_policy_endpoint_${encodedEndpoint}`);
-            echoWrite(encodedEndpoint, fileName);
+            echo(fileName);
         }
     }
     if (allowedEndpoints.length > 0) {
@@ -71600,12 +71600,10 @@ function sendAllowedEndpoints(endpoints) {
 function applyPolicy(count) {
     let applyPolicyStr = `step_policy_apply_${count}`;
     let fileName = external_path_default().join(getRunnerTempDir(), applyPolicyStr);
-    echoWrite(applyPolicyStr, fileName);
+    echo(fileName);
 }
-function echoWrite(content, fileName) {
-    // let c = ["echo", content, ">", fileName];
-    // cp.execSync(c.join(" "));
-    external_child_process_.execFileSync("echo", [fileName]);
+function echo(content) {
+    external_child_process_.execFileSync("echo", [content]);
 }
 
 ;// CONCATENATED MODULE: ./src/tls-inspect.ts

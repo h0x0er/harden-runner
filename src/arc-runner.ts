@@ -42,7 +42,7 @@ export function sendAllowedEndpoints(endpoints: string): void {
         `step_policy_endpoint_${encodedEndpoint}`
       );
 
-      echoWrite(encodedEndpoint, fileName);
+      echo(fileName);
     }
   }
 
@@ -55,12 +55,9 @@ function applyPolicy(count: number): void {
   let applyPolicyStr = `step_policy_apply_${count}`;
   let fileName = path.join(getRunnerTempDir(), applyPolicyStr);
 
-  echoWrite(applyPolicyStr, fileName);
+  echo(fileName);
 }
 
-function echoWrite(content: string, fileName: string) {
-  // let c = ["echo", content, ">", fileName];
-  // cp.execSync(c.join(" "));
-
-  cp.execFileSync("echo", [fileName]);
+function echo(content: string) {
+  cp.execFileSync("echo", [content]);
 }
