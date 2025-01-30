@@ -254,6 +254,8 @@ interface MonitorResponse {
         // Read the file
         var content = fs.readFileSync(statusFile, "utf-8");
         console.log(content);
+        await sleep(5000);
+
         break;
       }
     }
