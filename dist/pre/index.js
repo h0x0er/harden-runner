@@ -71974,7 +71974,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
                 // Read the file
                 var content = external_fs_.readFileSync(statusFile, "utf-8");
                 console.log(content);
-                yield setup_sleep(10000);
+                // await sleep(10000);
                 break;
             }
         }
