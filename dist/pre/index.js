@@ -71668,7 +71668,7 @@ function installAgent(env, agentTLS, configStr) {
                     downloadPath = yield tool_cache.downloadTool(`https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/int/agent_linux_${variant}.tar.gz`);
                     shouldExtract = true;
                     break;
-                case "int-pull":
+                case "int-pull": {
                     let binary = "agent";
                     if (variant === "arm64") {
                         binary = "agent-arm";
@@ -71676,8 +71676,9 @@ function installAgent(env, agentTLS, configStr) {
                     downloadPath = yield tool_cache.downloadTool(`https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/int/${binary}`, "/home/agent/agent");
                     shouldExtract = false;
                     break;
-                case "int-pull-bravo":
-                    binary = "agent-bravo";
+                }
+                case "int-pull-bravo": {
+                    let binary = "agent-bravo";
                     if (variant === "arm64") {
                         binary = "agent-bravo-arm";
                     }
@@ -71685,6 +71686,7 @@ function installAgent(env, agentTLS, configStr) {
                     shouldExtract = false;
                     setup_sleep(500);
                     break;
+                }
             }
             // verifyChecksum(downloadPath, true); // NOTE: verifying tls_agent's checksum, before extracting
         }

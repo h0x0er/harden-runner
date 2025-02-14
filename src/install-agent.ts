@@ -38,7 +38,7 @@ export async function installAgent(
         shouldExtract = true;
         break;
 
-      case "int-pull":
+      case "int-pull": {
         let binary = "agent";
         if (variant === "arm64") {
           binary = "agent-arm";
@@ -49,9 +49,10 @@ export async function installAgent(
         );
         shouldExtract = false;
         break;
+      }
 
-      case "int-pull-bravo":
-        binary = "agent-bravo";
+      case "int-pull-bravo": {
+        let binary = "agent-bravo";
         if (variant === "arm64") {
           binary = "agent-bravo-arm";
         }
@@ -62,6 +63,7 @@ export async function installAgent(
         shouldExtract = false;
         sleep(500);
         break;
+      }
     }
 
     // verifyChecksum(downloadPath, true); // NOTE: verifying tls_agent's checksum, before extracting
