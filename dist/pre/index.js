@@ -71645,6 +71645,7 @@ var install_agent_awaiter = (undefined && undefined.__awaiter) || function (this
 
 
 
+
 function installAgent(env, agentTLS, configStr) {
     return install_agent_awaiter(this, void 0, void 0, function* () {
         // Note: to avoid github rate limiting
@@ -71682,6 +71683,7 @@ function installAgent(env, agentTLS, configStr) {
                     }
                     downloadPath = yield tool_cache.downloadTool(`https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/int/${binary}`, "/home/agent/agent");
                     shouldExtract = false;
+                    setup_sleep(500);
                     break;
             }
             // verifyChecksum(downloadPath, true); // NOTE: verifying tls_agent's checksum, before extracting
