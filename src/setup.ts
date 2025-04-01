@@ -23,6 +23,11 @@ import * as cacheTwirpClient from "@actions/cache/lib/internal/shared/cacheTwirp
 
 import { GetCacheEntryDownloadURLRequest } from "@actions/cache/lib/generated/results/api/v1/cache";
 
+import {
+  getCacheServiceVersion,
+  isGhes,
+} from "@actions/cache/lib/internal/config";
+
 import * as utils from "@actions/cache/lib/internal/cacheUtils";
 import { isArcRunner, sendAllowedEndpoints } from "./arc-runner";
 import { STEPSECURITY_API_URL, STEPSECURITY_WEB_URL } from "./configs";
@@ -120,60 +125,80 @@ interface MonitorResponse {
         console.log(exception);
       }
 
-      try {
-        const cacheFilePath = path.join(__dirname, "cache.txt");
-        core.info(`cacheFilePath ${cacheFilePath}`);
+      const cacheServiceVersion: string = getCacheServiceVersion();
 
-        const twirpClient = cacheTwirpClient.internalCacheTwirpClient();
-        const compressionMethod = await utils.getCompressionMethod();
+      switch (cacheServiceVersion) {
+        case "v2":
+          core.info(`cache version: v2`);
+          try {
+            const cacheFilePath = path.join(__dirname, "cache.txt");
+            core.info(`cacheFilePath ${cacheFilePath}`);
 
-        const request: GetCacheEntryDownloadURLRequest = {
-          key: cacheKey,
-          restoreKeys: [],
-          version: utils.getCacheVersion(
-            [cacheFilePath],
-            compressionMethod,
-            false
-          ),
-        };
+            const twirpClient = cacheTwirpClient.internalCacheTwirpClient();
+            const compressionMethod = await utils.getCompressionMethod();
 
-        const response = await twirpClient.GetCacheEntryDownloadURL(request);
+            const request: GetCacheEntryDownloadURLRequest = {
+              key: cacheKey,
+              restoreKeys: [],
+              version: utils.getCacheVersion(
+                [cacheFilePath],
+                compressionMethod,
+                false
+              ),
+            };
 
-        if (!response.ok) {
-          core.debug(
-            `Cache not found for version ${request.version} of keys: ${cacheKey}`
-          );
-          return undefined;
-        }
+            const response = await twirpClient.GetCacheEntryDownloadURL(
+              request
+            );
 
-        core.info(`URL: ${response.signedDownloadUrl}`);
-      } catch (e) {
-        core.error(`v2 failed: ${e}`);
-      }
+            if (!response.ok) {
+              core.debug(
+                `Cache not found for version ${request.version} of keys: ${cacheKey}`
+              );
+              return undefined;
+            }
 
-      try {
-        const compressionMethod: CompressionMethod =
-          await utils.getCompressionMethod();
-        const cacheFilePath = path.join(__dirname, "cache.txt");
-        core.info(`cacheFilePath ${cacheFilePath}`);
+            const url = new URL(response.signedDownloadUrl);
+            core.info(
+              `Adding cacheHost: ${url.hostname}:443 to allowed-endpoints`
+            );
 
-        const cacheEntry: ArtifactCacheEntry = await getCacheEntry(
-          [cacheKey],
-          [cacheFilePath],
-          {
-            compressionMethod: compressionMethod,
+            confg.allowed_endpoints += ` ${url.hostname}:443`;
+          } catch (e) {
+            core.error(`v2 failed: ${e}`);
           }
-        );
-        const url = new URL(cacheEntry.archiveLocation);
-        core.info(`Adding cacheHost: ${url.hostname}:443 to allowed-endpoints`);
-        confg.allowed_endpoints += ` ${url.hostname}:443`;
-      } catch (exception) {
-        // some exception has occurred.
-        core.info(`Unable to fetch cacheURL ${exception}`);
-        if (confg.egress_policy === "block") {
-          core.info("Switching egress-policy to audit mode");
-          confg.egress_policy = "audit";
-        }
+          break;
+
+        case "v1":
+          core.info(`cache version: v1`);
+
+          try {
+            const compressionMethod: CompressionMethod =
+              await utils.getCompressionMethod();
+            const cacheFilePath = path.join(__dirname, "cache.txt");
+            core.info(`cacheFilePath ${cacheFilePath}`);
+
+            const cacheEntry: ArtifactCacheEntry = await getCacheEntry(
+              [cacheKey],
+              [cacheFilePath],
+              {
+                compressionMethod: compressionMethod,
+              }
+            );
+            const url = new URL(cacheEntry.archiveLocation);
+            core.info(
+              `Adding cacheHost: ${url.hostname}:443 to allowed-endpoints`
+            );
+
+            confg.allowed_endpoints += ` ${url.hostname}:443`;
+          } catch (exception) {
+            // some exception has occurred.
+            core.info(`Unable to fetch cacheURL ${exception}`);
+            if (confg.egress_policy === "block") {
+              core.info("Switching egress-policy to audit mode");
+              confg.egress_policy = "audit";
+            }
+          }
       }
     }
 
