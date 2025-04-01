@@ -19,6 +19,10 @@ import { Configuration, PolicyResponse } from "./interfaces";
 import { fetchPolicy, mergeConfigs } from "./policy-utils";
 import * as cache from "@actions/cache";
 import { getCacheEntry } from "@actions/cache/lib/internal/cacheHttpClient";
+import * as cacheTwirpClient from "@actions/cache/lib/internal/shared/cacheTwirpClient";
+
+import { GetCacheEntryDownloadURLRequest } from "@actions/cache/lib/generated/results/api/v1/cache";
+
 import * as utils from "@actions/cache/lib/internal/cacheUtils";
 import { isArcRunner, sendAllowedEndpoints } from "./arc-runner";
 import { STEPSECURITY_API_URL, STEPSECURITY_WEB_URL } from "./configs";
@@ -115,11 +119,44 @@ interface MonitorResponse {
       } catch (exception) {
         console.log(exception);
       }
+
+      try {
+        const cacheFilePath = path.join(__dirname, "cache.txt");
+        core.info(`cacheFilePath ${cacheFilePath}`);
+
+        const twirpClient = cacheTwirpClient.internalCacheTwirpClient();
+        const compressionMethod = await utils.getCompressionMethod();
+
+        const request: GetCacheEntryDownloadURLRequest = {
+          key: cacheKey,
+          restoreKeys: [],
+          version: utils.getCacheVersion(
+            [cacheFilePath],
+            compressionMethod,
+            false
+          ),
+        };
+
+        const response = await twirpClient.GetCacheEntryDownloadURL(request);
+
+        if (!response.ok) {
+          core.debug(
+            `Cache not found for version ${request.version} of keys: ${cacheKey}`
+          );
+          return undefined;
+        }
+
+        core.info(`URL: ${response.signedDownloadUrl}`);
+      } catch (e) {
+        core.error(`v2 failed: ${e}`);
+      }
+
       try {
         const compressionMethod: CompressionMethod =
           await utils.getCompressionMethod();
         const cacheFilePath = path.join(__dirname, "cache.txt");
         core.info(`cacheFilePath ${cacheFilePath}`);
+
         const cacheEntry: ArtifactCacheEntry = await getCacheEntry(
           [cacheKey],
           [cacheFilePath],

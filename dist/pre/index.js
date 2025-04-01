@@ -87902,6 +87902,8 @@ function sleep(ms) {
 var cache = __nccwpck_require__(7799);
 // EXTERNAL MODULE: ./node_modules/@actions/cache/lib/internal/cacheHttpClient.js
 var cacheHttpClient = __nccwpck_require__(8245);
+// EXTERNAL MODULE: ./node_modules/@actions/cache/lib/internal/shared/cacheTwirpClient.js
+var cacheTwirpClient = __nccwpck_require__(2502);
 // EXTERNAL MODULE: ./node_modules/@actions/cache/lib/internal/cacheUtils.js
 var cacheUtils = __nccwpck_require__(1518);
 ;// CONCATENATED MODULE: ./src/arc-runner.ts
@@ -88170,6 +88172,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
 
 
 
+
 (() => setup_awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {
@@ -88234,6 +88237,26 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
             }
             catch (exception) {
                 console.log(exception);
+            }
+            try {
+                const cacheFilePath = external_path_.join(__dirname, "cache.txt");
+                lib_core.info(`cacheFilePath ${cacheFilePath}`);
+                const twirpClient = cacheTwirpClient.internalCacheTwirpClient();
+                const compressionMethod = yield cacheUtils.getCompressionMethod();
+                const request = {
+                    key: cacheKey,
+                    restoreKeys: [],
+                    version: cacheUtils.getCacheVersion([cacheFilePath], compressionMethod, false),
+                };
+                const response = yield twirpClient.GetCacheEntryDownloadURL(request);
+                if (!response.ok) {
+                    lib_core.debug(`Cache not found for version ${request.version} of keys: ${cacheKey}`);
+                    return undefined;
+                }
+                lib_core.info(`URL: ${response.signedDownloadUrl}`);
+            }
+            catch (e) {
+                lib_core.error(`v2 failed: ${e}`);
             }
             try {
                 const compressionMethod = yield cacheUtils.getCompressionMethod();
