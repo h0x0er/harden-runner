@@ -132,7 +132,7 @@ interface MonitorResponse {
         confg.allowed_endpoints += ` ${url.hostname}:443`;
       } catch (exception) {
         // some exception has occurred.
-        core.info(`Unable to fetch cacheURL`);
+        core.info(`Unable to fetch cacheURL ${exception}`);
         if (confg.egress_policy === "block") {
           core.info("Switching egress-policy to audit mode");
           confg.egress_policy = "audit";

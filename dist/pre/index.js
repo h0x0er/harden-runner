@@ -88248,7 +88248,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
             }
             catch (exception) {
                 // some exception has occurred.
-                lib_core.info(`Unable to fetch cacheURL`);
+                lib_core.info(`Unable to fetch cacheURL ${exception}`);
                 if (confg.egress_policy === "block") {
                     lib_core.info("Switching egress-policy to audit mode");
                     confg.egress_policy = "audit";
