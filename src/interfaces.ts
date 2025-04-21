@@ -13,6 +13,7 @@ export interface Configuration {
   private: string;
   is_debug: boolean;
   one_time_key: string;
+  disable_sudo_and_containers?: boolean;
 }
 
 export interface PolicyResponse {
@@ -23,4 +24,5 @@ export interface PolicyResponse {
   disable_file_monitoring?: boolean;
   disable_telemetry?: boolean;
   egress_policy?: string;
+  disable_sudo_and_containers?: boolean;
 }

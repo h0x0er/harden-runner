@@ -37,6 +37,7 @@ test("merge configs", async () => {
     disable_telemetry: false,
     disable_sudo: false,
     disable_file_monitoring: false,
+    disable_sudo_and_containers: false,
     private: "true",
     is_github_hosted: true,
     is_debug: false,
@@ -49,6 +50,7 @@ test("merge configs", async () => {
     disable_telemetry: false,
     disable_sudo: false,
     disable_file_monitoring: false,
+    disable_sudo_and_containers: false,
   };
 
   let expectedConfiguration: Configuration = {
@@ -62,6 +64,7 @@ test("merge configs", async () => {
     disable_telemetry: false,
     disable_sudo: false,
     disable_file_monitoring: false,
+    disable_sudo_and_containers: false,
     private: "true",
     is_github_hosted: true,
     is_debug: false,

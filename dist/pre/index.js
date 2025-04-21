@@ -87890,6 +87890,10 @@ function mergeConfigs(localConfig, remoteConfig) {
     if (remoteConfig.egress_policy !== undefined) {
         localConfig.egress_policy = remoteConfig.egress_policy;
     }
+    if (remoteConfig.disable_sudo_and_containers !== undefined) {
+        localConfig.disable_sudo_and_containers =
+            remoteConfig.disable_sudo_and_containers;
+    }
     return localConfig;
 }
 function sleep(ms) {
@@ -88030,7 +88034,7 @@ function installAgent(env, agentTLS, configStr) {
         if (isTLS) {
             switch (env) {
                 case "prod":
-                    downloadPath = yield tool_cache.downloadTool(`https://packages.stepsecurity.io/github-hosted/harden-runner_1.4.2_linux_${variant}.tar.gz`);
+                    downloadPath = yield tool_cache.downloadTool(`https://packages.stepsecurity.io/github-hosted/harden-runner_1.6.3_linux_${variant}.tar.gz`);
                     shouldExtract = true;
                     break;
                 case "int":
@@ -88060,7 +88064,7 @@ function installAgent(env, agentTLS, configStr) {
             // verifyChecksum(downloadPath, true); // NOTE: verifying tls_agent's checksum, before extracting
         }
         else {
-            downloadPath = yield tool_cache.downloadTool("https://github.com/step-security/agent/releases/download/v0.13.5/agent_0.13.5_linux_amd64.tar.gz", undefined, auth);
+            downloadPath = yield tool_cache.downloadTool("https://github.com/step-security/agent/releases/download/v0.14.0/agent_0.14.0_linux_amd64.tar.gz", undefined, auth);
             // verifyChecksum(downloadPath, false); // NOTE: verifying agent's checksum, before extracting
         }
         let cmd, args;
@@ -88206,6 +88210,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
             is_github_hosted: isGithubHosted(),
             is_debug: lib_core.isDebug(),
             one_time_key: "",
+            disable_sudo_and_containers: lib_core.getBooleanInput("disable-sudo-and-containers"),
         };
         let policyName = lib_core.getInput("policy");
         if (policyName !== "") {
@@ -88354,6 +88359,9 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
             console.log(`error in connecting to ${api_url}: ${e}`);
         }
         external_fs_.appendFileSync(process.env.GITHUB_STATE, `addSummary=${addSummary}${external_os_.EOL}`, {
+            encoding: "utf8",
+        });
+        external_fs_.appendFileSync(process.env.GITHUB_STATE, `disableSudoAndContainers=${confg.disable_sudo_and_containers}${external_os_.EOL}`, {
             encoding: "utf8",
         });
         console.log(`Step Security Job Correlation ID: ${correlation_id}`);

@@ -79,7 +79,9 @@ import { arcCleanUp, isArcRunner, removeStepPolicyFiles } from "./arc-runner";
   }
 
   var disable_sudo = process.env.STATE_disableSudo;
-  if (disable_sudo !== "true") {
+  var disable_sudo_and_containers = process.env.STATE_disableSudoAndContainers;
+
+  if (disable_sudo !== "true" && disable_sudo_and_containers !== "true") {
     var journalLog = cp.execSync(
       "sudo journalctl -u agent.service --lines=1000",
       {

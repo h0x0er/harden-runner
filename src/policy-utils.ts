@@ -62,6 +62,10 @@ export function mergeConfigs(
   if (remoteConfig.egress_policy !== undefined) {
     localConfig.egress_policy = remoteConfig.egress_policy;
   }
+  if (remoteConfig.disable_sudo_and_containers !== undefined) {
+    localConfig.disable_sudo_and_containers =
+      remoteConfig.disable_sudo_and_containers;
+  }
 
   return localConfig;
 }

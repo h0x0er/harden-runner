@@ -73,6 +73,9 @@ interface MonitorResponse {
       is_github_hosted: isGithubHosted(),
       is_debug: core.isDebug(),
       one_time_key: "",
+      disable_sudo_and_containers: core.getBooleanInput(
+        "disable-sudo-and-containers"
+      ),
     };
 
     let policyName = core.getInput("policy");
@@ -277,6 +280,14 @@ interface MonitorResponse {
     fs.appendFileSync(
       process.env.GITHUB_STATE,
       `addSummary=${addSummary}${EOL}`,
+      {
+        encoding: "utf8",
+      }
+    );
+
+    fs.appendFileSync(
+      process.env.GITHUB_STATE,
+      `disableSudoAndContainers=${confg.disable_sudo_and_containers}${EOL}`,
       {
         encoding: "utf8",
       }
