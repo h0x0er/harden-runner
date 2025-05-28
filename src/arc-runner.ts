@@ -2,7 +2,7 @@ import * as cp from "child_process";
 import * as fs from "fs";
 import path from "path";
 
-export function isArcRunner(): boolean {
+export function isARCRunner(): boolean {
   const runnerUserAgent = process.env["GITHUB_ACTIONS_RUNNER_EXTRA_USER_AGENT"];
 
   let isARC = false;
@@ -18,7 +18,8 @@ export function isArcRunner(): boolean {
 
 function isSecondaryPod(): boolean {
   const workDir = "/__w";
-  return fs.existsSync(workDir);
+  let hasKubeEnv = process.env["KUBERNETES_PORT"] !== undefined;
+  return fs.existsSync(workDir) && hasKubeEnv;
 }
 
 export function sendAllowedEndpoints(endpoints: string): void {

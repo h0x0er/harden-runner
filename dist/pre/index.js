@@ -87920,7 +87920,7 @@ var cacheUtils = __nccwpck_require__(1518);
 ;// CONCATENATED MODULE: ./src/arc-runner.ts
 
 
-function isArcRunner() {
+function isARCRunner() {
     const runnerUserAgent = process.env["GITHUB_ACTIONS_RUNNER_EXTRA_USER_AGENT"];
     let isARC = false;
     if (!runnerUserAgent) {
@@ -87933,7 +87933,8 @@ function isArcRunner() {
 }
 function isSecondaryPod() {
     const workDir = "/__w";
-    return external_fs_.existsSync(workDir);
+    let hasKubeEnv = process.env["KUBERNETES_PORT"] !== undefined;
+    return external_fs_.existsSync(workDir) && hasKubeEnv;
 }
 function sendAllowedEndpoints(endpoints) {
     const allowedEndpoints = endpoints.split(" "); // endpoints are space separated
@@ -88242,7 +88243,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         if (!confg.disable_telemetry || confg.egress_policy === "audit") {
             printInfo(web_url);
         }
-        if (isArcRunner()) {
+        if (isARCRunner()) {
             console.log(`[!] ${ARC_RUNNER_MESSAGE}`);
             if (confg.egress_policy === "block") {
                 sendAllowedEndpoints(confg.allowed_endpoints);

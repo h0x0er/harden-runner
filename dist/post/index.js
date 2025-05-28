@@ -27792,7 +27792,7 @@ function isDocker() {
 ;// CONCATENATED MODULE: ./src/arc-runner.ts
 
 
-function isArcRunner() {
+function isARCRunner() {
     const runnerUserAgent = process.env["GITHUB_ACTIONS_RUNNER_EXTRA_USER_AGENT"];
     let isARC = false;
     if (!runnerUserAgent) {
@@ -27805,7 +27805,8 @@ function isArcRunner() {
 }
 function isSecondaryPod() {
     const workDir = "/__w";
-    return external_fs_.existsSync(workDir);
+    let hasKubeEnv = process.env["KUBERNETES_PORT"] !== undefined;
+    return external_fs_.existsSync(workDir) && hasKubeEnv;
 }
 function sendAllowedEndpoints(endpoints) {
     const allowedEndpoints = endpoints.split(" "); // endpoints are space separated
@@ -27897,7 +27898,7 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
         console.log(CONTAINER_MESSAGE);
         return;
     }
-    if (isArcRunner()) {
+    if (isARCRunner()) {
         console.log(`[!] ${ARC_RUNNER_MESSAGE}`);
         return;
     }
@@ -27952,7 +27953,7 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
         try {
             var journalLog = external_child_process_.execSync("sudo journalctl -u agent.service --lines=1000", {
                 encoding: "utf8",
-                maxBuffer: 1024 * 1024 * 10 // 10MB buffer
+                maxBuffer: 1024 * 1024 * 10, // 10MB buffer
             });
             console.log("agent.service log:");
             console.log(journalLog);
