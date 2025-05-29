@@ -224,7 +224,7 @@ interface MonitorResponse {
       });
 
       // self-hosted containerized workflow scenario
-      if (isDocker()) {
+      if (isDocker() && confg.egress_policy === "block") {
         sendAllowedEndpoints(confg.allowed_endpoints);
         await sleep(10000);
       }

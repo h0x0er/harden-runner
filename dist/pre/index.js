@@ -88258,7 +88258,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
                 encoding: "utf8",
             });
             // self-hosted containerized workflow scenario
-            if (isDocker()) {
+            if (isDocker() && confg.egress_policy === "block") {
                 sendAllowedEndpoints(confg.allowed_endpoints);
                 yield setup_sleep(10000);
             }
