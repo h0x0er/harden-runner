@@ -88257,6 +88257,11 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
             external_fs_.appendFileSync(process.env.GITHUB_STATE, `selfHosted=true${external_os_.EOL}`, {
                 encoding: "utf8",
             });
+            // self-hosted containerized workflow scenario
+            if (isDocker()) {
+                sendAllowedEndpoints(confg.allowed_endpoints);
+                yield setup_sleep(10000);
+            }
             if (!external_fs_.existsSync("/home/agent/agent")) {
                 lib_core.info(SELF_HOSTED_NO_AGENT_MESSAGE);
                 return;

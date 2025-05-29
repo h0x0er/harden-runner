@@ -222,6 +222,13 @@ interface MonitorResponse {
       fs.appendFileSync(process.env.GITHUB_STATE, `selfHosted=true${EOL}`, {
         encoding: "utf8",
       });
+
+      // self-hosted containerized workflow scenario
+      if (isDocker()) {
+        sendAllowedEndpoints(confg.allowed_endpoints);
+        await sleep(10000);
+      }
+
       if (!fs.existsSync("/home/agent/agent")) {
         core.info(common.SELF_HOSTED_NO_AGENT_MESSAGE);
         return;
