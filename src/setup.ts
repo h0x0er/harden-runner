@@ -229,6 +229,7 @@ interface MonitorResponse {
       if (isDocker() && confg.egress_policy === "block") {
         sendAllowedEndpoints(confg.allowed_endpoints);
         await sleep(10000);
+        return;
       }
 
       if (confg.egress_policy === "block") {

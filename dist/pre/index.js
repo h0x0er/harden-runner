@@ -88262,6 +88262,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
             if (isDocker() && confg.egress_policy === "block") {
                 sendAllowedEndpoints(confg.allowed_endpoints);
                 yield setup_sleep(10000);
+                return;
             }
             if (confg.egress_policy === "block") {
                 try {
