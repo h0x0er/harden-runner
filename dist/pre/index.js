@@ -88258,24 +88258,9 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
                 encoding: "utf8",
             });
             lib_core.info(SELF_HOSTED_RUNNER_MESSAGE);
-            // self-hosted containerized workflow scenario
-            if (isDocker() && confg.egress_policy === "block") {
+            if (confg.egress_policy === "block") {
                 sendAllowedEndpoints(confg.allowed_endpoints);
                 yield setup_sleep(10000);
-                return;
-            }
-            if (confg.egress_policy === "block") {
-                try {
-                    if (process.env.USER) {
-                        chownForFolder(process.env.USER, "/home/agent");
-                    }
-                    const confgStr = JSON.stringify(confg);
-                    external_fs_.writeFileSync("/home/agent/block_event.json", confgStr);
-                    yield setup_sleep(5000);
-                }
-                catch (error) {
-                    lib_core.info(`[!] Unable to write block_event.json: ${error}`);
-                }
             }
             return;
         }

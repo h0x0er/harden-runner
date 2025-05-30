@@ -225,25 +225,9 @@ interface MonitorResponse {
 
       core.info(common.SELF_HOSTED_RUNNER_MESSAGE);
 
-      // self-hosted containerized workflow scenario
-      if (isDocker() && confg.egress_policy === "block") {
+      if (confg.egress_policy === "block") {
         sendAllowedEndpoints(confg.allowed_endpoints);
         await sleep(10000);
-        return;
-      }
-
-      if (confg.egress_policy === "block") {
-        try {
-          if (process.env.USER) {
-            chownForFolder(process.env.USER, "/home/agent");
-          }
-
-          const confgStr = JSON.stringify(confg);
-          fs.writeFileSync("/home/agent/block_event.json", confgStr);
-          await sleep(5000);
-        } catch (error) {
-          core.info(`[!] Unable to write block_event.json: ${error}`);
-        }
       }
       return;
     }
