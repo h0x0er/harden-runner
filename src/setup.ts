@@ -223,16 +223,14 @@ interface MonitorResponse {
         encoding: "utf8",
       });
 
+      core.info(common.SELF_HOSTED_RUNNER_MESSAGE);
+
       // self-hosted containerized workflow scenario
       if (isDocker() && confg.egress_policy === "block") {
         sendAllowedEndpoints(confg.allowed_endpoints);
         await sleep(10000);
       }
 
-      if (!fs.existsSync("/home/agent/agent")) {
-        core.info(common.SELF_HOSTED_NO_AGENT_MESSAGE);
-        return;
-      }
       if (confg.egress_policy === "block") {
         try {
           if (process.env.USER) {
