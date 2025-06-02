@@ -227,7 +227,7 @@ interface MonitorResponse {
 
       if (confg.egress_policy === "block") {
         sendAllowedEndpoints(confg.allowed_endpoints);
-        await sleep(8000);
+        await sleep(10000);
       }
       return;
     }
