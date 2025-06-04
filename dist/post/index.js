@@ -27809,6 +27809,7 @@ function isSecondaryPod() {
     return external_fs_.existsSync(workDir) && hasKubeEnv;
 }
 function sendAllowedEndpoints(endpoints) {
+    const startTime = Date.now();
     const allowedEndpoints = endpoints.split(" "); // endpoints are space separated
     let sent = 0;
     for (let endpoint of allowedEndpoints) {
@@ -27823,6 +27824,8 @@ function sendAllowedEndpoints(endpoints) {
     if (sent > 0) {
         applyPolicy(sent);
     }
+    const duration = Date.now() - startTime;
+    console.log(`[harden-runner] sendAllowedEndpoints completed in ${duration}ms (sent ${sent} endpoints)`);
 }
 function applyPolicy(count) {
     let applyPolicyStr = `step_policy_apply_${count}`;

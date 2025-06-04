@@ -23,6 +23,7 @@ function isSecondaryPod(): boolean {
 }
 
 export function sendAllowedEndpoints(endpoints: string): void {
+  const startTime = Date.now();
   const allowedEndpoints = endpoints.split(" "); // endpoints are space separated
 
   let sent = 0;
@@ -39,6 +40,11 @@ export function sendAllowedEndpoints(endpoints: string): void {
   if (sent > 0) {
     applyPolicy(sent);
   }
+
+  const duration = Date.now() - startTime;
+  console.log(
+    `[harden-runner] sendAllowedEndpoints completed in ${duration}ms (sent ${sent} endpoints)`
+  );
 }
 
 function applyPolicy(count: number): void {
