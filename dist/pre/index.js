@@ -87939,7 +87939,7 @@ function isSecondaryPod() {
 function sendAllowedEndpoints(endpoints) {
     const allowedEndpoints = endpoints.split(" "); // endpoints are space separated
     for (const endpoint of allowedEndpoints) {
-        if (endpoint) {
+        if (endpoint.length > 0) {
             let encodedEndpoint = Buffer.from(endpoint).toString("base64");
             let endpointPolicyStr = `step_policy_endpoint_${encodedEndpoint}`;
             echo(endpointPolicyStr);
