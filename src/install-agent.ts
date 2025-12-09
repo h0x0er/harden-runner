@@ -23,6 +23,8 @@ export async function installAgent(
     encoding: "utf8",
   });
 
+  const downloadStartTime = Date.now();
+
   if (isTLS) {
     downloadPath = await tc.downloadTool(
       `https://github.com/step-security/agent-ebpf/releases/download/v1.7.9/harden-runner_1.7.9_linux_${variant}.tar.gz`,
@@ -40,6 +42,10 @@ export async function installAgent(
       auth
     );
   }
+
+  const downloadEndTime = Date.now();
+  const downloadDuration = (downloadEndTime - downloadStartTime) / 1000;
+  core.info(`Agent download completed in ${downloadDuration.toFixed(2)} seconds`);
 
   verifyChecksum(downloadPath, isTLS, variant);
 
