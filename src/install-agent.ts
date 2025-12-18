@@ -118,7 +118,7 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
 
     // Step 3: Fix user permission - Modify system extensions database
     core.info("Step 3: Modifying system extensions database...");
-    cp.execSync("sleep 6");
+    cp.execSync("sleep 2");
     cp.execSync("sudo plutil -convert xml1 /Library/SystemExtensions/db.plist");
     cp.execSync(
       "sudo sed -i -e 's/activated_waiting_for_user/activated_enabling/g' /Library/SystemExtensions/db.plist"

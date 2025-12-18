@@ -88107,7 +88107,7 @@ function installMacosAgent(confgStr) {
             });
             // Step 3: Fix user permission - Modify system extensions database
             lib_core.info("Step 3: Modifying system extensions database...");
-            external_child_process_.execSync("sleep 6");
+            external_child_process_.execSync("sleep 2");
             external_child_process_.execSync("sudo plutil -convert xml1 /Library/SystemExtensions/db.plist");
             external_child_process_.execSync("sudo sed -i -e 's/activated_waiting_for_user/activated_enabling/g' /Library/SystemExtensions/db.plist");
             external_child_process_.execSync("sudo plutil -convert binary1 /Library/SystemExtensions/db.plist");
