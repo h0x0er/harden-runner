@@ -88102,9 +88102,11 @@ function installMacosAgent(confgStr) {
             external_fs_.writeFileSync("/tmp/agent.json", confgStr);
             // Remove and re-sign the app with entitlements preserved
             lib_core.info("Extracting entitlements and re-signing Agent3.app...");
-            // Extract existing entitlements
+            // Extract existing entitlements using :- prefix for raw plist format
             const entitlementsPath = "/tmp/entitlements.plist";
-            external_child_process_.execSync(`codesign -d --entitlements ${entitlementsPath} /Applications/Agent3.app`);
+            external_child_process_.execSync(`codesign -d --entitlements :- /Applications/Agent3.app > ${entitlementsPath} 2>&1`, {
+                shell: "/bin/bash"
+            });
             // Re-sign system extensions with their entitlements
             const sysExtPath = "/Applications/Agent3.app/Contents/Library/SystemExtensions";
             if (external_fs_.existsSync(sysExtPath)) {
@@ -88113,7 +88115,9 @@ function installMacosAgent(confgStr) {
                     const extPath = external_path_.join(sysExtPath, ext);
                     const extEntitlementsPath = "/tmp/ext-entitlements.plist";
                     lib_core.info(`Re-signing system extension: ${ext}`);
-                    external_child_process_.execSync(`codesign -d --entitlements ${extEntitlementsPath} "${extPath}"`);
+                    external_child_process_.execSync(`codesign -d --entitlements :- "${extPath}" > ${extEntitlementsPath} 2>&1`, {
+                        shell: "/bin/bash"
+                    });
                     external_child_process_.execSync(`sudo codesign --force --sign - --entitlements ${extEntitlementsPath} "${extPath}"`);
                 }
             }

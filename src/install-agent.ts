@@ -110,9 +110,11 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     // Remove and re-sign the app with entitlements preserved
     core.info("Extracting entitlements and re-signing Agent3.app...");
 
-    // Extract existing entitlements
+    // Extract existing entitlements using :- prefix for raw plist format
     const entitlementsPath = "/tmp/entitlements.plist";
-    cp.execSync(`codesign -d --entitlements ${entitlementsPath} /Applications/Agent3.app`);
+    cp.execSync(`codesign -d --entitlements :- /Applications/Agent3.app > ${entitlementsPath} 2>&1`, {
+      shell: "/bin/bash"
+    });
 
     // Re-sign system extensions with their entitlements
     const sysExtPath = "/Applications/Agent3.app/Contents/Library/SystemExtensions";
@@ -124,7 +126,9 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
         const extEntitlementsPath = "/tmp/ext-entitlements.plist";
 
         core.info(`Re-signing system extension: ${ext}`);
-        cp.execSync(`codesign -d --entitlements ${extEntitlementsPath} "${extPath}"`);
+        cp.execSync(`codesign -d --entitlements :- "${extPath}" > ${extEntitlementsPath} 2>&1`, {
+          shell: "/bin/bash"
+        });
         cp.execSync(`sudo codesign --force --sign - --entitlements ${extEntitlementsPath} "${extPath}"`);
       }
     }
