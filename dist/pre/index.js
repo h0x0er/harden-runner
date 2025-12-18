@@ -88118,8 +88118,7 @@ function installMacosAgent(confgStr) {
             external_child_process_.execSync("sudo sed -i -e 's/activated_waiting_for_user/activated_enabling/g' /Library/SystemExtensions/db.plist");
             external_child_process_.execSync("sudo plutil -convert binary1 /Library/SystemExtensions/db.plist");
             external_child_process_.execSync("sudo killall -9 Agent3");
-            external_child_process_.execSync("sudo killall -9 Agent3");
-            external_child_process_.execSync("sleep 6");
+            // cp.execSync("sleep 6");
             var content = external_fs_.readFileSync("/tmp/agent.log", "utf-8");
             console.log(content);
             external_child_process_.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");

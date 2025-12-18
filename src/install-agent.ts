@@ -135,8 +135,7 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     );
 
     cp.execSync("sudo killall -9 Agent3");
-    cp.execSync("sudo killall -9 Agent3");
-    cp.execSync("sleep 6");
+    // cp.execSync("sleep 6");
     var content = fs.readFileSync("/tmp/agent.log", "utf-8");
     console.log(content);
 
