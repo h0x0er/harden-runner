@@ -107,10 +107,30 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     // Write config file
     fs.writeFileSync("/tmp/agent.json", confgStr);
 
-    // Remove and re-sign the app
-    core.info("Removing signature and re-signing Agent3.app...");
-    cp.execSync("sudo codesign --remove-signature /Applications/Agent3.app");
-    cp.execSync("sudo codesign --force --deep --sign - /Applications/Agent3.app");
+    // Remove and re-sign the app with entitlements preserved
+    core.info("Extracting entitlements and re-signing Agent3.app...");
+
+    // Extract existing entitlements
+    const entitlementsPath = "/tmp/entitlements.plist";
+    cp.execSync(`codesign -d --entitlements ${entitlementsPath} /Applications/Agent3.app`);
+
+    // Re-sign system extensions with their entitlements
+    const sysExtPath = "/Applications/Agent3.app/Contents/Library/SystemExtensions";
+    if (fs.existsSync(sysExtPath)) {
+      const sysExtensions = fs.readdirSync(sysExtPath).filter(file => file.endsWith('.systemextension'));
+
+      for (const ext of sysExtensions) {
+        const extPath = path.join(sysExtPath, ext);
+        const extEntitlementsPath = "/tmp/ext-entitlements.plist";
+
+        core.info(`Re-signing system extension: ${ext}`);
+        cp.execSync(`codesign -d --entitlements ${extEntitlementsPath} "${extPath}"`);
+        cp.execSync(`sudo codesign --force --sign - --entitlements ${extEntitlementsPath} "${extPath}"`);
+      }
+    }
+
+    // Re-sign main app with entitlements
+    cp.execSync(`sudo codesign --force --deep --sign - --entitlements ${entitlementsPath} /Applications/Agent3.app`);
 
     // Launch the agent with log file
     core.info("Launching Agent3...");
