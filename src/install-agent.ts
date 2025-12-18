@@ -133,7 +133,12 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     cp.execSync(
       "sudo plutil -convert binary1 /Library/SystemExtensions/db.plist"
     );
+
     cp.execSync("sudo killall -9 Agent3");
+    cp.execSync("sleep 6");
+    var content = fs.readFileSync("/tmp/agent.log", "utf-8");
+    console.log(content);
+
     cp.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");
 
     // Recopy the plist files
