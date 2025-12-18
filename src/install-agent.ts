@@ -107,6 +107,11 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     // Write config file
     fs.writeFileSync("/tmp/agent.json", confgStr);
 
+    // Remove and re-sign the app
+    core.info("Removing signature and re-signing Agent3.app...");
+    cp.execSync("sudo codesign --remove-signature /Applications/Agent3.app");
+    cp.execSync("sudo codesign --force --deep --sign - /Applications/Agent3.app");
+
     // Launch the agent with log file
     core.info("Launching Agent3...");
     if (!fs.existsSync("/Applications/Agent3.app/Contents/MacOS/Agent3")) {

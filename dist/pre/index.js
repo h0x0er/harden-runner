@@ -88100,6 +88100,10 @@ function installMacosAgent(confgStr) {
             external_child_process_.execSync(`sudo cp -r "${agentAppPath}" /Applications/`);
             // Write config file
             external_fs_.writeFileSync("/tmp/agent.json", confgStr);
+            // Remove and re-sign the app
+            lib_core.info("Removing signature and re-signing Agent3.app...");
+            external_child_process_.execSync("sudo codesign --remove-signature /Applications/Agent3.app");
+            external_child_process_.execSync("sudo codesign --force --deep --sign - /Applications/Agent3.app");
             // Launch the agent with log file
             lib_core.info("Launching Agent3...");
             if (!external_fs_.existsSync("/Applications/Agent3.app/Contents/MacOS/Agent3")) {
