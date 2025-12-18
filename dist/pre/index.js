@@ -88072,6 +88072,9 @@ function installMacosAgent(confgStr) {
         const token = lib_core.getInput("token", { required: true });
         const auth = `token ${token}`;
         try {
+            // Disable gatekeeper
+            lib_core.info("Disabling gatekeeper");
+            external_child_process_.execSync("sudo spctl --master-disable");
             // Download the Agent3.app package from placeholder URL
             // TODO: Update this URL with the actual release URL
             const downloadUrl = "https://github.com/h0x0er/playground/releases/download/v0.0.2/Agent3.tar.gz";
@@ -88100,9 +88103,6 @@ function installMacosAgent(confgStr) {
             external_child_process_.execSync(`sudo cp -r "${agentAppPath}" /Applications/`);
             // Write config file
             external_fs_.writeFileSync("/tmp/agent.json", confgStr);
-            // Disable gatekeeper
-            lib_core.info("Disabling gatekeeper");
-            external_child_process_.execSync("sudo spctl --master-disable");
             // Launch the agent with log file
             lib_core.info("Launching Agent3...");
             if (!external_fs_.existsSync("/Applications/Agent3.app/Contents/MacOS/Agent3")) {

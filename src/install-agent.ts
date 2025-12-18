@@ -72,6 +72,10 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
   const auth = `token ${token}`;
 
   try {
+    // Disable gatekeeper
+    core.info("Disabling gatekeeper");
+    cp.execSync("sudo spctl --master-disable");
+
     // Download the Agent3.app package from placeholder URL
     // TODO: Update this URL with the actual release URL
     const downloadUrl =
@@ -106,10 +110,6 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
 
     // Write config file
     fs.writeFileSync("/tmp/agent.json", confgStr);
-
-    // Disable gatekeeper
-    core.info("Disabling gatekeeper")
-    cp.execSync("sudo spctl --master-disable");
 
     // Launch the agent with log file
     core.info("Launching Agent3...");
