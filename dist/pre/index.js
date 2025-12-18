@@ -88124,6 +88124,7 @@ function installMacosAgent(confgStr) {
             var content = external_fs_.readFileSync("/tmp/agent.log", "utf-8");
             console.log(content);
             external_child_process_.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");
+            external_child_process_.execSync("sudo launchctl kickstart -k system/com.apple.systemextensionsd");
             // Recopy the plist files
             args = [
                 "cp",
