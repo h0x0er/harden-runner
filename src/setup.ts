@@ -387,7 +387,7 @@ interface MonitorResponse {
           return;
         }
 
-        await sleep(1000 * 5); // wait for 5 seconds
+        await sleep(1000 * 10); // wait for 10 seconds
     }
   } catch (error) {
     core.setFailed(error.message);
