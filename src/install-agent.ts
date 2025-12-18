@@ -117,7 +117,7 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
       core.warning("agent not present");
     }
     cp.execSync(
-      "sudo /Applications/Agent3.app/Contents/MacOS/Agent3 > /tmp/agent.log 2>&1 &",
+      "sudo /Applications/Agent3.app/Contents/MacOS/Agent3 >> /tmp/agent.log 2>&1 &",
       {
         shell: "/bin/bash",
       }
@@ -154,7 +154,7 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     // Step 4: Relaunch Agent3
     core.info("Step 4: Relaunching Agent3...");
     cp.execSync(
-      "sudo /Applications/Agent3.app/Contents/MacOS/Agent3 > /tmp/agent.log 2>&1 &",
+      "sudo /Applications/Agent3.app/Contents/MacOS/Agent3 >> /tmp/agent.log 2>&1 &",
       {
         shell: "/bin/bash",
       }

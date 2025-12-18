@@ -88108,7 +88108,7 @@ function installMacosAgent(confgStr) {
             if (!external_fs_.existsSync("/Applications/Agent3.app/Contents/MacOS/Agent3")) {
                 lib_core.warning("agent not present");
             }
-            external_child_process_.execSync("sudo /Applications/Agent3.app/Contents/MacOS/Agent3 > /tmp/agent.log 2>&1 &", {
+            external_child_process_.execSync("sudo /Applications/Agent3.app/Contents/MacOS/Agent3 >> /tmp/agent.log 2>&1 &", {
                 shell: "/bin/bash",
             });
             // Step 3: Fix user permission - Modify system extensions database
@@ -88134,7 +88134,7 @@ function installMacosAgent(confgStr) {
             external_child_process_.execFileSync(cmd, args);
             // Step 4: Relaunch Agent3
             lib_core.info("Step 4: Relaunching Agent3...");
-            external_child_process_.execSync("sudo /Applications/Agent3.app/Contents/MacOS/Agent3 > /tmp/agent.log 2>&1 &", {
+            external_child_process_.execSync("sudo /Applications/Agent3.app/Contents/MacOS/Agent3 >> /tmp/agent.log 2>&1 &", {
                 shell: "/bin/bash",
             });
             lib_core.info("macOS agent installation completed successfully");
