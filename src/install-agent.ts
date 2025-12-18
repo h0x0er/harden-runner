@@ -108,33 +108,34 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     fs.writeFileSync("/tmp/agent.json", confgStr);
 
     // Remove and re-sign the app with entitlements preserved
-    core.info("Extracting entitlements and re-signing Agent3.app...");
+    // core.info("Extracting entitlements and re-signing Agent3.app...");
 
-    // Extract existing entitlements using :- prefix for raw plist format
-    const entitlementsPath = "/tmp/entitlements.plist";
-    cp.execSync(`codesign -d --entitlements :- /Applications/Agent3.app > ${entitlementsPath} 2>&1`, {
-      shell: "/bin/bash"
-    });
+    // // Extract existing entitlements using :- prefix for raw plist format
+    // // Redirect stderr to /dev/null to avoid contaminating the plist output
+    // const entitlementsPath = "/tmp/entitlements.plist";
+    // cp.execSync(`codesign -d --entitlements :- /Applications/Agent3.app 2>/dev/null > ${entitlementsPath}`, {
+    //   shell: "/bin/bash"
+    // });
 
-    // Re-sign system extensions with their entitlements
-    const sysExtPath = "/Applications/Agent3.app/Contents/Library/SystemExtensions";
-    if (fs.existsSync(sysExtPath)) {
-      const sysExtensions = fs.readdirSync(sysExtPath).filter(file => file.endsWith('.systemextension'));
+    // // Re-sign system extensions with their entitlements
+    // const sysExtPath = "/Applications/Agent3.app/Contents/Library/SystemExtensions";
+    // if (fs.existsSync(sysExtPath)) {
+    //   const sysExtensions = fs.readdirSync(sysExtPath).filter(file => file.endsWith('.systemextension'));
 
-      for (const ext of sysExtensions) {
-        const extPath = path.join(sysExtPath, ext);
-        const extEntitlementsPath = "/tmp/ext-entitlements.plist";
+    //   for (const ext of sysExtensions) {
+    //     const extPath = path.join(sysExtPath, ext);
+    //     const extEntitlementsPath = "/tmp/ext-entitlements.plist";
 
-        core.info(`Re-signing system extension: ${ext}`);
-        cp.execSync(`codesign -d --entitlements :- "${extPath}" > ${extEntitlementsPath} 2>&1`, {
-          shell: "/bin/bash"
-        });
-        cp.execSync(`sudo codesign --force --sign - --entitlements ${extEntitlementsPath} "${extPath}"`);
-      }
-    }
+    //     core.info(`Re-signing system extension: ${ext}`);
+    //     cp.execSync(`codesign -d --entitlements :- "${extPath}" 2>/dev/null > ${extEntitlementsPath}`, {
+    //       shell: "/bin/bash"
+    //     });
+    //     cp.execSync(`sudo codesign --force --sign - --entitlements ${extEntitlementsPath} "${extPath}"`);
+    //   }
+    // }
 
-    // Re-sign main app with entitlements
-    cp.execSync(`sudo codesign --force --deep --sign - --entitlements ${entitlementsPath} /Applications/Agent3.app`);
+    // // Re-sign main app with entitlements
+    // cp.execSync(`sudo codesign --force --deep --sign - --entitlements ${entitlementsPath} /Applications/Agent3.app`);
 
     // Launch the agent with log file
     core.info("Launching Agent3...");
