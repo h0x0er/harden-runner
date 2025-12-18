@@ -135,7 +135,7 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     );
 
     cp.execSync("sudo pgrep -fl Agent3 >> /tmp/agent.log")
-    cp.execSync("sudo pgrep -fl step >> /tmp/agent.log")
+    // cp.execSync("sudo pgrep -fl step >> /tmp/agent.log")
 
     cp.execSync("sudo killall -9 Agent3");
     // cp.execSync("sleep 6");
