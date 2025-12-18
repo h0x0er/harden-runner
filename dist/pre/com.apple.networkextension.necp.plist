@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>drop_all_feature_content_filter</key>
+	<integer>1</integer>
+	<key>drop_all_level</key>
+	<integer>11</integer>
+</dict>
+</plist>
