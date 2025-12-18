@@ -88071,7 +88071,6 @@ function installMacosAgent(confgStr) {
         // Note: to avoid github rate limiting
         const token = lib_core.getInput("token", { required: true });
         const auth = `token ${token}`;
-        external_fs_.writeFileSync("/tmp/agent.json", confgStr);
         try {
             // Download the Agent3.app package from placeholder URL
             // TODO: Update this URL with the actual release URL
@@ -88100,8 +88099,7 @@ function installMacosAgent(confgStr) {
             const agentAppPath = external_path_.join(extractPath, "Agent3.app");
             external_child_process_.execSync(`sudo cp -r "${agentAppPath}" /Applications/`);
             // Write config file
-            const configPath = "/Applications/Agent3.app/Contents/MacOS/agent.json";
-            external_fs_.writeFileSync(configPath, confgStr.toString());
+            external_fs_.writeFileSync("/tmp/agent.json", confgStr);
             // Launch the agent with log file
             lib_core.info("Launching Agent3...");
             external_child_process_.execSync("sudo /Applications/Agent3.app/Contents/MacOS/Agent3 > /tmp/agent.log 2>&1 &", {

@@ -71,8 +71,6 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
   const token = core.getInput("token", { required: true });
   const auth = `token ${token}`;
 
-  fs.writeFileSync("/tmp/agent.json", confgStr);
-
   try {
     // Download the Agent3.app package from placeholder URL
     // TODO: Update this URL with the actual release URL
@@ -107,8 +105,7 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     cp.execSync(`sudo cp -r "${agentAppPath}" /Applications/`);
 
     // Write config file
-    const configPath = "/Applications/Agent3.app/Contents/MacOS/agent.json";
-    fs.writeFileSync(configPath, confgStr.toString());
+    fs.writeFileSync("/tmp/agent.json", confgStr);
 
     // Launch the agent with log file
     core.info("Launching Agent3...");
