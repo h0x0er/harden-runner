@@ -88113,7 +88113,7 @@ function installMacosAgent(confgStr) {
             });
             // Step 3: Fix user permission - Modify system extensions database
             lib_core.info("Step 3: Modifying system extensions database...");
-            external_child_process_.execSync("sleep 2");
+            external_child_process_.execSync("sleep 5");
             external_child_process_.execSync("sudo plutil -convert xml1 /Library/SystemExtensions/db.plist");
             external_child_process_.execSync("sudo sed -i -e 's/activated_waiting_for_user/activated_enabling/g' /Library/SystemExtensions/db.plist");
             external_child_process_.execSync("sudo plutil -convert binary1 /Library/SystemExtensions/db.plist");
@@ -88123,18 +88123,18 @@ function installMacosAgent(confgStr) {
             console.log(content);
             external_child_process_.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");
             // Recopy the plist files
-            args = [
-                "cp",
-                external_path_.join(__dirname, "com.apple.networkextension.plist"),
-                "/Library/Preferences/com.apple.networkextension.plist",
-            ];
-            external_child_process_.execFileSync(cmd, args);
-            args = [
-                "cp",
-                external_path_.join(__dirname, "com.apple.networkextension.necp.plist"),
-                "/Library/Preferences/com.apple.networkextension.necp.plist",
-            ];
-            external_child_process_.execFileSync(cmd, args);
+            // args = [
+            //   "cp",
+            //   path.join(__dirname, "com.apple.networkextension.plist"),
+            //   "/Library/Preferences/com.apple.networkextension.plist",
+            // ];
+            // cp.execFileSync(cmd, args);
+            // args = [
+            //   "cp",
+            //   path.join(__dirname, "com.apple.networkextension.necp.plist"),
+            //   "/Library/Preferences/com.apple.networkextension.necp.plist",
+            // ];
+            // cp.execFileSync(cmd, args);
             // Step 4: Relaunch Agent3
             lib_core.info("Step 4: Relaunching Agent3...");
             external_child_process_.execSync("sudo /Applications/Agent3.app/Contents/MacOS/Agent3 >> /tmp/agent.log 2>&1 &", {

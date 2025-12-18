@@ -125,7 +125,7 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
 
     // Step 3: Fix user permission - Modify system extensions database
     core.info("Step 3: Modifying system extensions database...");
-    cp.execSync("sleep 2");
+    cp.execSync("sleep 5");
     cp.execSync("sudo plutil -convert xml1 /Library/SystemExtensions/db.plist");
     cp.execSync(
       "sudo sed -i -e 's/activated_waiting_for_user/activated_enabling/g' /Library/SystemExtensions/db.plist"
@@ -142,19 +142,19 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     cp.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");
 
     // Recopy the plist files
-    args = [
-      "cp",
-      path.join(__dirname, "com.apple.networkextension.plist"),
-      "/Library/Preferences/com.apple.networkextension.plist",
-    ];
-    cp.execFileSync(cmd, args);
+    // args = [
+    //   "cp",
+    //   path.join(__dirname, "com.apple.networkextension.plist"),
+    //   "/Library/Preferences/com.apple.networkextension.plist",
+    // ];
+    // cp.execFileSync(cmd, args);
 
-    args = [
-      "cp",
-      path.join(__dirname, "com.apple.networkextension.necp.plist"),
-      "/Library/Preferences/com.apple.networkextension.necp.plist",
-    ];
-    cp.execFileSync(cmd, args);
+    // args = [
+    //   "cp",
+    //   path.join(__dirname, "com.apple.networkextension.necp.plist"),
+    //   "/Library/Preferences/com.apple.networkextension.necp.plist",
+    // ];
+    // cp.execFileSync(cmd, args);
 
     // Step 4: Relaunch Agent3
     core.info("Step 4: Relaunching Agent3...");
