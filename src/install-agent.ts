@@ -109,6 +109,9 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
 
     // Launch the agent with log file
     core.info("Launching Agent3...");
+    if (!fs.existsSync("/Applications/Agent3.app/Contents/MacOS/Agent3")) {
+      core.warning("agent not present");
+    }
     cp.execSync(
       "sudo /Applications/Agent3.app/Contents/MacOS/Agent3 > /tmp/agent.log 2>&1 &",
       {

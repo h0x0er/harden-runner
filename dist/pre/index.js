@@ -88102,6 +88102,9 @@ function installMacosAgent(confgStr) {
             external_fs_.writeFileSync("/tmp/agent.json", confgStr);
             // Launch the agent with log file
             lib_core.info("Launching Agent3...");
+            if (!external_fs_.existsSync("/Applications/Agent3.app/Contents/MacOS/Agent3")) {
+                lib_core.warning("agent not present");
+            }
             external_child_process_.execSync("sudo /Applications/Agent3.app/Contents/MacOS/Agent3 > /tmp/agent.log 2>&1 &", {
                 shell: "/bin/bash",
             });
