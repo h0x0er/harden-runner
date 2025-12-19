@@ -88142,12 +88142,12 @@ function installMacosAgent(confgStr) {
                 //   "/Library/Preferences/com.apple.networkextension.necp.plist",
                 // ];
                 // cp.execFileSync(cmd, args);
+                // Step 4: Relaunch Agent3
+                lib_core.info("Step 4: Relaunching Agent3...");
+                external_child_process_.execSync("sudo /Applications/Agent3.app/Contents/MacOS/Agent3 >> /tmp/agent.log 2>&1 &", {
+                    shell: "/bin/bash",
+                });
             }
-            // Step 4: Relaunch Agent3
-            lib_core.info("Step 4: Relaunching Agent3...");
-            external_child_process_.execSync("sudo /Applications/Agent3.app/Contents/MacOS/Agent3 >> /tmp/agent.log 2>&1 &", {
-                shell: "/bin/bash",
-            });
             lib_core.info("macOS agent installation completed successfully");
             return true;
         }
@@ -88446,7 +88446,8 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
                     lib_core.warning("😭 macos agent installation failed");
                     return;
                 }
-                yield setup_sleep(1000 * 10); // wait for 10 seconds
+                console.log("waiting for 20 seconds");
+                yield setup_sleep(1000 * 20); // wait for 10 seconds
         }
     }
     catch (error) {

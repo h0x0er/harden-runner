@@ -164,16 +164,16 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
       //   "/Library/Preferences/com.apple.networkextension.necp.plist",
       // ];
       // cp.execFileSync(cmd, args);
-    }
 
-    // Step 4: Relaunch Agent3
-    core.info("Step 4: Relaunching Agent3...");
-    cp.execSync(
-      "sudo /Applications/Agent3.app/Contents/MacOS/Agent3 >> /tmp/agent.log 2>&1 &",
-      {
-        shell: "/bin/bash",
-      }
-    );
+      // Step 4: Relaunch Agent3
+      core.info("Step 4: Relaunching Agent3...");
+      cp.execSync(
+        "sudo /Applications/Agent3.app/Contents/MacOS/Agent3 >> /tmp/agent.log 2>&1 &",
+        {
+          shell: "/bin/bash",
+        }
+      );
+    }
 
     core.info("macOS agent installation completed successfully");
     return true;
