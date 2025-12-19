@@ -88345,7 +88345,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         }
         const runnerName = process.env.RUNNER_NAME || "";
         lib_core.info(`RUNNER_NAME: ${runnerName}`);
-        if (!isGithubHosted()) {
+        if (!isGithubHosted() && platform !== "darwin") {
             external_fs_.appendFileSync(process.env.GITHUB_STATE, `selfHosted=true${external_os_.EOL}`, {
                 encoding: "utf8",
             });
