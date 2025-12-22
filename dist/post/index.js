@@ -34675,7 +34675,7 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
                 const logStreamOutput = external_child_process_.execSync("log show --predicate 'subsystem == \"io.stepsecurity.harden-runner\"' --info --last 10m", {
                     encoding: "utf8",
                     maxBuffer: 1024 * 1024 * 10,
-                    timeout: 10, // 30 second timeout
+                    timeout: 10000, // 30 second timeout
                 });
                 console.log(logStreamOutput);
             }

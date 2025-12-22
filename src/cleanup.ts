@@ -56,7 +56,7 @@ import { context } from "@actions/github";
           {
             encoding: "utf8",
             maxBuffer: 1024 * 1024 * 10, // 10MB buffer
-            timeout: 10, // 30 second timeout
+            timeout: 10000, // 30 second timeout
           }
         );
         console.log(logStreamOutput);
