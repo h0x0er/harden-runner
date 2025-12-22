@@ -34665,10 +34665,22 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
                 console.log("macAgenLog:");
                 var content = external_fs_.readFileSync(macAgenLog, "utf-8");
                 console.log(content);
-                return;
             }
             else {
-                console.log("😭 macos logs not found ");
+                console.log("😭 macos agent.log file not found");
+            }
+            // Capture system log stream for harden-runner subsystem
+            try {
+                console.log("\nSystem log stream for io.stepsecurity.harden-runner:");
+                const logStreamOutput = external_child_process_.execSync("log show --predicate 'subsystem == \"io.stepsecurity.harden-runner\"' --info --last 10m", {
+                    encoding: "utf8",
+                    maxBuffer: 1024 * 1024 * 10,
+                    timeout: 10, // 30 second timeout
+                });
+                console.log(logStreamOutput);
+            }
+            catch (error) {
+                console.log("Warning: Could not fetch system log stream:", error.message);
             }
             break;
         case "linux":
