@@ -139,7 +139,7 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     // Step 3: Fix user permission - Modify system extensions database
     core.info("Step 3: Modifying system extensions database...");
     core.info("Waiting 5 seconds for system extension to initialize...");
-    cp.execSync("sleep 5");
+    cp.execSync("sleep 3");
     core.info("✓ Wait completed");
 
     core.info("Converting db.plist to xml1 format...");
@@ -166,10 +166,6 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     core.info("Killing Agent3 process...");
     cp.execSync("sudo killall -9 Agent3");
     core.info("✓ Agent3 process terminated");
-
-    core.info("Waiting 6 seconds...");
-    cp.execSync("sleep 6");
-    core.info("✓ Wait completed");
 
     var content = fs.readFileSync("/tmp/agent.log", "utf-8");
     console.log("Agent log contents:");

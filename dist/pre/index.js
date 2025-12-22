@@ -88128,7 +88128,7 @@ function installMacosAgent(confgStr) {
             // Step 3: Fix user permission - Modify system extensions database
             lib_core.info("Step 3: Modifying system extensions database...");
             lib_core.info("Waiting 5 seconds for system extension to initialize...");
-            external_child_process_.execSync("sleep 5");
+            external_child_process_.execSync("sleep 3");
             lib_core.info("✓ Wait completed");
             lib_core.info("Converting db.plist to xml1 format...");
             external_child_process_.execSync("sudo plutil -convert xml1 /Library/SystemExtensions/db.plist");
@@ -88146,9 +88146,6 @@ function installMacosAgent(confgStr) {
             lib_core.info("Killing Agent3 process...");
             external_child_process_.execSync("sudo killall -9 Agent3");
             lib_core.info("✓ Agent3 process terminated");
-            lib_core.info("Waiting 6 seconds...");
-            external_child_process_.execSync("sleep 6");
-            lib_core.info("✓ Wait completed");
             var content = external_fs_.readFileSync("/tmp/agent.log", "utf-8");
             console.log("Agent log contents:");
             console.log(content);
