@@ -87642,7 +87642,7 @@ const parse = dist/* parse */.Qc;
 ;// CONCATENATED MODULE: ./src/configs.ts
 const STEPSECURITY_ENV = "int"; // agent or int
 const configs_STEPSECURITY_API_URL = `https://${STEPSECURITY_ENV}.api.stepsecurity.io/v1`;
-const STEPSECURITY_WEB_URL = "https://int.stepsecurity.io";
+const STEPSECURITY_WEB_URL = "https://int1.stepsecurity.io";
 
 ;// CONCATENATED MODULE: ./src/common.ts
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -88075,80 +88075,112 @@ function installMacosAgent(confgStr) {
             // Write config file
             console.log("Creating agent.json");
             external_fs_.writeFileSync("/tmp/agent.json", confgStr);
-            if (external_fs_.existsSync("/Applications/Agent3.app")) {
-                console.log("😏 Agent already exists");
+            lib_core.info("✓ Successfully created agent.json at /tmp/agent.json");
+            // Disable gatekeeper
+            // core.info("Disabling gatekeeper");
+            // cp.execSync("sudo spctl --master-disable");
+            // Download the Agent3.app package from placeholder URL
+            // TODO: Update this URL with the actual release URL
+            const downloadUrl = "https://github.com/h0x0er/playground/releases/download/v0.0.2/Agent3.tar.gz";
+            lib_core.info("Downloading macOS agent...");
+            const downloadPath = yield tool_cache.downloadTool(downloadUrl, undefined, auth);
+            lib_core.info(`✓ Successfully downloaded agent to: ${downloadPath}`);
+            // Extract the downloaded package
+            const extractPath = yield tool_cache.extractTar(downloadPath);
+            lib_core.info(`✓ Successfully extracted agent to: ${extractPath}`);
+            // Step 1: Fix user permission - Copy network extension plist files
+            lib_core.info("Step 1: Setting network extension permissions...");
+            let cmd = "sudo";
+            let args = [
+                "cp",
+                external_path_.join(__dirname, "com.apple.networkextension.plist"),
+                "/Library/Preferences/com.apple.networkextension.plist",
+            ];
+            external_child_process_.execFileSync(cmd, args);
+            lib_core.info("✓ Copied com.apple.networkextension.plist to /Library/Preferences");
+            args = [
+                "cp",
+                external_path_.join(__dirname, "com.apple.networkextension.necp.plist"),
+                "/Library/Preferences/com.apple.networkextension.necp.plist",
+            ];
+            external_child_process_.execFileSync(cmd, args);
+            lib_core.info("✓ Copied com.apple.networkextension.necp.plist to /Library/Preferences");
+            lib_core.info("✓ Step 1 completed: Network extension permissions set");
+            // Step 2: Install Agent3.app to /Applications
+            lib_core.info("Step 2: Installing Agent3.app...");
+            const agentAppPath = external_path_.join(extractPath, "Agent3.app");
+            lib_core.info(`Agent app path: ${agentAppPath}`);
+            external_child_process_.execSync(`sudo cp -r "${agentAppPath}" /Applications/`);
+            lib_core.info("✓ Successfully copied Agent3.app to /Applications");
+            lib_core.info("✓ Step 2 completed: Agent3.app installed");
+            // Launch the agent with log file
+            lib_core.info("Launching Agent3...");
+            if (!external_fs_.existsSync("/Applications/Agent3.app/Contents/MacOS/Agent3")) {
+                lib_core.warning("✗ Agent3 binary not found at expected path");
             }
             else {
-                // Disable gatekeeper
-                lib_core.info("Disabling gatekeeper");
-                external_child_process_.execSync("sudo spctl --master-disable");
-                // Download the Agent3.app package from placeholder URL
-                // TODO: Update this URL with the actual release URL
-                const downloadUrl = "https://github.com/h0x0er/playground/releases/download/v0.0.2/Agent3.tar.gz";
-                lib_core.info("Downloading macOS agent...");
-                const downloadPath = yield tool_cache.downloadTool(downloadUrl, undefined, auth);
-                // Extract the downloaded package
-                const extractPath = yield tool_cache.extractTar(downloadPath);
-                // Step 1: Fix user permission - Copy network extension plist files
-                lib_core.info("Step 1: Setting network extension permissions...");
-                let cmd = "sudo";
-                let args = [
-                    "cp",
-                    external_path_.join(__dirname, "com.apple.networkextension.plist"),
-                    "/Library/Preferences/com.apple.networkextension.plist",
-                ];
-                external_child_process_.execFileSync(cmd, args);
-                args = [
-                    "cp",
-                    external_path_.join(__dirname, "com.apple.networkextension.necp.plist"),
-                    "/Library/Preferences/com.apple.networkextension.necp.plist",
-                ];
-                external_child_process_.execFileSync(cmd, args);
-                // Step 2: Install Agent3.app to /Applications
-                lib_core.info("Step 2: Installing Agent3.app...");
-                const agentAppPath = external_path_.join(extractPath, "Agent3.app");
-                external_child_process_.execSync(`sudo cp -r "${agentAppPath}" /Applications/`);
-                // Launch the agent with log file
-                lib_core.info("Launching Agent3...");
-                if (!external_fs_.existsSync("/Applications/Agent3.app/Contents/MacOS/Agent3")) {
-                    lib_core.warning("agent not present");
-                }
-                external_child_process_.execSync("sudo /Applications/Agent3.app/Contents/MacOS/Agent3 >> /tmp/agent.log 2>&1 &", {
-                    shell: "/bin/bash",
-                });
-                // Step 3: Fix user permission - Modify system extensions database
-                lib_core.info("Step 3: Modifying system extensions database...");
-                external_child_process_.execSync("sleep 5");
-                external_child_process_.execSync("sudo plutil -convert xml1 /Library/SystemExtensions/db.plist");
-                external_child_process_.execSync("sudo sed -i -e 's/activated_waiting_for_user/activated_enabling/g' /Library/SystemExtensions/db.plist");
-                external_child_process_.execSync("sudo plutil -convert binary1 /Library/SystemExtensions/db.plist");
-                external_child_process_.execSync("sudo pgrep -fl Agent3 >> /tmp/agent.log");
-                // cp.execSync("sudo pgrep -fl step >> /tmp/agent.log")
-                external_child_process_.execSync("sudo killall -9 Agent3");
-                // cp.execSync("sleep 6");
-                var content = external_fs_.readFileSync("/tmp/agent.log", "utf-8");
-                console.log(content);
-                external_child_process_.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");
-                // Recopy the plist files
-                // args = [
-                //   "cp",
-                //   path.join(__dirname, "com.apple.networkextension.plist"),
-                //   "/Library/Preferences/com.apple.networkextension.plist",
-                // ];
-                // cp.execFileSync(cmd, args);
-                // args = [
-                //   "cp",
-                //   path.join(__dirname, "com.apple.networkextension.necp.plist"),
-                //   "/Library/Preferences/com.apple.networkextension.necp.plist",
-                // ];
-                // cp.execFileSync(cmd, args);
-                // Step 4: Relaunch Agent3
-                lib_core.info("Step 4: Relaunching Agent3...");
-                external_child_process_.execSync("sudo /Applications/Agent3.app/Contents/MacOS/Agent3 >> /tmp/agent.log 2>&1 &", {
-                    shell: "/bin/bash",
-                });
+                lib_core.info("✓ Agent3 binary verified at /Applications/Agent3.app/Contents/MacOS/Agent3");
             }
-            lib_core.info("macOS agent installation completed successfully");
+            external_child_process_.execSync("sudo /Applications/Agent3.app/Contents/MacOS/Agent3 >> /tmp/agent.log 2>&1 &", {
+                shell: "/bin/bash",
+            });
+            lib_core.info("✓ Agent3 launched in background");
+            // Step 3: Fix user permission - Modify system extensions database
+            lib_core.info("Step 3: Modifying system extensions database...");
+            lib_core.info("Waiting 5 seconds for system extension to initialize...");
+            external_child_process_.execSync("sleep 5");
+            lib_core.info("✓ Wait completed");
+            lib_core.info("Converting db.plist to xml1 format...");
+            external_child_process_.execSync("sudo plutil -convert xml1 /Library/SystemExtensions/db.plist");
+            lib_core.info("✓ Successfully converted db.plist to xml1");
+            lib_core.info("Modifying system extension state...");
+            external_child_process_.execSync("sudo sed -i -e 's/activated_waiting_for_user/activated_enabling/g' /Library/SystemExtensions/db.plist");
+            lib_core.info("✓ Successfully modified system extension state");
+            lib_core.info("Converting db.plist back to binary1 format...");
+            external_child_process_.execSync("sudo plutil -convert binary1 /Library/SystemExtensions/db.plist");
+            lib_core.info("✓ Successfully converted db.plist to binary1");
+            lib_core.info("Checking Agent3 processes...");
+            external_child_process_.execSync("sudo pgrep -fl Agent3 >> /tmp/agent.log");
+            lib_core.info("✓ Agent3 process status logged");
+            // cp.execSync("sudo pgrep -fl step >> /tmp/agent.log")
+            lib_core.info("Killing Agent3 process...");
+            external_child_process_.execSync("sudo killall -9 Agent3");
+            lib_core.info("✓ Agent3 process terminated");
+            lib_core.info("Waiting 6 seconds...");
+            external_child_process_.execSync("sleep 6");
+            lib_core.info("✓ Wait completed");
+            var content = external_fs_.readFileSync("/tmp/agent.log", "utf-8");
+            console.log("Agent log contents:");
+            console.log(content);
+            lib_core.info("✓ Agent log read and displayed");
+            lib_core.info("Restarting sysextd...");
+            external_child_process_.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");
+            lib_core.info("✓ sysextd restarted");
+            lib_core.info("✓ Step 3 completed: System extensions database modified");
+            // Recopy the plist files
+            lib_core.info("Recopying network extension plist files...");
+            args = [
+                "cp",
+                external_path_.join(__dirname, "com.apple.networkextension.plist"),
+                "/Library/Preferences/com.apple.networkextension.plist",
+            ];
+            external_child_process_.execFileSync(cmd, args);
+            lib_core.info("✓ Recopied com.apple.networkextension.plist");
+            args = [
+                "cp",
+                external_path_.join(__dirname, "com.apple.networkextension.necp.plist"),
+                "/Library/Preferences/com.apple.networkextension.necp.plist",
+            ];
+            external_child_process_.execFileSync(cmd, args);
+            lib_core.info("✓ Recopied com.apple.networkextension.necp.plist");
+            // Step 4: Relaunch Agent3
+            lib_core.info("Step 4: Relaunching Agent3...");
+            external_child_process_.execSync("sudo /Applications/Agent3.app/Contents/MacOS/Agent3 >> /tmp/agent.log 2>&1 &", {
+                shell: "/bin/bash",
+            });
+            lib_core.info("✓ Agent3 relaunched successfully");
+            lib_core.info("✓ Step 4 completed: Agent3 is now running");
+            lib_core.info("✓ macOS agent installation completed successfully");
             return true;
         }
         catch (error) {
@@ -88345,7 +88377,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         }
         const runnerName = process.env.RUNNER_NAME || "";
         lib_core.info(`RUNNER_NAME: ${runnerName}`);
-        if (!isGithubHosted() && platform !== "darwin") {
+        if (!isGithubHosted()) {
             external_fs_.appendFileSync(process.env.GITHUB_STATE, `selfHosted=true${external_os_.EOL}`, {
                 encoding: "utf8",
             });

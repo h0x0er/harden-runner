@@ -251,7 +251,7 @@ interface MonitorResponse {
 
     const runnerName = process.env.RUNNER_NAME || "";
     core.info(`RUNNER_NAME: ${runnerName}`);
-    if (!isGithubHosted() && platform !== "darwin") {
+    if (!isGithubHosted()) {
       fs.appendFileSync(process.env.GITHUB_STATE, `selfHosted=true${EOL}`, {
         encoding: "utf8",
       });

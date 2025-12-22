@@ -75,107 +75,142 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     // Write config file
     console.log("Creating agent.json");
     fs.writeFileSync("/tmp/agent.json", confgStr);
+    core.info("✓ Successfully created agent.json at /tmp/agent.json");
 
-    if (fs.existsSync("/Applications/Agent3.app")) {
-      console.log("😏 Agent already exists");
+    // Disable gatekeeper
+    // core.info("Disabling gatekeeper");
+    // cp.execSync("sudo spctl --master-disable");
+
+    // Download the Agent3.app package from placeholder URL
+    // TODO: Update this URL with the actual release URL
+    const downloadUrl =
+      "https://github.com/h0x0er/playground/releases/download/v0.0.2/Agent3.tar.gz";
+    core.info("Downloading macOS agent...");
+    const downloadPath = await tc.downloadTool(downloadUrl, undefined, auth);
+    core.info(`✓ Successfully downloaded agent to: ${downloadPath}`);
+
+    // Extract the downloaded package
+    const extractPath = await tc.extractTar(downloadPath);
+    core.info(`✓ Successfully extracted agent to: ${extractPath}`);
+
+    // Step 1: Fix user permission - Copy network extension plist files
+    core.info("Step 1: Setting network extension permissions...");
+    let cmd = "sudo";
+    let args = [
+      "cp",
+      path.join(__dirname, "com.apple.networkextension.plist"),
+      "/Library/Preferences/com.apple.networkextension.plist",
+    ];
+    cp.execFileSync(cmd, args);
+    core.info("✓ Copied com.apple.networkextension.plist to /Library/Preferences");
+
+    args = [
+      "cp",
+      path.join(__dirname, "com.apple.networkextension.necp.plist"),
+      "/Library/Preferences/com.apple.networkextension.necp.plist",
+    ];
+    cp.execFileSync(cmd, args);
+    core.info("✓ Copied com.apple.networkextension.necp.plist to /Library/Preferences");
+    core.info("✓ Step 1 completed: Network extension permissions set");
+
+    // Step 2: Install Agent3.app to /Applications
+    core.info("Step 2: Installing Agent3.app...");
+    const agentAppPath = path.join(extractPath, "Agent3.app");
+    core.info(`Agent app path: ${agentAppPath}`);
+    cp.execSync(`sudo cp -r "${agentAppPath}" /Applications/`);
+    core.info("✓ Successfully copied Agent3.app to /Applications");
+    core.info("✓ Step 2 completed: Agent3.app installed");
+
+    // Launch the agent with log file
+    core.info("Launching Agent3...");
+    if (!fs.existsSync("/Applications/Agent3.app/Contents/MacOS/Agent3")) {
+      core.warning("✗ Agent3 binary not found at expected path");
     } else {
-      // Disable gatekeeper
-      core.info("Disabling gatekeeper");
-      cp.execSync("sudo spctl --master-disable");
-
-      // Download the Agent3.app package from placeholder URL
-      // TODO: Update this URL with the actual release URL
-      const downloadUrl =
-        "https://github.com/h0x0er/playground/releases/download/v0.0.2/Agent3.tar.gz";
-      core.info("Downloading macOS agent...");
-      const downloadPath = await tc.downloadTool(downloadUrl, undefined, auth);
-
-      // Extract the downloaded package
-      const extractPath = await tc.extractTar(downloadPath);
-
-      // Step 1: Fix user permission - Copy network extension plist files
-      core.info("Step 1: Setting network extension permissions...");
-      let cmd = "sudo";
-      let args = [
-        "cp",
-        path.join(__dirname, "com.apple.networkextension.plist"),
-        "/Library/Preferences/com.apple.networkextension.plist",
-      ];
-      cp.execFileSync(cmd, args);
-
-      args = [
-        "cp",
-        path.join(__dirname, "com.apple.networkextension.necp.plist"),
-        "/Library/Preferences/com.apple.networkextension.necp.plist",
-      ];
-      cp.execFileSync(cmd, args);
-
-      // Step 2: Install Agent3.app to /Applications
-      core.info("Step 2: Installing Agent3.app...");
-      const agentAppPath = path.join(extractPath, "Agent3.app");
-      cp.execSync(`sudo cp -r "${agentAppPath}" /Applications/`);
-
-      // Launch the agent with log file
-      core.info("Launching Agent3...");
-      if (!fs.existsSync("/Applications/Agent3.app/Contents/MacOS/Agent3")) {
-        core.warning("agent not present");
-      }
-      cp.execSync(
-        "sudo /Applications/Agent3.app/Contents/MacOS/Agent3 >> /tmp/agent.log 2>&1 &",
-        {
-          shell: "/bin/bash",
-        }
-      );
-
-      // Step 3: Fix user permission - Modify system extensions database
-      core.info("Step 3: Modifying system extensions database...");
-      cp.execSync("sleep 5");
-      cp.execSync(
-        "sudo plutil -convert xml1 /Library/SystemExtensions/db.plist"
-      );
-      cp.execSync(
-        "sudo sed -i -e 's/activated_waiting_for_user/activated_enabling/g' /Library/SystemExtensions/db.plist"
-      );
-      cp.execSync(
-        "sudo plutil -convert binary1 /Library/SystemExtensions/db.plist"
-      );
-
-      cp.execSync("sudo pgrep -fl Agent3 >> /tmp/agent.log");
-      // cp.execSync("sudo pgrep -fl step >> /tmp/agent.log")
-
-      cp.execSync("sudo killall -9 Agent3");
-      // cp.execSync("sleep 6");
-      var content = fs.readFileSync("/tmp/agent.log", "utf-8");
-      console.log(content);
-
-      cp.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");
-
-      // Recopy the plist files
-      // args = [
-      //   "cp",
-      //   path.join(__dirname, "com.apple.networkextension.plist"),
-      //   "/Library/Preferences/com.apple.networkextension.plist",
-      // ];
-      // cp.execFileSync(cmd, args);
-
-      // args = [
-      //   "cp",
-      //   path.join(__dirname, "com.apple.networkextension.necp.plist"),
-      //   "/Library/Preferences/com.apple.networkextension.necp.plist",
-      // ];
-      // cp.execFileSync(cmd, args);
-
-      // Step 4: Relaunch Agent3
-      core.info("Step 4: Relaunching Agent3...");
-      cp.execSync(
-        "sudo /Applications/Agent3.app/Contents/MacOS/Agent3 >> /tmp/agent.log 2>&1 &",
-        {
-          shell: "/bin/bash",
-        }
-      );
+      core.info("✓ Agent3 binary verified at /Applications/Agent3.app/Contents/MacOS/Agent3");
     }
+    cp.execSync(
+      "sudo /Applications/Agent3.app/Contents/MacOS/Agent3 >> /tmp/agent.log 2>&1 &",
+      {
+        shell: "/bin/bash",
+      }
+    );
+    core.info("✓ Agent3 launched in background");
 
-    core.info("macOS agent installation completed successfully");
+    // Step 3: Fix user permission - Modify system extensions database
+    core.info("Step 3: Modifying system extensions database...");
+    core.info("Waiting 5 seconds for system extension to initialize...");
+    cp.execSync("sleep 5");
+    core.info("✓ Wait completed");
+
+    core.info("Converting db.plist to xml1 format...");
+    cp.execSync("sudo plutil -convert xml1 /Library/SystemExtensions/db.plist");
+    core.info("✓ Successfully converted db.plist to xml1");
+
+    core.info("Modifying system extension state...");
+    cp.execSync(
+      "sudo sed -i -e 's/activated_waiting_for_user/activated_enabling/g' /Library/SystemExtensions/db.plist"
+    );
+    core.info("✓ Successfully modified system extension state");
+
+    core.info("Converting db.plist back to binary1 format...");
+    cp.execSync(
+      "sudo plutil -convert binary1 /Library/SystemExtensions/db.plist"
+    );
+    core.info("✓ Successfully converted db.plist to binary1");
+
+    core.info("Checking Agent3 processes...");
+    cp.execSync("sudo pgrep -fl Agent3 >> /tmp/agent.log");
+    core.info("✓ Agent3 process status logged");
+    // cp.execSync("sudo pgrep -fl step >> /tmp/agent.log")
+
+    core.info("Killing Agent3 process...");
+    cp.execSync("sudo killall -9 Agent3");
+    core.info("✓ Agent3 process terminated");
+
+    core.info("Waiting 6 seconds...");
+    cp.execSync("sleep 6");
+    core.info("✓ Wait completed");
+
+    var content = fs.readFileSync("/tmp/agent.log", "utf-8");
+    console.log("Agent log contents:");
+    console.log(content);
+    core.info("✓ Agent log read and displayed");
+
+    core.info("Restarting sysextd...");
+    cp.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");
+    core.info("✓ sysextd restarted");
+    core.info("✓ Step 3 completed: System extensions database modified");
+
+    // Recopy the plist files
+    core.info("Recopying network extension plist files...");
+    args = [
+      "cp",
+      path.join(__dirname, "com.apple.networkextension.plist"),
+      "/Library/Preferences/com.apple.networkextension.plist",
+    ];
+    cp.execFileSync(cmd, args);
+    core.info("✓ Recopied com.apple.networkextension.plist");
+
+    args = [
+      "cp",
+      path.join(__dirname, "com.apple.networkextension.necp.plist"),
+      "/Library/Preferences/com.apple.networkextension.necp.plist",
+    ];
+    cp.execFileSync(cmd, args);
+    core.info("✓ Recopied com.apple.networkextension.necp.plist");
+
+    // Step 4: Relaunch Agent3
+    core.info("Step 4: Relaunching Agent3...");
+    cp.execSync(
+      "sudo /Applications/Agent3.app/Contents/MacOS/Agent3 >> /tmp/agent.log 2>&1 &",
+      {
+        shell: "/bin/bash",
+      }
+    );
+    core.info("✓ Agent3 relaunched successfully");
+    core.info("✓ Step 4 completed: Agent3 is now running");
+
+    core.info("✓ macOS agent installation completed successfully");
     return true;
   } catch (error) {
     core.error(`Failed to install macOS agent: ${error}`);
