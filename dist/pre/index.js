@@ -88478,8 +88478,8 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
                     lib_core.warning("😭 macos agent installation failed");
                     return;
                 }
-                console.log("waiting for 20 seconds");
-                yield setup_sleep(1000 * 20); // wait for 10 seconds
+                console.log("waiting for 5 seconds");
+                yield setup_sleep(1000 * 5); // wait for 10 seconds
         }
     }
     catch (error) {

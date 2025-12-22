@@ -386,8 +386,8 @@ interface MonitorResponse {
           core.warning("😭 macos agent installation failed");
           return;
         }
-        console.log("waiting for 20 seconds");
-        await sleep(1000 * 20); // wait for 10 seconds
+        console.log("waiting for 5 seconds");
+        await sleep(1000 * 5); // wait for 10 seconds
     }
   } catch (error) {
     core.setFailed(error.message);
