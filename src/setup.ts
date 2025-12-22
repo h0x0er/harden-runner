@@ -381,7 +381,7 @@ interface MonitorResponse {
         }
 
       case "darwin":
-        const installed = installMacosAgent(confgStr);
+        const installed = await installMacosAgent(confgStr);
         if (!installed) {
           core.warning("😭 macos agent installation failed");
           return;

@@ -88473,7 +88473,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
                     }
                 }
             case "darwin":
-                const installed = installMacosAgent(confgStr);
+                const installed = yield installMacosAgent(confgStr);
                 if (!installed) {
                     lib_core.warning("😭 macos agent installation failed");
                     return;
