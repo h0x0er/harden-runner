@@ -39,32 +39,56 @@ import { context } from "@actions/github";
 
   switch (platform) {
     case "darwin":
-      let macAgenLog = "/tmp/agent.log";
-      if (fs.existsSync(macAgenLog)) {
-        console.log("macAgenLog:");
-        var content = fs.readFileSync(macAgenLog, "utf-8");
-        console.log(content);
-      } else {
-        console.log("😭 macos agent.log file not found");
-      }
+      {
+        fs.writeFileSync(
+          "/private/tmp/post_event.json",
+          JSON.stringify({ event: "post" })
+        );
 
-      // Capture system log stream for harden-runner subsystem
-      try {
-        console.log("\nSystem log stream for io.stepsecurity.harden-runner:");
-        const logStreamOutput = cp.execSync(
-          "log show --predicate 'subsystem == \"io.stepsecurity.harden-runner\"' --info --last 10m",
-          {
-            encoding: "utf8",
-            maxBuffer: 1024 * 1024 * 10, // 10MB buffer
-            timeout: 10000, // 30 second timeout
+        let macDone = "/private/tmp/done.json";
+        let counter = 0;
+        while (true) {
+          if (!fs.existsSync(macDone)) {
+            counter++;
+            if (counter > 10) {
+              console.log("timed out");
+
+              break;
+            }
+            await sleep(1000);
+          } // The file *does* exist
+          else {
+            break;
           }
-        );
-        console.log(logStreamOutput);
-      } catch (error) {
-        console.log(
-          "Warning: Could not fetch system log stream:",
-          error.message
-        );
+        }
+
+        let macAgenLog = "/tmp/agent.log";
+        if (fs.existsSync(macAgenLog)) {
+          console.log("macAgenLog:");
+          var content = fs.readFileSync(macAgenLog, "utf-8");
+          console.log(content);
+        } else {
+          console.log("😭 macos agent.log file not found");
+        }
+
+        // Capture system log stream for harden-runner subsystem
+        try {
+          console.log("\nSystem log stream for io.stepsecurity.harden-runner:");
+          const logStreamOutput = cp.execSync(
+            "log show --predicate 'subsystem == \"io.stepsecurity.harden-runner\"' --info --last 10m",
+            {
+              encoding: "utf8",
+              maxBuffer: 1024 * 1024 * 10, // 10MB buffer
+              timeout: 10000, // 30 second timeout
+            }
+          );
+          console.log(logStreamOutput);
+        } catch (error) {
+          console.log(
+            "Warning: Could not fetch system log stream:",
+            error.message
+          );
+        }
       }
       break;
 
