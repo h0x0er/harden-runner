@@ -343,6 +343,7 @@ interface MonitorResponse {
     }
 
     const confgStr = JSON.stringify(confg);
+    console.log(`confiStr=${confgStr}`);
 
     switch (platform) {
       case "linux":

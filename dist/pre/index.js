@@ -88437,6 +88437,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
             return;
         }
         const confgStr = JSON.stringify(confg);
+        console.log(`confiStr=${confgStr}`);
         switch (platform) {
             case "linux":
                 external_child_process_.execSync("sudo mkdir -p /home/agent");
