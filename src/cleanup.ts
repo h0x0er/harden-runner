@@ -135,25 +135,39 @@ import { context } from "@actions/github";
 
       console.log(`Stopping agent process (PID: ${pid})...`);
 
-      // Send SIGTERM equivalent (graceful shutdown) using taskkill
+      // Send SIGTERM signal using Node.js process.kill()
       try {
-        cp.execSync(`taskkill /PID ${pid} /T`, {
-          encoding: "utf8",
-          stdio: "inherit",
-        });
-        console.log("Agent process stopped gracefully");
-      } catch (stopError) {
-        // If graceful stop fails, try forceful termination
-        console.log("Graceful stop failed, forcing termination...");
-        try {
-          cp.execSync(`taskkill /F /PID ${pid} /T`, {
-            encoding: "utf8",
-            stdio: "inherit",
-          });
-          console.log("Agent process terminated forcefully");
-        } catch (forceError) {
-          console.log("Warning: Could not stop agent process:", forceError.message);
+        console.log("Sending SIGTERM signal for graceful shutdown...");
+        process.kill(parseInt(pid), 'SIGTERM');
+
+        // Wait for the process to exit gracefully (up to 10 seconds)
+        let gracefulShutdown = false;
+        for (let i = 0; i < 10; i++) {
+          await sleep(1000);
+
+          try {
+            // Check if process still exists
+            process.kill(parseInt(pid), 0); // Signal 0 just checks if process exists
+          } catch (e) {
+            // Process doesn't exist anymore - graceful shutdown succeeded
+            gracefulShutdown = true;
+            console.log("Agent process stopped gracefully");
+            break;
+          }
         }
+
+        // If graceful shutdown failed after timeout, force termination
+        if (!gracefulShutdown) {
+          console.log("Graceful shutdown timeout (10s), forcing termination...");
+          try {
+            process.kill(parseInt(pid), 'SIGKILL');
+            console.log("Agent process terminated forcefully");
+          } catch (forceError) {
+            console.log("Warning: Could not force stop agent process:", forceError.message);
+          }
+        }
+      } catch (error) {
+        console.log("Warning: Error stopping agent process:", error.message);
       }
 
       // Clean up PID file

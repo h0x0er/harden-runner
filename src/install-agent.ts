@@ -239,12 +239,15 @@ export async function installWindowsAgent(
       // Start the agent process in the background
       core.info(`Executing: ${agentExePath}`);
 
-      // Use spawn to start the process in background without waiting for it to complete
+      // Use spawn to start the process with CREATE_NEW_CONSOLE so it can receive CTRL+C signals
       const { spawn } = require('child_process');
       const agentProcess = spawn(agentExePath, [], {
         cwd: agentDir,
         detached: true,
-        stdio: 'ignore'
+        stdio: 'ignore',
+        // CREATE_NEW_CONSOLE (0x00000010) allows the process to receive console control events
+        windowsHide: false,
+        shell: false
       });
 
       // Save the PID to a file for later termination
