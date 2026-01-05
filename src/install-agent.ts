@@ -102,7 +102,7 @@ export async function installWindowsAgent(
       return false;
     }
 
-    const tarGzPath = path.join(agentDir, "agent.tar.gz");
+    const tarGzPath = path.join(agentDir, "agent_windows_amd64.tar.gz");
 
     core.info(`Downloading Windows agent from S3...`);
 
@@ -246,6 +246,12 @@ export async function installWindowsAgent(
         detached: true,
         stdio: 'ignore'
       });
+
+      // Save the PID to a file for later termination
+      const pidFile = path.join(agentDir, "agent.pid");
+      fs.writeFileSync(pidFile, agentProcess.pid.toString());
+      core.info(`Agent process started with PID: ${agentProcess.pid}`);
+      core.info(`PID saved to: ${pidFile}`);
 
       // Unref the process so it can continue running independently
       agentProcess.unref();

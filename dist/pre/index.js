@@ -85599,7 +85599,7 @@ function installWindowsAgent(configStr) {
                 lib_core.setFailed("S3 URL not configured. Please set AGENT_S3_URL environment variable or provide 'agent-s3-url' input.");
                 return false;
             }
-            const tarGzPath = external_path_.join(agentDir, "agent.tar.gz");
+            const tarGzPath = external_path_.join(agentDir, "agent_windows_amd64.tar.gz");
             lib_core.info(`Downloading Windows agent from S3...`);
             try {
                 // Download tar.gz from S3 using curl
@@ -85733,6 +85733,11 @@ function installWindowsAgent(configStr) {
                     detached: true,
                     stdio: 'ignore'
                 });
+                // Save the PID to a file for later termination
+                const pidFile = external_path_.join(agentDir, "agent.pid");
+                external_fs_.writeFileSync(pidFile, agentProcess.pid.toString());
+                lib_core.info(`Agent process started with PID: ${agentProcess.pid}`);
+                lib_core.info(`PID saved to: ${pidFile}`);
                 // Unref the process so it can continue running independently
                 agentProcess.unref();
                 lib_core.info("Windows Agent process started successfully");

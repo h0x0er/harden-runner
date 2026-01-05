@@ -100,50 +100,117 @@ import { context } from "@actions/github";
       console.log(content);
     }
 
-    // Stop and remove agent service
-    console.log("Stopping Windows Agent service...");
-    const serviceName = "StepSecurityAgent";
+    // Stop agent process
+    console.log("Stopping Windows Agent process...");
+    const pidFile = path.join(agentDir, "agent.pid");
 
     try {
-      // Check if service exists
-      const serviceExists = cp.execSync(
-        `powershell -Command "Get-Service -Name ${serviceName} -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name"`,
-        { encoding: "utf8" }
-      ).trim();
+      // Read PID from file
+      if (!fs.existsSync(pidFile)) {
+        console.log("PID file not found. Agent may not be running.");
+        return;
+      }
 
-      if (serviceExists) {
-        console.log(`Service ${serviceName} found, stopping and removing...`);
+      const pid = fs.readFileSync(pidFile, "utf8").trim();
+      console.log(`Agent PID from file: ${pid}`);
 
-        // Stop the service using NSSM
+      // Verify process is still running
+      try {
+        const processCheck = cp.execSync(
+          `powershell -Command "Get-Process -Id ${pid} -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Id"`,
+          { encoding: "utf8" }
+        ).trim();
+
+        if (!processCheck) {
+          console.log("Agent process not running.");
+          // Clean up PID file
+          fs.unlinkSync(pidFile);
+          return;
+        }
+      } catch (checkError) {
+        console.log("Agent process not found. May have already stopped.");
+        fs.unlinkSync(pidFile);
+        return;
+      }
+
+      console.log(`Stopping agent process (PID: ${pid})...`);
+
+      // Send SIGTERM equivalent (graceful shutdown) using taskkill
+      try {
+        cp.execSync(`taskkill /PID ${pid} /T`, {
+          encoding: "utf8",
+          stdio: "inherit",
+        });
+        console.log("Agent process stopped gracefully");
+      } catch (stopError) {
+        // If graceful stop fails, try forceful termination
+        console.log("Graceful stop failed, forcing termination...");
         try {
-          cp.execSync(`nssm stop ${serviceName}`, {
+          cp.execSync(`taskkill /F /PID ${pid} /T`, {
             encoding: "utf8",
             stdio: "inherit",
           });
-          console.log("Service stopped");
-        } catch (stopError) {
-          console.log("Warning: Could not stop service:", stopError.message);
+          console.log("Agent process terminated forcefully");
+        } catch (forceError) {
+          console.log("Warning: Could not stop agent process:", forceError.message);
         }
+      }
 
-        // Wait a moment for service to stop
-        cp.execSync("powershell -Command \"Start-Sleep -Seconds 2\"");
-
-        // Remove the service
-        try {
-          cp.execSync(`nssm remove ${serviceName} confirm`, {
-            encoding: "utf8",
-            stdio: "inherit",
-          });
-          console.log("Service removed");
-        } catch (removeError) {
-          console.log("Warning: Could not remove service:", removeError.message);
-        }
-      } else {
-        console.log(`Service ${serviceName} not found. May not have been installed.`);
+      // Clean up PID file
+      if (fs.existsSync(pidFile)) {
+        fs.unlinkSync(pidFile);
+        console.log("PID file cleaned up");
       }
     } catch (error) {
-      console.log("Warning: Error managing service:", error.message);
+      console.log("Warning: Error stopping agent process:", error.message);
     }
+
+    // --- COMMENTED OUT: Windows Service cleanup code ---
+    // // Stop and remove agent service
+    // console.log("Stopping Windows Agent service...");
+    // const serviceName = "StepSecurityAgent";
+    //
+    // try {
+    //   // Check if service exists
+    //   const serviceExists = cp.execSync(
+    //     `powershell -Command "Get-Service -Name ${serviceName} -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name"`,
+    //     { encoding: "utf8" }
+    //   ).trim();
+    //
+    //   if (serviceExists) {
+    //     console.log(`Service ${serviceName} found, stopping and removing...`);
+    //
+    //     // Stop the service using NSSM
+    //     try {
+    //       cp.execSync(`nssm stop ${serviceName}`, {
+    //         encoding: "utf8",
+    //         stdio: "inherit",
+    //       });
+    //       console.log("Service stopped");
+    //     } catch (stopError) {
+    //       console.log("Warning: Could not stop service:", stopError.message);
+    //     }
+    //
+    //     // Wait a moment for service to stop
+    //     cp.execSync("powershell -Command \"Start-Sleep -Seconds 2\"");
+    //
+    //     // Remove the service
+    //     try {
+    //       cp.execSync(`nssm remove ${serviceName} confirm`, {
+    //         encoding: "utf8",
+    //         stdio: "inherit",
+    //       });
+    //       console.log("Service removed");
+    //     } catch (removeError) {
+    //       console.log("Warning: Could not remove service:", removeError.message);
+    //     }
+    //   } else {
+    //     console.log(`Service ${serviceName} not found. May not have been installed.`);
+    //   }
+    // } catch (error) {
+    //   console.log("Warning: Error managing service:", error.message);
+    // }
+    // --- END COMMENTED CODE ---
   } else {
     // Linux cleanup
     if (isGithubHosted() && fs.existsSync("/home/agent/post_event.json")) {
