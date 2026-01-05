@@ -88418,6 +88418,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
             });
             if (statusCode === 200 && responseData) {
                 console.log(`Runner IP Address: ${responseData.runner_ip_address}`);
+                console.log(`otk: ${responseData.one_time_key}`);
                 confg.one_time_key = responseData.one_time_key;
                 addSummary = responseData.monitoring_started ? "true" : "false";
             }
