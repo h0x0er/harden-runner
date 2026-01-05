@@ -32235,10 +32235,10 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
                 return;
             }
             console.log(`Stopping agent process (PID: ${pid})...`);
-            // Send SIGTERM signal using Node.js process.kill()
+            // Send SIGINT signal using Node.js process.kill()
             try {
-                console.log("Sending SIGTERM signal for graceful shutdown...");
-                process.kill(parseInt(pid), 'SIGTERM');
+                console.log("Sending SIGINT signal for graceful shutdown...");
+                process.kill(parseInt(pid), 'SIGINT');
                 // Wait for the process to exit gracefully (up to 10 seconds)
                 let gracefulShutdown = false;
                 for (let i = 0; i < 10; i++) {
