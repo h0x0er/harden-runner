@@ -85581,7 +85581,7 @@ function installWindowsAgent(configStr) {
     return install_agent_awaiter(this, void 0, void 0, function* () {
         try {
             // Note: to avoid github rate limiting
-            const token = lib_core.getInput("token", { required: true });
+            // const token = core.getInput("token", { required: true });
             // Set up agent directory at C:\agent (mirrors Linux /home/agent)
             const agentDir = "C:\\agent";
             lib_core.info(`Creating agent directory: ${agentDir}`);
@@ -85591,79 +85591,36 @@ function installWindowsAgent(configStr) {
             external_fs_.appendFileSync(process.env.GITHUB_STATE, `agentDir=${agentDir}${external_os_.EOL}`, {
                 encoding: "utf8",
             });
-            // Download Windows agent from private repository using gh CLI
-            const repo = "sailikhith-stepsecurity/win-agent";
+            // Download Windows agent from S3
             const agentExePath = external_path_.join(agentDir, "agent.exe");
-            lib_core.info(`Downloading Windows agent from ${repo}...`);
+            // Get S3 URL from environment variable or GitHub Actions input
+            const s3Url = process.env.AGENT_S3_URL || lib_core.getInput("agent-s3-url");
+            if (!s3Url) {
+                lib_core.setFailed("S3 URL not configured. Please set AGENT_S3_URL environment variable or provide 'agent-s3-url' input.");
+                return false;
+            }
+            const tarGzPath = external_path_.join(agentDir, "agent.tar.gz");
+            lib_core.info(`Downloading Windows agent from S3...`);
             try {
-                // Set GH_TOKEN environment variable for gh CLI
-                const ghEnv = Object.assign(Object.assign({}, process.env), { GH_TOKEN: token });
-                // First, verify access to the repository
-                lib_core.info("Verifying access to repository...");
-                try {
-                    const verifyRepoCmd = `gh repo view ${repo} --json nameWithOwner,isPrivate`;
-                    const repoInfo = external_child_process_.execSync(verifyRepoCmd, {
-                        encoding: "utf8",
-                        env: ghEnv,
-                    });
-                    lib_core.info(`Repository access confirmed: ${repo}`);
-                    lib_core.info(`Repository info: ${repoInfo}`);
-                }
-                catch (verifyError) {
-                    lib_core.setFailed(`Cannot access repository ${repo}. Please ensure:\n` +
-                        `  1. The repository exists\n` +
-                        `  2. The token has 'repo' scope\n` +
-                        `  3. The token is passed via 'token' input\n` +
-                        `Error: ${verifyError.message}`);
+                // Download tar.gz from S3 using curl
+                lib_core.info(`Downloading from: ${s3Url}`);
+                external_child_process_.execSync(`curl -L -o "${tarGzPath}" "${s3Url}"`, { stdio: "inherit" });
+                if (!external_fs_.existsSync(tarGzPath)) {
+                    lib_core.setFailed("Failed to download agent.tar.gz from S3");
                     return false;
                 }
-                // Check for available releases
-                lib_core.info("Checking for available releases...");
-                try {
-                    const listReleasesCmd = `gh release list --repo ${repo} --limit 5`;
-                    const releasesList = external_child_process_.execSync(listReleasesCmd, {
-                        encoding: "utf8",
-                        env: ghEnv,
-                    });
-                    if (releasesList.trim()) {
-                        lib_core.info("Available releases:");
-                        lib_core.info(releasesList);
-                    }
-                    else {
-                        lib_core.setFailed(`No releases found in ${repo}.\n` +
-                            `Please create a release first:\n` +
-                            `  1. Go to https://github.com/${repo}/releases\n` +
-                            `  2. Create a new release with a tag (e.g., v0.0.1)\n` +
-                            `  3. Upload the windows-agent-amd64.exe binary`);
-                        return false;
-                    }
-                }
-                catch (listError) {
-                    lib_core.setFailed(`Failed to list releases from ${repo}: ${listError.message}`);
-                    return false;
-                }
-                // Get latest release tag
-                const getReleaseCmd = `gh release view --repo ${repo} --json tagName --jq .tagName`;
-                const releaseTag = external_child_process_.execSync(getReleaseCmd, {
-                    encoding: "utf8",
-                    env: ghEnv,
-                }).trim();
-                if (!releaseTag) {
-                    lib_core.setFailed(`No release found in ${repo}`);
-                    return false;
-                }
-                lib_core.info(`Latest release: ${releaseTag}`);
-                // Download the windows-agent-amd64.exe
-                const downloadCmd = `gh release download ${releaseTag} --repo ${repo} --pattern "windows-agent-amd64.exe" --dir "${agentDir}" --clobber`;
-                external_child_process_.execSync(downloadCmd, { env: ghEnv });
-                // Rename to agent.exe
-                const downloadedFile = external_path_.join(agentDir, "windows-agent-amd64.exe");
-                if (external_fs_.existsSync(downloadedFile)) {
-                    external_fs_.renameSync(downloadedFile, agentExePath);
-                    lib_core.info(`Downloaded agent to: ${agentExePath}`);
+                lib_core.info(`Downloaded tar.gz to: ${tarGzPath}`);
+                // Extract tar.gz
+                lib_core.info("Extracting tar.gz...");
+                external_child_process_.execSync(`tar -xzf "${tarGzPath}" -C "${agentDir}"`, { stdio: "inherit" });
+                // Verify agent.exe exists after extraction
+                if (external_fs_.existsSync(agentExePath)) {
+                    lib_core.info(`Agent extracted to: ${agentExePath}`);
+                    // Clean up tar.gz
+                    external_fs_.unlinkSync(tarGzPath);
                 }
                 else {
-                    lib_core.setFailed("Failed to download windows-agent-amd64.exe");
+                    lib_core.setFailed("agent.exe not found after extraction");
                     return false;
                 }
             }
@@ -85671,103 +85628,221 @@ function installWindowsAgent(configStr) {
                 lib_core.setFailed(`Failed to download Windows agent: ${error.message}`);
                 return false;
             }
+            // --- COMMENTED OUT: GitHub download code ---
+            // const repo = "sailikhith-stepsecurity/win-agent";
+            // core.info(`Downloading Windows agent from ${repo}...`);
+            //
+            // try {
+            //   // Set GH_TOKEN environment variable for gh CLI
+            //   const ghEnv = { ...process.env, GH_TOKEN: token };
+            //
+            //   // First, verify access to the repository
+            //   core.info("Verifying access to repository...");
+            //   try {
+            //     const verifyRepoCmd = `gh repo view ${repo} --json nameWithOwner,isPrivate`;
+            //     const repoInfo = cp.execSync(verifyRepoCmd, {
+            //       encoding: "utf8",
+            //       env: ghEnv,
+            //     });
+            //     core.info(`Repository access confirmed: ${repo}`);
+            //     core.info(`Repository info: ${repoInfo}`);
+            //   } catch (verifyError) {
+            //     core.setFailed(
+            //       `Cannot access repository ${repo}. Please ensure:\n` +
+            //       `  1. The repository exists\n` +
+            //       `  2. The token has 'repo' scope\n` +
+            //       `  3. The token is passed via 'token' input\n` +
+            //       `Error: ${verifyError.message}`
+            //     );
+            //     return false;
+            //   }
+            //
+            //   // Check for available releases
+            //   core.info("Checking for available releases...");
+            //   try {
+            //     const listReleasesCmd = `gh release list --repo ${repo} --limit 5`;
+            //     const releasesList = cp.execSync(listReleasesCmd, {
+            //       encoding: "utf8",
+            //       env: ghEnv,
+            //     });
+            //     if (releasesList.trim()) {
+            //       core.info("Available releases:");
+            //       core.info(releasesList);
+            //     } else {
+            //       core.setFailed(
+            //         `No releases found in ${repo}.\n` +
+            //         `Please create a release first:\n` +
+            //         `  1. Go to https://github.com/${repo}/releases\n` +
+            //         `  2. Create a new release with a tag (e.g., v0.0.1)\n` +
+            //         `  3. Upload the windows-agent-amd64.exe binary`
+            //       );
+            //       return false;
+            //     }
+            //   } catch (listError) {
+            //     core.setFailed(
+            //       `Failed to list releases from ${repo}: ${listError.message}`
+            //     );
+            //     return false;
+            //   }
+            //
+            //   // Get latest release tag
+            //   const getReleaseCmd = `gh release view --repo ${repo} --json tagName --jq .tagName`;
+            //   const releaseTag = cp.execSync(getReleaseCmd, {
+            //     encoding: "utf8",
+            //     env: ghEnv,
+            //   }).trim();
+            //
+            //   if (!releaseTag) {
+            //     core.setFailed(`No release found in ${repo}`);
+            //     return false;
+            //   }
+            //
+            //   core.info(`Latest release: ${releaseTag}`);
+            //
+            //   // Download the windows-agent-amd64.exe
+            //   const downloadCmd = `gh release download ${releaseTag} --repo ${repo} --pattern "windows-agent-amd64.exe" --dir "${agentDir}" --clobber`;
+            //   cp.execSync(downloadCmd, { env: ghEnv });
+            //
+            //   // Rename to agent.exe
+            //   const downloadedFile = path.join(agentDir, "windows-agent-amd64.exe");
+            //   if (fs.existsSync(downloadedFile)) {
+            //     fs.renameSync(downloadedFile, agentExePath);
+            //     core.info(`Downloaded agent to: ${agentExePath}`);
+            //   } else {
+            //     core.setFailed("Failed to download windows-agent-amd64.exe");
+            //     return false;
+            //   }
+            // } catch (error) {
+            //   core.setFailed(`Failed to download Windows agent: ${error.message}`);
+            //   return false;
+            // }
+            // --- END COMMENTED CODE ---
             // Write config.json
             const configPath = external_path_.join(agentDir, "config.json");
             external_fs_.writeFileSync(configPath, configStr);
             lib_core.info(`Created config file: ${configPath}`);
-            // Install NSSM and use it to run agent as a Windows Service
-            lib_core.info("Installing Windows Agent as a service using NSSM...");
-            const serviceName = "StepSecurityAgent";
-            const logPath = external_path_.join(agentDir, "agent.log");
+            // Start agent as a process
+            lib_core.info("Starting Windows Agent as a process...");
             try {
-                // PowerShell script to install NSSM, create and start service
-                const serviceScript = `
-$serviceName = "${serviceName}"
-$agentPath = "${agentExePath}"
-$agentDir = "${agentDir}"
-$logPath = "${logPath}"
-
-Write-Host "Installing NSSM (Non-Sucking Service Manager)..."
-
-# Install NSSM using chocolatey
-try {
-  choco install nssm -y --no-progress
-  if ($LASTEXITCODE -ne 0) {
-    Write-Error "Failed to install NSSM via chocolatey"
-    exit 1
-  }
-  Write-Host "NSSM installed successfully"
-} catch {
-  Write-Error "Error installing NSSM: $_"
-  exit 1
-}
-
-# Refresh environment to get NSSM in PATH
-$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-
-Write-Host "Creating service: $serviceName"
-
-# Check if service already exists and remove it
-$existingService = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
-if ($existingService) {
-  Write-Host "Service already exists, removing..."
-  nssm stop $serviceName
-  nssm remove $serviceName confirm
-  Start-Sleep -Seconds 2
-}
-
-# Install service using NSSM
-Write-Host "Installing service with NSSM..."
-nssm install $serviceName "$agentPath"
-
-if ($LASTEXITCODE -ne 0) {
-  Write-Error "Failed to install service with NSSM"
-  exit 1
-}
-
-# Configure service
-Write-Host "Configuring service..."
-nssm set $serviceName AppDirectory "$agentDir"
-nssm set $serviceName AppStdout "$logPath"
-nssm set $serviceName AppStderr "$logPath"
-nssm set $serviceName DisplayName "StepSecurity Harden Runner Agent"
-nssm set $serviceName Description "Security monitoring agent for GitHub Actions"
-
-# Start the service
-Write-Host "Starting service..."
-nssm start $serviceName
-
-if ($LASTEXITCODE -ne 0) {
-  Write-Error "Failed to start service"
-  nssm remove $serviceName confirm
-  exit 1
-}
-
-Write-Host "Service started successfully"
-
-# Wait a moment for service to initialize
-Start-Sleep -Seconds 2
-
-# Check service status
-$service = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
-if ($service) {
-  Write-Host "Service Status: $($service.Status)"
-} else {
-  Write-Warning "Could not retrieve service status"
-}
-`;
-                const scriptPath = external_path_.join(agentDir, "install-service.ps1");
-                external_fs_.writeFileSync(scriptPath, serviceScript);
-                external_child_process_.execSync(`powershell -ExecutionPolicy Bypass -File "${scriptPath}"`, {
-                    stdio: "inherit",
+                // Start the agent process in the background
+                lib_core.info(`Executing: ${agentExePath}`);
+                // Use spawn to start the process in background without waiting for it to complete
+                const { spawn } = __nccwpck_require__(5317);
+                const agentProcess = spawn(agentExePath, [], {
+                    cwd: agentDir,
+                    detached: true,
+                    stdio: 'ignore'
                 });
-                lib_core.info("Windows Agent service installed and started successfully");
+                // Unref the process so it can continue running independently
+                agentProcess.unref();
+                lib_core.info("Windows Agent process started successfully");
                 return true;
             }
             catch (error) {
-                lib_core.setFailed(`Failed to install Windows agent service: ${error.message}`);
+                lib_core.setFailed(`Failed to start Windows agent process: ${error.message}`);
                 return false;
             }
+            // --- COMMENTED OUT: Windows Service installation code ---
+            // // Install NSSM and use it to run agent as a Windows Service
+            // core.info("Installing Windows Agent as a service using NSSM...");
+            //
+            // const serviceName = "StepSecurityAgent";
+            // const logPath = path.join(agentDir, "agent.log");
+            //
+            // try {
+            //   // PowerShell script to install NSSM, create and start service
+            //   const serviceScript = `
+            // $serviceName = "${serviceName}"
+            // $agentPath = "${agentExePath}"
+            // $agentDir = "${agentDir}"
+            // $logPath = "${logPath}"
+            //
+            // Write-Host "Installing NSSM (Non-Sucking Service Manager)..."
+            //
+            // # Install NSSM using chocolatey
+            // try {
+            //   choco install nssm -y --no-progress
+            //   if ($LASTEXITCODE -ne 0) {
+            //     Write-Error "Failed to install NSSM via chocolatey"
+            //     exit 1
+            //   }
+            //   Write-Host "NSSM installed successfully"
+            // } catch {
+            //   Write-Error "Error installing NSSM: $_"
+            //   exit 1
+            // }
+            //
+            // # Refresh environment to get NSSM in PATH
+            // $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+            //
+            // Write-Host "Creating service: $serviceName"
+            //
+            // # Check if service already exists and remove it
+            // $existingService = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
+            // if ($existingService) {
+            //   Write-Host "Service already exists, removing..."
+            //   nssm stop $serviceName
+            //   nssm remove $serviceName confirm
+            //   Start-Sleep -Seconds 2
+            // }
+            //
+            // # Install service using NSSM
+            // Write-Host "Installing service with NSSM..."
+            // nssm install $serviceName "$agentPath"
+            //
+            // if ($LASTEXITCODE -ne 0) {
+            //   Write-Error "Failed to install service with NSSM"
+            //   exit 1
+            // }
+            //
+            // # Configure service
+            // Write-Host "Configuring service..."
+            // nssm set $serviceName AppDirectory "$agentDir"
+            // nssm set $serviceName AppStdout "$logPath"
+            // nssm set $serviceName AppStderr "$logPath"
+            // nssm set $serviceName DisplayName "StepSecurity Harden Runner Agent"
+            // nssm set $serviceName Description "Security monitoring agent for GitHub Actions"
+            //
+            // # Start the service
+            // Write-Host "Starting service..."
+            // nssm start $serviceName
+            //
+            // if ($LASTEXITCODE -ne 0) {
+            //   Write-Error "Failed to start service"
+            //   nssm remove $serviceName confirm
+            //   exit 1
+            // }
+            //
+            // Write-Host "Service started successfully"
+            //
+            // # Wait a moment for service to initialize
+            // Start-Sleep -Seconds 2
+            //
+            // # Check service status
+            // $service = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
+            // if ($service) {
+            //   Write-Host "Service Status: $($service.Status)"
+            // } else {
+            //   Write-Warning "Could not retrieve service status"
+            // }
+            // `;
+            //
+            //   const scriptPath = path.join(agentDir, "install-service.ps1");
+            //   fs.writeFileSync(scriptPath, serviceScript);
+            //
+            //   cp.execSync(`powershell -ExecutionPolicy Bypass -File "${scriptPath}"`, {
+            //     stdio: "inherit",
+            //   });
+            //
+            //   core.info("Windows Agent service installed and started successfully");
+            //   return true;
+            // } catch (error) {
+            //   core.setFailed(
+            //     `Failed to install Windows agent service: ${error.message}`
+            //   );
+            //   return false;
+            // }
+            // --- END COMMENTED CODE ---
         }
         catch (error) {
             lib_core.setFailed(`Failed to install Windows agent: ${error.message}`);
