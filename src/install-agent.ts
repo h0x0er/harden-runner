@@ -239,12 +239,17 @@ export async function installWindowsAgent(
       // Start the agent process in the background
       core.info(`Executing: ${agentExePath}`);
 
+      // Set up log file for agent output
+      const logPath = path.join(agentDir, "agent.log");
+      const logStream = fs.openSync(logPath, 'a');
+      core.info(`Agent logs will be written to: ${logPath}`);
+
       // Use spawn to start the process with CREATE_NEW_CONSOLE so it can receive CTRL+C signals
       const { spawn } = require('child_process');
       const agentProcess = spawn(agentExePath, [], {
         cwd: agentDir,
         detached: true,
-        stdio: 'ignore',
+        stdio: ['ignore', logStream, logStream], // stdin: ignore, stdout: log, stderr: log
         // CREATE_NEW_CONSOLE (0x00000010) allows the process to receive console control events
         windowsHide: false,
         shell: false
