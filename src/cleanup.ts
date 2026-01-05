@@ -84,14 +84,6 @@ import { context } from "@actions/github";
       }
     }
 
-    // Display agent log
-    const log = path.join(agentDir, "agent.log");
-    if (fs.existsSync(log)) {
-      console.log("log:");
-      var content = fs.readFileSync(log, "utf-8");
-      console.log(content);
-    }
-
     // Display agent status
     const status = path.join(agentDir, "agent.status");
     if (fs.existsSync(status)) {
@@ -177,6 +169,14 @@ import { context } from "@actions/github";
       }
     } catch (error) {
       console.log("Warning: Error stopping agent process:", error.message);
+    }
+
+    // Display agent log
+    const log = path.join(agentDir, "agent.log");
+    if (fs.existsSync(log)) {
+      console.log("log:");
+      var content = fs.readFileSync(log, "utf-8");
+      console.log(content);
     }
 
     // --- COMMENTED OUT: Windows Service cleanup code ---

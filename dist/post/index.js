@@ -32201,13 +32201,6 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
                 break;
             }
         }
-        // Display agent log
-        const log = external_path_.join(agentDir, "agent.log");
-        if (external_fs_.existsSync(log)) {
-            console.log("log:");
-            var content = external_fs_.readFileSync(log, "utf-8");
-            console.log(content);
-        }
         // Display agent status
         const status = external_path_.join(agentDir, "agent.status");
         if (external_fs_.existsSync(status)) {
@@ -32284,6 +32277,13 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
         }
         catch (error) {
             console.log("Warning: Error stopping agent process:", error.message);
+        }
+        // Display agent log
+        const log = external_path_.join(agentDir, "agent.log");
+        if (external_fs_.existsSync(log)) {
+            console.log("log:");
+            var content = external_fs_.readFileSync(log, "utf-8");
+            console.log(content);
         }
         // --- COMMENTED OUT: Windows Service cleanup code ---
         // // Stop and remove agent service
