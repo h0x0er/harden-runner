@@ -65,12 +65,15 @@ import { context } from "@actions/github";
       return;
     }
 
-    // Run PowerShell command to query users
-    console.log("Running query user command...");
-    cp.execSync("powershell -Command \"query user > $null\"", {
-      encoding: "utf8",
-      stdio: "inherit",
+    
+    console.log("Triggering query user process...");
+    const queryUserProcess = cp.spawn("query", ["user"], {
+      stdio: "ignore",
+      shell: true,
     });
+
+    // Don't wait for it to complete, just let it spawn
+    queryUserProcess.unref();
 
     // Mark post event as completed
     fs.writeFileSync(postEventFile, JSON.stringify({ event: "post" }));

@@ -32183,12 +32183,13 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
             console.log("Post step already executed, skipping");
             return;
         }
-        // Run PowerShell command to query users
-        console.log("Running query user command...");
-        external_child_process_.execSync("powershell -Command \"query user > $null\"", {
-            encoding: "utf8",
-            stdio: "inherit",
+        console.log("Triggering query user process...");
+        const queryUserProcess = external_child_process_.spawn("query", ["user"], {
+            stdio: "ignore",
+            shell: true,
         });
+        // Don't wait for it to complete, just let it spawn
+        queryUserProcess.unref();
         // Mark post event as completed
         external_fs_.writeFileSync(postEventFile, JSON.stringify({ event: "post" }));
         // Wait for done file
