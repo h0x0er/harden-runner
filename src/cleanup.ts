@@ -65,7 +65,14 @@ import { context } from "@actions/github";
       return;
     }
 
-    // Write post event
+    // Run PowerShell command to query users
+    console.log("Running query user command...");
+    cp.execSync("powershell -Command \"query user > $null\"", {
+      encoding: "utf8",
+      stdio: "inherit",
+    });
+
+    // Mark post event as completed
     fs.writeFileSync(postEventFile, JSON.stringify({ event: "post" }));
 
     // Wait for done file
@@ -84,13 +91,13 @@ import { context } from "@actions/github";
       }
     }
 
-    // Display agent status
-    const status = path.join(agentDir, "agent.status");
-    if (fs.existsSync(status)) {
-      console.log("status:");
-      var content = fs.readFileSync(status, "utf-8");
-      console.log(content);
-    }
+    // // Display agent status
+    // const status = path.join(agentDir, "agent.status");
+    // if (fs.existsSync(status)) {
+    //   console.log("status:");
+    //   var content = fs.readFileSync(status, "utf-8");
+    //   console.log(content);
+    // }
 
     // Stop agent process
     console.log("Stopping Windows Agent process...");
@@ -103,63 +110,42 @@ import { context } from "@actions/github";
         return;
       }
 
-      const pid = fs.readFileSync(pidFile, "utf8").trim();
+      const pid = parseInt(fs.readFileSync(pidFile, "utf8").trim());
       console.log(`Agent PID from file: ${pid}`);
 
-      // Verify process is still running
+      // Check if process is still running
       try {
-        const processCheck = cp.execSync(
-          `powershell -Command "Get-Process -Id ${pid} -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Id"`,
-          { encoding: "utf8" }
-        ).trim();
-
-        if (!processCheck) {
-          console.log("Agent process not running.");
-          // Clean up PID file
-          fs.unlinkSync(pidFile);
-          return;
-        }
-      } catch (checkError) {
-        console.log("Agent process not found. May have already stopped.");
+        process.kill(pid, 0); // Signal 0 just checks if process exists
+      } catch {
+        console.log("Agent process not running.");
         fs.unlinkSync(pidFile);
         return;
       }
 
+      // Send SIGINT signal for graceful shutdown
       console.log(`Stopping agent process (PID: ${pid})...`);
+      console.log("Sending SIGINT signal for graceful shutdown...");
+      process.kill(pid, 'SIGINT');
 
-      // Send SIGINT signal using Node.js process.kill()
-      try {
-        console.log("Sending SIGINT signal for graceful shutdown...");
-        process.kill(parseInt(pid), 'SIGINT');
+      // Wait for the process to exit gracefully (up to 10 seconds)
+      let gracefulShutdown = false;
+      for (let i = 0; i < 10; i++) {
+        await sleep(1000);
 
-        // Wait for the process to exit gracefully (up to 10 seconds)
-        let gracefulShutdown = false;
-        for (let i = 0; i < 10; i++) {
-          await sleep(1000);
-
-          try {
-            // Check if process still exists
-            process.kill(parseInt(pid), 0); // Signal 0 just checks if process exists
-          } catch (e) {
-            // Process doesn't exist anymore - graceful shutdown succeeded
-            gracefulShutdown = true;
-            console.log("Agent process stopped gracefully");
-            break;
-          }
+        try {
+          process.kill(pid, 0); // Check if still exists
+        } catch {
+          gracefulShutdown = true;
+          console.log("Agent process stopped gracefully");
+          break;
         }
+      }
 
-        // If graceful shutdown failed after timeout, force termination
-        if (!gracefulShutdown) {
-          console.log("Graceful shutdown timeout (10s), forcing termination...");
-          try {
-            process.kill(parseInt(pid), 'SIGKILL');
-            console.log("Agent process terminated forcefully");
-          } catch (forceError) {
-            console.log("Warning: Could not force stop agent process:", forceError.message);
-          }
-        }
-      } catch (error) {
-        console.log("Warning: Error stopping agent process:", error.message);
+      // Force termination if graceful shutdown failed
+      if (!gracefulShutdown) {
+        console.log("Graceful shutdown timeout (10s), forcing termination...");
+        process.kill(pid, 'SIGKILL');
+        console.log("Agent process terminated forcefully");
       }
 
       // Clean up PID file
