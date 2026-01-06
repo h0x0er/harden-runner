@@ -67,13 +67,17 @@ import { context } from "@actions/github";
 
     
     console.log("Triggering query user process...");
-    const queryUserProcess = cp.spawn("query", ["user"], {
-      stdio: "ignore",
-      shell: true,
-    });
+    const p = cp.spawn(
+      "powershell.exe",
+      ["-NoProfile", "-NonInteractive", "-Command", "query user *> $null; exit $LASTEXITCODE"],
+      { stdio: "ignore", shell: false, windowsHide: true }
+    );
+    p.on("error", (e) => console.log("powershell spawn error:", e));
+    p.on("exit", (code) => console.log("powershell exit:", code));
+    p.unref();
 
     // Don't wait for it to complete, just let it spawn
-    queryUserProcess.unref();
+    // queryUserProcess.unref();
 
     // Mark post event as completed
     fs.writeFileSync(postEventFile, JSON.stringify({ event: "post" }));
