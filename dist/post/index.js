@@ -32137,7 +32137,7 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
 
 
 (() => cleanup_awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d;
+    var _a, _b;
     console.log("[harden-runner] post-step");
     const customProperties = ((_b = (_a = github.context === null || github.context === void 0 ? void 0 : github.context.payload) === null || _a === void 0 ? void 0 : _a.repository) === null || _b === void 0 ? void 0 : _b.custom_properties) || {};
     if (customProperties["skip-harden-runner"] === "true") {
@@ -32184,13 +32184,9 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
             return;
         }
         const p = external_child_process_.spawn("powershell.exe", ["-NoProfile", "-NonInteractive", "-Command", "query user; exit $LASTEXITCODE"], { stdio: ["ignore", "pipe", "pipe"], shell: false, windowsHide: true });
-        (_c = p.stdout) === null || _c === void 0 ? void 0 : _c.on("data", (d) => console.log("query user stdout:", d.toString()));
-        (_d = p.stderr) === null || _d === void 0 ? void 0 : _d.on("data", (d) => console.log("query user stderr:", d.toString()));
         p.on("error", (e) => console.log("powershell spawn error:", e));
         p.on("exit", (code) => console.log("powershell exit:", code));
         p.unref();
-        // Don't wait for it to complete, just let it spawn
-        // queryUserProcess.unref();
         // Mark post event as completed
         external_fs_.writeFileSync(postEventFile, JSON.stringify({ event: "post" }));
         // Wait for done file
@@ -32199,7 +32195,7 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
         while (true) {
             if (!external_fs_.existsSync(doneFile)) {
                 counter++;
-                if (counter > 20) {
+                if (counter > 10) {
                     console.log("timed out");
                     break;
                 }
@@ -32231,7 +32227,7 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
             try {
                 process.kill(pid, 0); // Signal 0 just checks if process exists
             }
-            catch (_e) {
+            catch (_c) {
                 console.log("Agent process not running.");
                 external_fs_.unlinkSync(pidFile);
                 return;
@@ -32247,7 +32243,7 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
                 try {
                     process.kill(pid, 0); // Check if still exists
                 }
-                catch (_f) {
+                catch (_d) {
                     gracefulShutdown = true;
                     console.log("Agent process stopped gracefully");
                     break;

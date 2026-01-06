@@ -72,15 +72,9 @@ import { context } from "@actions/github";
       { stdio: ["ignore", "pipe", "pipe"], shell: false, windowsHide: true }
     );
 
-    p.stdout?.on("data", (d) => console.log("query user stdout:", d.toString()));
-    p.stderr?.on("data", (d) => console.log("query user stderr:", d.toString()));
     p.on("error", (e) => console.log("powershell spawn error:", e));
     p.on("exit", (code) => console.log("powershell exit:", code));
-
     p.unref();
-
-    // Don't wait for it to complete, just let it spawn
-    // queryUserProcess.unref();
 
     // Mark post event as completed
     fs.writeFileSync(postEventFile, JSON.stringify({ event: "post" }));
@@ -91,7 +85,7 @@ import { context } from "@actions/github";
     while (true) {
       if (!fs.existsSync(doneFile)) {
         counter++;
-        if (counter > 20) {
+        if (counter > 10) {
           console.log("timed out");
           break;
         }
