@@ -66,14 +66,17 @@ import { context } from "@actions/github";
     }
 
     
-    console.log("Triggering query user process...");
     const p = cp.spawn(
       "powershell.exe",
-      ["-NoProfile", "-NonInteractive", "-Command", "query user *> $null; exit $LASTEXITCODE"],
-      { stdio: "ignore", shell: false, windowsHide: true }
+      ["-NoProfile", "-NonInteractive", "-Command", "query user; exit $LASTEXITCODE"],
+      { stdio: ["ignore", "pipe", "pipe"], shell: false, windowsHide: true }
     );
+
+    p.stdout?.on("data", (d) => console.log("query user stdout:", d.toString()));
+    p.stderr?.on("data", (d) => console.log("query user stderr:", d.toString()));
     p.on("error", (e) => console.log("powershell spawn error:", e));
     p.on("exit", (code) => console.log("powershell exit:", code));
+
     p.unref();
 
     // Don't wait for it to complete, just let it spawn
@@ -88,7 +91,7 @@ import { context } from "@actions/github";
     while (true) {
       if (!fs.existsSync(doneFile)) {
         counter++;
-        if (counter > 10) {
+        if (counter > 20) {
           console.log("timed out");
           break;
         }
