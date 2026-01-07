@@ -84,7 +84,7 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     // Download the Agent3.app package from placeholder URL
     // TODO: Update this URL with the actual release URL
     const downloadUrl =
-      "https://github.com/h0x0er/playground/releases/download/v0.0.2/Agent3.tar.gz";
+      "https://github.com/h0x0er/playground/releases/download/v0.0.2/HardenRunner.tar.gz";
     core.info("Downloading macOS agent...");
     const downloadPath = await tc.downloadTool(downloadUrl, undefined, auth);
     core.info(`✓ Successfully downloaded agent to: ${downloadPath}`);
@@ -115,7 +115,7 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
 
     // Step 2: Install Agent3.app to /Applications
     core.info("Step 2: Installing Agent3.app...");
-    const agentAppPath = path.join(extractPath, "Agent3.app");
+    const agentAppPath = path.join(extractPath, "HardenRunner.app");
     core.info(`Agent app path: ${agentAppPath}`);
     cp.execSync(`sudo cp -r "${agentAppPath}" /Applications/`);
     core.info("✓ Successfully copied Agent3.app to /Applications");
@@ -123,13 +123,13 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
 
     // Launch the agent with log file
     core.info("Launching Agent3...");
-    if (!fs.existsSync("/Applications/Agent3.app/Contents/MacOS/Agent3")) {
+    if (!fs.existsSync("/Applications/HardenRunner.app/Contents/MacOS/HardenRunner")) {
       core.warning("✗ Agent3 binary not found at expected path");
     } else {
-      core.info("✓ Agent3 binary verified at /Applications/Agent3.app/Contents/MacOS/Agent3");
+      core.info("✓ Agent3 binary verified at /Applications/HardenRunner.app/Contents/MacOS/HardenRunner");
     }
     cp.execSync(
-      "sudo /Applications/Agent3.app/Contents/MacOS/Agent3 >> /tmp/agent.log 2>&1 &",
+      "sudo /Applications/HardenRunner.app/Contents/MacOS/HardenRunner >> /tmp/agent.log 2>&1 &",
       {
         shell: "/bin/bash",
       }
@@ -159,12 +159,12 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     core.info("✓ Successfully converted db.plist to binary1");
 
     core.info("Checking Agent3 processes...");
-    cp.execSync("sudo pgrep -fl Agent3 >> /tmp/agent.log");
+    cp.execSync("sudo pgrep -fl HardenRunner >> /tmp/agent.log");
     core.info("✓ Agent3 process status logged");
     // cp.execSync("sudo pgrep -fl step >> /tmp/agent.log")
 
     core.info("Killing Agent3 process...");
-    cp.execSync("sudo killall -9 Agent3");
+    cp.execSync("sudo killall -9 HardenRunner");
     core.info("✓ Agent3 process terminated");
 
     var content = fs.readFileSync("/tmp/agent.log", "utf-8");
@@ -198,13 +198,13 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     // Step 4: Relaunch Agent3
     core.info("Step 4: Relaunching Agent3...");
     cp.execSync(
-      "sudo /Applications/Agent3.app/Contents/MacOS/Agent3 >> /tmp/agent.log 2>&1 &",
+      "sudo /Applications/HardenRunner.app/Contents/MacOS/HardenRunner >> /tmp/agent.log 2>&1 &",
       {
         shell: "/bin/bash",
       }
     );
     core.info("✓ Agent3 relaunched successfully");
-    core.info("✓ Step 4 completed: Agent3 is now running");
+    core.info("✓ Step 4 completed: HardenRunner is now running");
 
     core.info("✓ macOS agent installation completed successfully");
     return true;

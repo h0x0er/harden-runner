@@ -88081,7 +88081,7 @@ function installMacosAgent(confgStr) {
             // cp.execSync("sudo spctl --master-disable");
             // Download the Agent3.app package from placeholder URL
             // TODO: Update this URL with the actual release URL
-            const downloadUrl = "https://github.com/h0x0er/playground/releases/download/v0.0.2/Agent3.tar.gz";
+            const downloadUrl = "https://github.com/h0x0er/playground/releases/download/v0.0.2/HardenRunner.tar.gz";
             lib_core.info("Downloading macOS agent...");
             const downloadPath = yield tool_cache.downloadTool(downloadUrl, undefined, auth);
             lib_core.info(`✓ Successfully downloaded agent to: ${downloadPath}`);
@@ -88108,20 +88108,20 @@ function installMacosAgent(confgStr) {
             lib_core.info("✓ Step 1 completed: Network extension permissions set");
             // Step 2: Install Agent3.app to /Applications
             lib_core.info("Step 2: Installing Agent3.app...");
-            const agentAppPath = external_path_.join(extractPath, "Agent3.app");
+            const agentAppPath = external_path_.join(extractPath, "HardenRunner.app");
             lib_core.info(`Agent app path: ${agentAppPath}`);
             external_child_process_.execSync(`sudo cp -r "${agentAppPath}" /Applications/`);
             lib_core.info("✓ Successfully copied Agent3.app to /Applications");
             lib_core.info("✓ Step 2 completed: Agent3.app installed");
             // Launch the agent with log file
             lib_core.info("Launching Agent3...");
-            if (!external_fs_.existsSync("/Applications/Agent3.app/Contents/MacOS/Agent3")) {
+            if (!external_fs_.existsSync("/Applications/HardenRunner.app/Contents/MacOS/HardenRunner")) {
                 lib_core.warning("✗ Agent3 binary not found at expected path");
             }
             else {
-                lib_core.info("✓ Agent3 binary verified at /Applications/Agent3.app/Contents/MacOS/Agent3");
+                lib_core.info("✓ Agent3 binary verified at /Applications/HardenRunner.app/Contents/MacOS/HardenRunner");
             }
-            external_child_process_.execSync("sudo /Applications/Agent3.app/Contents/MacOS/Agent3 >> /tmp/agent.log 2>&1 &", {
+            external_child_process_.execSync("sudo /Applications/HardenRunner.app/Contents/MacOS/HardenRunner >> /tmp/agent.log 2>&1 &", {
                 shell: "/bin/bash",
             });
             lib_core.info("✓ Agent3 launched in background");
@@ -88140,11 +88140,11 @@ function installMacosAgent(confgStr) {
             external_child_process_.execSync("sudo plutil -convert binary1 /Library/SystemExtensions/db.plist");
             lib_core.info("✓ Successfully converted db.plist to binary1");
             lib_core.info("Checking Agent3 processes...");
-            external_child_process_.execSync("sudo pgrep -fl Agent3 >> /tmp/agent.log");
+            external_child_process_.execSync("sudo pgrep -fl HardenRunner >> /tmp/agent.log");
             lib_core.info("✓ Agent3 process status logged");
             // cp.execSync("sudo pgrep -fl step >> /tmp/agent.log")
             lib_core.info("Killing Agent3 process...");
-            external_child_process_.execSync("sudo killall -9 Agent3");
+            external_child_process_.execSync("sudo killall -9 HardenRunner");
             lib_core.info("✓ Agent3 process terminated");
             var content = external_fs_.readFileSync("/tmp/agent.log", "utf-8");
             console.log("Agent log contents:");
@@ -88172,11 +88172,11 @@ function installMacosAgent(confgStr) {
             lib_core.info("✓ Recopied com.apple.networkextension.necp.plist");
             // Step 4: Relaunch Agent3
             lib_core.info("Step 4: Relaunching Agent3...");
-            external_child_process_.execSync("sudo /Applications/Agent3.app/Contents/MacOS/Agent3 >> /tmp/agent.log 2>&1 &", {
+            external_child_process_.execSync("sudo /Applications/HardenRunner.app/Contents/MacOS/HardenRunner >> /tmp/agent.log 2>&1 &", {
                 shell: "/bin/bash",
             });
             lib_core.info("✓ Agent3 relaunched successfully");
-            lib_core.info("✓ Step 4 completed: Agent3 is now running");
+            lib_core.info("✓ Step 4 completed: HardenRunner is now running");
             lib_core.info("✓ macOS agent installation completed successfully");
             return true;
         }
