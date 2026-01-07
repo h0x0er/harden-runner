@@ -88092,7 +88092,7 @@ function installMacosAgent(confgStr) {
             let args;
             // Step 1: Fix user permission - Copy network extension plist files
             // core.info("Step 1: Setting network extension permissions...");
-            // cmd = "sudo";
+            cmd = "sudo";
             // args = [
             //   "cp",
             //   path.join(__dirname, "com.apple.networkextension.plist"),
