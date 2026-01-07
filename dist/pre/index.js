@@ -88132,10 +88132,10 @@ function installMacosAgent(confgStr) {
             console.log("Agent log contents:");
             console.log(content);
             lib_core.info("✓ Agent log read and displayed");
-            // core.info("Restarting sysextd...");
-            // cp.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");
-            // core.info("✓ sysextd restarted");
-            // core.info("✓ Step 3 completed: System extensions database modified");
+            lib_core.info("Restarting sysextd...");
+            external_child_process_.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");
+            lib_core.info("✓ sysextd restarted");
+            lib_core.info("✓ Step 3 completed: System extensions database modified");
             // Recopy the plist files
             lib_core.info("Recopying network extension plist files...");
             let cmd = "sudo";

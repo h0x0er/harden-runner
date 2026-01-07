@@ -158,10 +158,10 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     console.log(content);
     core.info("✓ Agent log read and displayed");
 
-    // core.info("Restarting sysextd...");
-    // cp.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");
-    // core.info("✓ sysextd restarted");
-    // core.info("✓ Step 3 completed: System extensions database modified");
+    core.info("Restarting sysextd...");
+    cp.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");
+    core.info("✓ sysextd restarted");
+    core.info("✓ Step 3 completed: System extensions database modified");
 
     // Recopy the plist files
     core.info("Recopying network extension plist files...");
