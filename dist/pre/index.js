@@ -88122,9 +88122,8 @@ function installMacosAgent(confgStr) {
             external_child_process_.execSync("sudo plutil -convert binary1 /Library/SystemExtensions/db.plist");
             lib_core.info("✓ Successfully converted db.plist to binary1");
             lib_core.info("Checking Agent3 processes...");
-            external_child_process_.execSync("sudo pgrep -fl HardenRunner >> /tmp/agent.log");
+            external_child_process_.execSync("sudo pgrep -fil HardenRunner >> /tmp/agent.log");
             lib_core.info("✓ Agent3 process status logged");
-            // cp.execSync("sudo pgrep -fl step >> /tmp/agent.log")
             lib_core.info("Killing Agent3 process...");
             external_child_process_.execSync("sudo killall -9 HardenRunner");
             lib_core.info("✓ Agent3 process terminated");

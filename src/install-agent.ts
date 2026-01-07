@@ -145,9 +145,8 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     core.info("✓ Successfully converted db.plist to binary1");
 
     core.info("Checking Agent3 processes...");
-    cp.execSync("sudo pgrep -fl HardenRunner >> /tmp/agent.log");
+    cp.execSync("sudo pgrep -fil HardenRunner >> /tmp/agent.log");
     core.info("✓ Agent3 process status logged");
-    // cp.execSync("sudo pgrep -fl step >> /tmp/agent.log")
 
     core.info("Killing Agent3 process...");
     cp.execSync("sudo killall -9 HardenRunner");
