@@ -93,28 +93,6 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     const extractPath = await tc.extractTar(downloadPath);
     core.info(`✓ Successfully extracted agent to: ${extractPath}`);
 
-    let cmd;
-    let args;
-    // Step 1: Fix user permission - Copy network extension plist files
-    // core.info("Step 1: Setting network extension permissions...");
-    cmd = "sudo";
-    // args = [
-    //   "cp",
-    //   path.join(__dirname, "com.apple.networkextension.plist"),
-    //   "/Library/Preferences/com.apple.networkextension.plist",
-    // ];
-    // cp.execFileSync(cmd, args);
-    // core.info("✓ Copied com.apple.networkextension.plist to /Library/Preferences");
-
-    // args = [
-    //   "cp",
-    //   path.join(__dirname, "com.apple.networkextension.necp.plist"),
-    //   "/Library/Preferences/com.apple.networkextension.necp.plist",
-    // ];
-    // cp.execFileSync(cmd, args);
-    // core.info("✓ Copied com.apple.networkextension.necp.plist to /Library/Preferences");
-    // core.info("✓ Step 1 completed: Network extension permissions set");
-
     // Step 2: Install Agent3.app to /Applications
     core.info("Step 2: Installing Agent3.app...");
     const agentAppPath = path.join(extractPath, "HardenRunner.app");
@@ -125,10 +103,16 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
 
     // Launch the agent with log file
     core.info("Launching Agent3...");
-    if (!fs.existsSync("/Applications/HardenRunner.app/Contents/MacOS/HardenRunner")) {
+    if (
+      !fs.existsSync(
+        "/Applications/HardenRunner.app/Contents/MacOS/HardenRunner"
+      )
+    ) {
       core.warning("✗ Agent3 binary not found at expected path");
     } else {
-      core.info("✓ Agent3 binary verified at /Applications/HardenRunner.app/Contents/MacOS/HardenRunner");
+      core.info(
+        "✓ Agent3 binary verified at /Applications/HardenRunner.app/Contents/MacOS/HardenRunner"
+      );
     }
     cp.execSync(
       "sudo /Applications/HardenRunner.app/Contents/MacOS/HardenRunner >> /tmp/agent.log 2>&1 &",
@@ -174,14 +158,15 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     console.log(content);
     core.info("✓ Agent log read and displayed");
 
-    core.info("Restarting sysextd...");
-    cp.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");
-    core.info("✓ sysextd restarted");
-    core.info("✓ Step 3 completed: System extensions database modified");
+    // core.info("Restarting sysextd...");
+    // cp.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");
+    // core.info("✓ sysextd restarted");
+    // core.info("✓ Step 3 completed: System extensions database modified");
 
     // Recopy the plist files
     core.info("Recopying network extension plist files...");
-    args = [
+    let cmd = "sudo";
+    let args = [
       "cp",
       path.join(__dirname, "com.apple.networkextension.plist"),
       "/Library/Preferences/com.apple.networkextension.plist",
