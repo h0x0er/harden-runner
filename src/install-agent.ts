@@ -93,25 +93,27 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     const extractPath = await tc.extractTar(downloadPath);
     core.info(`✓ Successfully extracted agent to: ${extractPath}`);
 
+    let cmd;
+    let args;
     // Step 1: Fix user permission - Copy network extension plist files
-    core.info("Step 1: Setting network extension permissions...");
-    let cmd = "sudo";
-    let args = [
-      "cp",
-      path.join(__dirname, "com.apple.networkextension.plist"),
-      "/Library/Preferences/com.apple.networkextension.plist",
-    ];
-    cp.execFileSync(cmd, args);
-    core.info("✓ Copied com.apple.networkextension.plist to /Library/Preferences");
+    // core.info("Step 1: Setting network extension permissions...");
+    // cmd = "sudo";
+    // args = [
+    //   "cp",
+    //   path.join(__dirname, "com.apple.networkextension.plist"),
+    //   "/Library/Preferences/com.apple.networkextension.plist",
+    // ];
+    // cp.execFileSync(cmd, args);
+    // core.info("✓ Copied com.apple.networkextension.plist to /Library/Preferences");
 
-    args = [
-      "cp",
-      path.join(__dirname, "com.apple.networkextension.necp.plist"),
-      "/Library/Preferences/com.apple.networkextension.necp.plist",
-    ];
-    cp.execFileSync(cmd, args);
-    core.info("✓ Copied com.apple.networkextension.necp.plist to /Library/Preferences");
-    core.info("✓ Step 1 completed: Network extension permissions set");
+    // args = [
+    //   "cp",
+    //   path.join(__dirname, "com.apple.networkextension.necp.plist"),
+    //   "/Library/Preferences/com.apple.networkextension.necp.plist",
+    // ];
+    // cp.execFileSync(cmd, args);
+    // core.info("✓ Copied com.apple.networkextension.necp.plist to /Library/Preferences");
+    // core.info("✓ Step 1 completed: Network extension permissions set");
 
     // Step 2: Install Agent3.app to /Applications
     core.info("Step 2: Installing Agent3.app...");

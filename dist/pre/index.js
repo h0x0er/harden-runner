@@ -88088,24 +88088,26 @@ function installMacosAgent(confgStr) {
             // Extract the downloaded package
             const extractPath = yield tool_cache.extractTar(downloadPath);
             lib_core.info(`✓ Successfully extracted agent to: ${extractPath}`);
+            let cmd;
+            let args;
             // Step 1: Fix user permission - Copy network extension plist files
-            lib_core.info("Step 1: Setting network extension permissions...");
-            let cmd = "sudo";
-            let args = [
-                "cp",
-                external_path_.join(__dirname, "com.apple.networkextension.plist"),
-                "/Library/Preferences/com.apple.networkextension.plist",
-            ];
-            external_child_process_.execFileSync(cmd, args);
-            lib_core.info("✓ Copied com.apple.networkextension.plist to /Library/Preferences");
-            args = [
-                "cp",
-                external_path_.join(__dirname, "com.apple.networkextension.necp.plist"),
-                "/Library/Preferences/com.apple.networkextension.necp.plist",
-            ];
-            external_child_process_.execFileSync(cmd, args);
-            lib_core.info("✓ Copied com.apple.networkextension.necp.plist to /Library/Preferences");
-            lib_core.info("✓ Step 1 completed: Network extension permissions set");
+            // core.info("Step 1: Setting network extension permissions...");
+            // cmd = "sudo";
+            // args = [
+            //   "cp",
+            //   path.join(__dirname, "com.apple.networkextension.plist"),
+            //   "/Library/Preferences/com.apple.networkextension.plist",
+            // ];
+            // cp.execFileSync(cmd, args);
+            // core.info("✓ Copied com.apple.networkextension.plist to /Library/Preferences");
+            // args = [
+            //   "cp",
+            //   path.join(__dirname, "com.apple.networkextension.necp.plist"),
+            //   "/Library/Preferences/com.apple.networkextension.necp.plist",
+            // ];
+            // cp.execFileSync(cmd, args);
+            // core.info("✓ Copied com.apple.networkextension.necp.plist to /Library/Preferences");
+            // core.info("✓ Step 1 completed: Network extension permissions set");
             // Step 2: Install Agent3.app to /Applications
             lib_core.info("Step 2: Installing Agent3.app...");
             const agentAppPath = external_path_.join(extractPath, "HardenRunner.app");
