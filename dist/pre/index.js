@@ -88145,13 +88145,13 @@ function installMacosAgent(confgStr) {
             ];
             external_child_process_.execFileSync(cmd, args);
             lib_core.info("✓ Recopied com.apple.networkextension.plist");
-            args = [
-                "cp",
-                external_path_.join(__dirname, "com.apple.networkextension.necp.plist"),
-                "/Library/Preferences/com.apple.networkextension.necp.plist",
-            ];
-            external_child_process_.execFileSync(cmd, args);
-            lib_core.info("✓ Recopied com.apple.networkextension.necp.plist");
+            // args = [
+            //   "cp",
+            //   path.join(__dirname, "com.apple.networkextension.necp.plist"),
+            //   "/Library/Preferences/com.apple.networkextension.necp.plist",
+            // ];
+            // cp.execFileSync(cmd, args);
+            // core.info("✓ Recopied com.apple.networkextension.necp.plist");
             // Step 4: Relaunch Agent3
             lib_core.info("Step 4: Relaunching Agent3...");
             external_child_process_.execSync("sudo /Applications/HardenRunner.app/Contents/MacOS/HardenRunner >> /tmp/agent.log 2>&1 &", {

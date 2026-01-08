@@ -173,13 +173,13 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     cp.execFileSync(cmd, args);
     core.info("✓ Recopied com.apple.networkextension.plist");
 
-    args = [
-      "cp",
-      path.join(__dirname, "com.apple.networkextension.necp.plist"),
-      "/Library/Preferences/com.apple.networkextension.necp.plist",
-    ];
-    cp.execFileSync(cmd, args);
-    core.info("✓ Recopied com.apple.networkextension.necp.plist");
+    // args = [
+    //   "cp",
+    //   path.join(__dirname, "com.apple.networkextension.necp.plist"),
+    //   "/Library/Preferences/com.apple.networkextension.necp.plist",
+    // ];
+    // cp.execFileSync(cmd, args);
+    // core.info("✓ Recopied com.apple.networkextension.necp.plist");
 
     // Step 4: Relaunch Agent3
     core.info("Step 4: Relaunching Agent3...");
