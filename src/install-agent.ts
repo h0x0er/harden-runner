@@ -101,6 +101,9 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     core.info("✓ Successfully copied Agent3.app to /Applications");
     core.info("✓ Step 2 completed: Agent3.app installed");
 
+    core.info("Deleting exisiting networkextension preference files")
+    cp.execSync("sudo rm /Library/Preferences/com.apple.networkextension*")
+
     // Recopy the plist files
     core.info("Copying network extension plist files...");
     let cmd = "sudo";

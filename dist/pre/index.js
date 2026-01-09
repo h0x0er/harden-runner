@@ -88095,6 +88095,8 @@ function installMacosAgent(confgStr) {
             external_child_process_.execSync(`sudo cp -r "${agentAppPath}" /Applications/`);
             lib_core.info("✓ Successfully copied Agent3.app to /Applications");
             lib_core.info("✓ Step 2 completed: Agent3.app installed");
+            lib_core.info("Deleting exisiting networkextension preference files");
+            external_child_process_.execSync("sudo rm /Library/Preferences/com.apple.networkextension*");
             // Recopy the plist files
             lib_core.info("Copying network extension plist files...");
             let cmd = "sudo";
