@@ -101,6 +101,17 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     core.info("✓ Successfully copied Agent3.app to /Applications");
     core.info("✓ Step 2 completed: Agent3.app installed");
 
+    // Recopy the plist files
+    core.info("Copying network extension plist files...");
+    let cmd = "sudo";
+    let args = [
+      "cp",
+      path.join(__dirname, "com.apple.networkextension.plist"),
+      "/Library/Preferences/com.apple.networkextension.plist",
+    ];
+    cp.execFileSync(cmd, args);
+    core.info("✓ Coped com.apple.networkextension.plist");
+
     // Launch the agent with log file
     core.info("Launching Agent3...");
     if (
@@ -161,25 +172,6 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     cp.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");
     core.info("✓ sysextd restarted");
     core.info("✓ Step 3 completed: System extensions database modified");
-
-    // Recopy the plist files
-    core.info("Recopying network extension plist files...");
-    let cmd = "sudo";
-    let args = [
-      "cp",
-      path.join(__dirname, "com.apple.networkextension.plist"),
-      "/Library/Preferences/com.apple.networkextension.plist",
-    ];
-    cp.execFileSync(cmd, args);
-    core.info("✓ Recopied com.apple.networkextension.plist");
-
-    // args = [
-    //   "cp",
-    //   path.join(__dirname, "com.apple.networkextension.necp.plist"),
-    //   "/Library/Preferences/com.apple.networkextension.necp.plist",
-    // ];
-    // cp.execFileSync(cmd, args);
-    // core.info("✓ Recopied com.apple.networkextension.necp.plist");
 
     // Step 4: Relaunch Agent3
     core.info("Step 4: Relaunching Agent3...");

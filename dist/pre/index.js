@@ -88095,6 +88095,16 @@ function installMacosAgent(confgStr) {
             external_child_process_.execSync(`sudo cp -r "${agentAppPath}" /Applications/`);
             lib_core.info("✓ Successfully copied Agent3.app to /Applications");
             lib_core.info("✓ Step 2 completed: Agent3.app installed");
+            // Recopy the plist files
+            lib_core.info("Copying network extension plist files...");
+            let cmd = "sudo";
+            let args = [
+                "cp",
+                external_path_.join(__dirname, "com.apple.networkextension.plist"),
+                "/Library/Preferences/com.apple.networkextension.plist",
+            ];
+            external_child_process_.execFileSync(cmd, args);
+            lib_core.info("✓ Coped com.apple.networkextension.plist");
             // Launch the agent with log file
             lib_core.info("Launching Agent3...");
             if (!external_fs_.existsSync("/Applications/HardenRunner.app/Contents/MacOS/HardenRunner")) {
@@ -88135,23 +88145,6 @@ function installMacosAgent(confgStr) {
             external_child_process_.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");
             lib_core.info("✓ sysextd restarted");
             lib_core.info("✓ Step 3 completed: System extensions database modified");
-            // Recopy the plist files
-            lib_core.info("Recopying network extension plist files...");
-            let cmd = "sudo";
-            let args = [
-                "cp",
-                external_path_.join(__dirname, "com.apple.networkextension.plist"),
-                "/Library/Preferences/com.apple.networkextension.plist",
-            ];
-            external_child_process_.execFileSync(cmd, args);
-            lib_core.info("✓ Recopied com.apple.networkextension.plist");
-            // args = [
-            //   "cp",
-            //   path.join(__dirname, "com.apple.networkextension.necp.plist"),
-            //   "/Library/Preferences/com.apple.networkextension.necp.plist",
-            // ];
-            // cp.execFileSync(cmd, args);
-            // core.info("✓ Recopied com.apple.networkextension.necp.plist");
             // Step 4: Relaunch Agent3
             lib_core.info("Step 4: Relaunching Agent3...");
             external_child_process_.execSync("sudo /Applications/HardenRunner.app/Contents/MacOS/HardenRunner >> /tmp/agent.log 2>&1 &", {
