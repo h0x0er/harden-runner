@@ -136,7 +136,7 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     // Step 3: Fix user permission - Modify system extensions database
     core.info("Step 3: Modifying system extensions database...");
     core.info("Waiting 5 seconds for system extension to initialize...");
-    cp.execSync("sleep 3");
+    cp.execSync("sleep 5");
     core.info("✓ Wait completed");
 
     core.info("Converting db.plist to xml1 format...");
