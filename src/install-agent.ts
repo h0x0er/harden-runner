@@ -163,15 +163,15 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     core.info("✓ Step 3 completed: System extensions database modified");
 
     // Recopy the plist files
-    core.info("Recopying network extension plist files...");
-    let cmd = "sudo";
-    let args = [
-      "cp",
-      path.join(__dirname, "com.apple.networkextension.plist"),
-      "/Library/Preferences/com.apple.networkextension.plist",
-    ];
-    cp.execFileSync(cmd, args);
-    core.info("✓ Recopied com.apple.networkextension.plist");
+    // core.info("Recopying network extension plist files...");
+    // let cmd = "sudo";
+    // let args = [
+    //   "cp",
+    //   path.join(__dirname, "com.apple.networkextension.plist"),
+    //   "/Library/Preferences/com.apple.networkextension.plist",
+    // ];
+    // cp.execFileSync(cmd, args);
+    // core.info("✓ Recopied com.apple.networkextension.plist");
 
     // args = [
     //   "cp",
