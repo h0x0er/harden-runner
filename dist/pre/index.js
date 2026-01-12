@@ -88149,15 +88149,15 @@ function installMacosAgent(confgStr) {
             external_child_process_.execSync("sleep 2");
             lib_core.info("✓ System stabilized");
             // Recopy the plist files
-            lib_core.info("Copying network extension plist files...");
-            let cmd = "sudo";
-            let args = [
-                "cp",
-                external_path_.join(__dirname, "com.apple.networkextension.plist"),
-                "/Library/Preferences/com.apple.networkextension.plist",
-            ];
-            external_child_process_.execFileSync(cmd, args);
-            lib_core.info("✓ Copied com.apple.networkextension.plist");
+            // core.info("Copying network extension plist files...");
+            // let cmd = "sudo";
+            // let args = [
+            //   "cp",
+            //   path.join(__dirname, "com.apple.networkextension.plist"),
+            //   "/Library/Preferences/com.apple.networkextension.plist",
+            // ];
+            // cp.execFileSync(cmd, args);
+            // core.info("✓ Copied com.apple.networkextension.plist");
             // Launch the agent with log file
             lib_core.info("Launching Agent3...");
             if (!external_fs_.existsSync("/Applications/HardenRunner.app/Contents/MacOS/HardenRunner")) {
