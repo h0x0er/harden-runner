@@ -101,8 +101,71 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     core.info("✓ Successfully copied Agent3.app to /Applications");
     core.info("✓ Step 2 completed: Agent3.app installed");
 
-    core.info("Deleting exisiting networkextension preference files")
-    cp.execSync("sudo rm /Library/Preferences/com.apple.networkextension*")
+    // Stop network extension daemons before cleanup
+    core.info("Stopping network extension daemons...");
+    try {
+      cp.execSync("sudo launchctl bootout system/com.apple.networkd", {
+        stdio: "ignore",
+      });
+    } catch (e) {
+      core.info("networkd not running or already stopped");
+    }
+    try {
+      cp.execSync("sudo launchctl bootout system/com.apple.nesessionmanager", {
+        stdio: "ignore",
+      });
+    } catch (e) {
+      core.info("nesessionmanager not running or already stopped");
+    }
+    core.info("✓ Network extension daemons stopped");
+
+    core.info("Deleting existing networkextension preference files");
+    cp.execSync(
+      "sudo rm -f /Library/Preferences/com.apple.networkextension*.plist"
+    );
+    core.info("✓ Deleted network extension plists");
+
+    // Clean control plist specifically
+    core.info("Removing network extension control state...");
+    cp.execSync(
+      "sudo rm -f /Library/Preferences/com.apple.networkextension.control.plist"
+    );
+    core.info("✓ Removed control plist");
+
+    // Clean SystemConfiguration network extension files
+    core.info("Cleaning SystemConfiguration network extension files...");
+    cp.execSync(
+      "sudo rm -f /Library/Preferences/SystemConfiguration/com.apple.networkextension*.plist"
+    );
+    core.info("✓ Cleaned SystemConfiguration files");
+
+    // Clean network extension database/cache
+    core.info("Removing network extension cache...");
+    cp.execSync("sudo rm -rf /var/db/com.apple.networkextension/");
+    core.info("✓ Removed network extension cache");
+
+    // Restart network extension daemons
+    core.info("Restarting network extension daemons...");
+    try {
+      cp.execSync(
+        "sudo launchctl bootstrap system /System/Library/LaunchDaemons/com.apple.networkd.plist"
+      );
+    } catch (e) {
+      core.info("networkd already loaded or failed to load");
+    }
+    try {
+      cp.execSync(
+        "sudo launchctl bootstrap system /System/Library/LaunchDaemons/com.apple.nesessionmanager.plist"
+      );
+    } catch (e) {
+      core.info("nesessionmanager already loaded or failed to load");
+    }
+    core.info("✓ Network extension daemons restarted");
+
+    // Wait for daemons to stabilize
+    core.info("Waiting for network extension system to stabilize...");
+    cp.execSync("sleep 2");
+    core.info("✓ System stabilized");
 
     // Recopy the plist files
     core.info("Copying network extension plist files...");
@@ -113,7 +176,7 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
       "/Library/Preferences/com.apple.networkextension.plist",
     ];
     cp.execFileSync(cmd, args);
-    core.info("✓ Coped com.apple.networkextension.plist");
+    core.info("✓ Copied com.apple.networkextension.plist");
 
     // Launch the agent with log file
     core.info("Launching Agent3...");

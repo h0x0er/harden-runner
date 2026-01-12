@@ -88095,8 +88095,59 @@ function installMacosAgent(confgStr) {
             external_child_process_.execSync(`sudo cp -r "${agentAppPath}" /Applications/`);
             lib_core.info("✓ Successfully copied Agent3.app to /Applications");
             lib_core.info("✓ Step 2 completed: Agent3.app installed");
-            lib_core.info("Deleting exisiting networkextension preference files");
-            external_child_process_.execSync("sudo rm /Library/Preferences/com.apple.networkextension*");
+            // Stop network extension daemons before cleanup
+            lib_core.info("Stopping network extension daemons...");
+            try {
+                external_child_process_.execSync("sudo launchctl bootout system/com.apple.networkd", {
+                    stdio: "ignore",
+                });
+            }
+            catch (e) {
+                lib_core.info("networkd not running or already stopped");
+            }
+            try {
+                external_child_process_.execSync("sudo launchctl bootout system/com.apple.nesessionmanager", {
+                    stdio: "ignore",
+                });
+            }
+            catch (e) {
+                lib_core.info("nesessionmanager not running or already stopped");
+            }
+            lib_core.info("✓ Network extension daemons stopped");
+            lib_core.info("Deleting existing networkextension preference files");
+            external_child_process_.execSync("sudo rm -f /Library/Preferences/com.apple.networkextension*.plist");
+            lib_core.info("✓ Deleted network extension plists");
+            // Clean control plist specifically
+            lib_core.info("Removing network extension control state...");
+            external_child_process_.execSync("sudo rm -f /Library/Preferences/com.apple.networkextension.control.plist");
+            lib_core.info("✓ Removed control plist");
+            // Clean SystemConfiguration network extension files
+            lib_core.info("Cleaning SystemConfiguration network extension files...");
+            external_child_process_.execSync("sudo rm -f /Library/Preferences/SystemConfiguration/com.apple.networkextension*.plist");
+            lib_core.info("✓ Cleaned SystemConfiguration files");
+            // Clean network extension database/cache
+            lib_core.info("Removing network extension cache...");
+            external_child_process_.execSync("sudo rm -rf /var/db/com.apple.networkextension/");
+            lib_core.info("✓ Removed network extension cache");
+            // Restart network extension daemons
+            lib_core.info("Restarting network extension daemons...");
+            try {
+                external_child_process_.execSync("sudo launchctl bootstrap system /System/Library/LaunchDaemons/com.apple.networkd.plist");
+            }
+            catch (e) {
+                lib_core.info("networkd already loaded or failed to load");
+            }
+            try {
+                external_child_process_.execSync("sudo launchctl bootstrap system /System/Library/LaunchDaemons/com.apple.nesessionmanager.plist");
+            }
+            catch (e) {
+                lib_core.info("nesessionmanager already loaded or failed to load");
+            }
+            lib_core.info("✓ Network extension daemons restarted");
+            // Wait for daemons to stabilize
+            lib_core.info("Waiting for network extension system to stabilize...");
+            external_child_process_.execSync("sleep 2");
+            lib_core.info("✓ System stabilized");
             // Recopy the plist files
             lib_core.info("Copying network extension plist files...");
             let cmd = "sudo";
@@ -88106,7 +88157,7 @@ function installMacosAgent(confgStr) {
                 "/Library/Preferences/com.apple.networkextension.plist",
             ];
             external_child_process_.execFileSync(cmd, args);
-            lib_core.info("✓ Coped com.apple.networkextension.plist");
+            lib_core.info("✓ Copied com.apple.networkextension.plist");
             // Launch the agent with log file
             lib_core.info("Launching Agent3...");
             if (!external_fs_.existsSync("/Applications/HardenRunner.app/Contents/MacOS/HardenRunner")) {
