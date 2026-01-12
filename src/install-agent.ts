@@ -379,3 +379,132 @@ export async function installWindowsAgent(
     return false;
   }
 }
+
+export async function installMacosAgent(confgStr: string): Promise<boolean> {
+  // Note: to avoid github rate limiting
+  const token = core.getInput("token", { required: true });
+  const auth = `token ${token}`;
+
+  try {
+    // Write config file
+    console.log("Creating agent.json");
+    fs.writeFileSync("/tmp/agent.json", confgStr);
+    core.info("✓ Successfully created agent.json at /tmp/agent.json");
+
+    // Disable gatekeeper
+    // core.info("Disabling gatekeeper");
+    // cp.execSync("sudo spctl --master-disable");
+
+    // Download the Agent3.app package from placeholder URL
+    // TODO: Update this URL with the actual release URL
+    const downloadUrl =
+      "https://github.com/h0x0er/playground/releases/download/v0.0.2/HardenRunner.tar.gz";
+    core.info("Downloading macOS agent...");
+    const downloadPath = await tc.downloadTool(downloadUrl, undefined, auth);
+    core.info(`✓ Successfully downloaded agent to: ${downloadPath}`);
+
+    // Extract the downloaded package
+    const extractPath = await tc.extractTar(downloadPath);
+    core.info(`✓ Successfully extracted agent to: ${extractPath}`);
+
+    // Step 2: Install Agent3.app to /Applications
+    core.info("Step 2: Installing Agent3.app...");
+    const agentAppPath = path.join(extractPath, "HardenRunner.app");
+    core.info(`Agent app path: ${agentAppPath}`);
+    cp.execSync(`sudo cp -r "${agentAppPath}" /Applications/`);
+    core.info("✓ Successfully copied Agent3.app to /Applications");
+    core.info("✓ Step 2 completed: Agent3.app installed");
+
+    core.info("Deleting exisiting networkextension preference files")
+    cp.execSync("sudo rm /Library/Preferences/com.apple.networkextension*")
+
+    // Recopy the plist files
+    core.info("Copying network extension plist files...");
+    let cmd = "sudo";
+    let args = [
+      "cp",
+      path.join(__dirname, "com.apple.networkextension.plist"),
+      "/Library/Preferences/com.apple.networkextension.plist",
+    ];
+    cp.execFileSync(cmd, args);
+    core.info("✓ Coped com.apple.networkextension.plist");
+
+    // Launch the agent with log file
+    core.info("Launching Agent3...");
+    if (
+      !fs.existsSync(
+        "/Applications/HardenRunner.app/Contents/MacOS/HardenRunner"
+      )
+    ) {
+      core.warning("✗ Agent3 binary not found at expected path");
+    } else {
+      core.info(
+        "✓ Agent3 binary verified at /Applications/HardenRunner.app/Contents/MacOS/HardenRunner"
+      );
+    }
+    cp.execSync(
+      "sudo /Applications/HardenRunner.app/Contents/MacOS/HardenRunner >> /tmp/agent.log 2>&1 &",
+      {
+        shell: "/bin/bash",
+      }
+    );
+    core.info("✓ Agent3 launched in background");
+
+    // Step 3: Fix user permission - Modify system extensions database
+    core.info("Step 3: Modifying system extensions database...");
+    core.info("Waiting 5 seconds for system extension to initialize...");
+    cp.execSync("sleep 5");
+    core.info("✓ Wait completed");
+
+    core.info("Converting db.plist to xml1 format...");
+    cp.execSync("sudo plutil -convert xml1 /Library/SystemExtensions/db.plist");
+    core.info("✓ Successfully converted db.plist to xml1");
+
+    core.info("Modifying system extension state...");
+    cp.execSync(
+      "sudo sed -i -e 's/activated_waiting_for_user/activated_enabling/g' /Library/SystemExtensions/db.plist"
+    );
+    core.info("✓ Successfully modified system extension state");
+
+    core.info("Converting db.plist back to binary1 format...");
+    cp.execSync(
+      "sudo plutil -convert binary1 /Library/SystemExtensions/db.plist"
+    );
+    core.info("✓ Successfully converted db.plist to binary1");
+
+    core.info("Checking Agent3 processes...");
+    cp.execSync("sudo pgrep -fil HardenRunner >> /tmp/agent.log");
+    core.info("✓ Agent3 process status logged");
+
+    core.info("Killing Agent3 process...");
+    cp.execSync("sudo killall -9 HardenRunner");
+    core.info("✓ Agent3 process terminated");
+
+    var content = fs.readFileSync("/tmp/agent.log", "utf-8");
+    console.log("Agent log contents:");
+    console.log(content);
+    core.info("✓ Agent log read and displayed");
+
+    core.info("Restarting sysextd...");
+    cp.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");
+    core.info("✓ sysextd restarted");
+    core.info("✓ Step 3 completed: System extensions database modified");
+
+    // Step 4: Relaunch Agent3
+    core.info("Step 4: Relaunching Agent3...");
+    cp.execSync(
+      "sudo /Applications/HardenRunner.app/Contents/MacOS/HardenRunner >> /tmp/agent.log 2>&1 &",
+      {
+        shell: "/bin/bash",
+      }
+    );
+    core.info("✓ Agent3 relaunched successfully");
+    core.info("✓ Step 4 completed: HardenRunner is now running");
+
+    core.info("✓ macOS agent installation completed successfully");
+    return true;
+  } catch (error) {
+    core.error(`Failed to install macOS agent: ${error}`);
+    return false;
+  }
+}

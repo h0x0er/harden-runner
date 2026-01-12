@@ -27,7 +27,7 @@ import * as utils from "@actions/cache/lib/internal/cacheUtils";
 import { isARCRunner, sendAllowedEndpoints } from "./arc-runner";
 import { STEPSECURITY_API_URL, STEPSECURITY_WEB_URL } from "./configs";
 import { isGithubHosted, isTLSEnabled } from "./tls-inspect";
-import { installAgent, installWindowsAgent } from "./install-agent";
+import { installAgent, installWindowsAgent, installMacosAgent } from "./install-agent";
 
 interface MonitorResponse {
   runner_ip_address?: string;
@@ -46,7 +46,7 @@ interface MonitorResponse {
     }
 
     // Check platform support
-    if (process.platform !== "linux" && process.platform !== "win32") {
+    if (process.platform !== "linux" && process.platform !== "win32" && process.platform !== "darwin") {
       console.log(common.UNSUPPORTED_PLATFORM_MESSAGE);
       return;
     }
@@ -333,27 +333,42 @@ interface MonitorResponse {
     let statusFile: string;
     let logFile: string;
 
-    if (process.platform === "win32") {
-      // Windows installation
-      core.info("Installing Windows Agent...");
-      agentInstalled = await installWindowsAgent(confgStr);
+    switch (process.platform) {
+      case "linux":
+        // Linux installation
+        cp.execSync("sudo mkdir -p /home/agent");
+        chownForFolder(process.env.USER, "/home/agent");
 
-      const agentDir = process.env.STATE_agentDir || "C:\\agent";
-      statusFile = path.join(agentDir, "agent.status");
-      logFile = path.join(agentDir, "agent.log");
-    } else {
-      // Linux installation
-      cp.execSync("sudo mkdir -p /home/agent");
-      chownForFolder(process.env.USER, "/home/agent");
+        let isTLS = await isTLSEnabled(context.repo.owner);
+        agentInstalled = await installAgent(isTLS, confgStr);
 
-      let isTLS = await isTLSEnabled(context.repo.owner);
-      agentInstalled = await installAgent(isTLS, confgStr);
+        statusFile = "/home/agent/agent.status";
+        logFile = "/home/agent/agent.log";
+        break;
 
-      statusFile = "/home/agent/agent.status";
-      logFile = "/home/agent/agent.log";
-    }
+      case "win32":
+        // Windows installation
+        agentInstalled = await installWindowsAgent(confgStr);
 
-    // Wait for agent to start (same logic for both platforms)
+        const agentDir = process.env.STATE_agentDir || "C:\\agent";
+        statusFile = path.join(agentDir, "agent.status");
+        logFile = path.join(agentDir, "agent.log");
+        break;
+      
+      case "darwin":
+        // MacOS installation
+        agentInstalled = await installMacosAgent(confgStr);
+
+        if (!agentInstalled) {
+          core.warning("😭 macos agent installation failed");
+          return;
+        }
+        console.log("waiting for 5 seconds");
+        await sleep(1000 * 5); // wait for 10 seconds
+        break;
+        
+    } 
+    // Wait for agent to start (same logic for all platforms)
     if (agentInstalled) {
       // Check that the file exists locally
       var counter = 0;
