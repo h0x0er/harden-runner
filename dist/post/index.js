@@ -31988,7 +31988,7 @@ function addSummary() {
 const STATUS_HARDEN_RUNNER_UNAVAILABLE = "409";
 const CONTAINER_MESSAGE = "This job is running in a container. Such jobs can be monitored by installing Harden Runner in a custom VM image for GitHub-hosted runners.";
 const UBUNTU_MESSAGE = "This job is not running in a GitHub Actions Hosted Runner Ubuntu VM. Harden Runner is only supported on Ubuntu VM. This job will not be monitored.";
-const UNSUPPORTED_PLATFORM_MESSAGE = "This job is not running on a supported platform. Harden Runner supports Linux (Ubuntu) and Windows runners. This job will not be monitored.";
+const UNSUPPORTED_PLATFORM_MESSAGE = "This job is not running on a supported platform. Harden Runner supports Linux (Ubuntu), Windows and MacOS runners. This job will not be monitored.";
 const SELF_HOSTED_RUNNER_MESSAGE = "This job is running on a self-hosted runner.";
 const HARDEN_RUNNER_UNAVAILABLE_MESSAGE = "Sorry, we are currently experiencing issues with the Harden Runner installation process. It is currently unavailable.";
 const ARC_RUNNER_MESSAGE = "Workflow is currently being executed in ARC based runner.";
@@ -32145,7 +32145,7 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
         return;
     }
     // Check platform support
-    if (process.platform !== "linux" && process.platform !== "win32") {
+    if (process.platform !== "linux" && process.platform !== "win32" && process.platform !== "darwin") {
         console.log(UNSUPPORTED_PLATFORM_MESSAGE);
         return;
     }
@@ -32175,204 +32175,197 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
         return;
     }
     // Platform-specific cleanup
-    if (process.platform === "win32") {
-        // Windows cleanup
-        const agentDir = process.env.STATE_agentDir || "C:\\agent";
-        const postEventFile = external_path_.join(agentDir, "post_event.json");
-        if (isGithubHosted() && external_fs_.existsSync(postEventFile)) {
-            console.log("Post step already executed, skipping");
-            return;
-        }
-        const p = external_child_process_.spawn("powershell.exe", ["-NoProfile", "-NonInteractive", "-Command", "query user; exit $LASTEXITCODE"], { stdio: ["ignore", "pipe", "pipe"], shell: false, windowsHide: true });
-        p.on("error", (e) => console.log("powershell spawn error:", e));
-        p.on("exit", (code) => console.log("powershell exit:", code));
-        p.unref();
-        // Mark post event as completed
-        external_fs_.writeFileSync(postEventFile, JSON.stringify({ event: "post" }));
-        // Wait for done file
-        const doneFile = external_path_.join(agentDir, "done.json");
-        let counter = 0;
-        while (true) {
-            if (!external_fs_.existsSync(doneFile)) {
-                counter++;
-                if (counter > 10) {
-                    console.log("timed out");
+    switch (process.platform) {
+        case "linux":
+            // Linux cleanup
+            if (isGithubHosted() && external_fs_.existsSync("/home/agent/post_event.json")) {
+                console.log("Post step already executed, skipping");
+                return;
+            }
+            external_fs_.writeFileSync("/home/agent/post_event.json", JSON.stringify({ event: "post" }));
+            const doneFile = "/home/agent/done.json";
+            let counter = 0;
+            while (true) {
+                if (!external_fs_.existsSync(doneFile)) {
+                    counter++;
+                    if (counter > 10) {
+                        console.log("timed out");
+                        break;
+                    }
+                    yield sleep(1000);
+                }
+                else {
                     break;
                 }
-                yield sleep(1000);
             }
-            else {
-                break;
+            const log = "/home/agent/agent.log";
+            if (external_fs_.existsSync(log)) {
+                console.log("log:");
+                var content = external_fs_.readFileSync(log, "utf-8");
+                console.log(content);
             }
-        }
-        // // Display agent status
-        // const status = path.join(agentDir, "agent.status");
-        // if (fs.existsSync(status)) {
-        //   console.log("status:");
-        //   var content = fs.readFileSync(status, "utf-8");
-        //   console.log(content);
-        // }
-        // Stop agent process
-        console.log("Stopping Windows Agent process...");
-        const pidFile = external_path_.join(agentDir, "agent.pid");
-        try {
-            // Read PID from file
-            if (!external_fs_.existsSync(pidFile)) {
-                console.log("PID file not found. Agent may not be running.");
-                return;
+            const daemonLog = "/home/agent/daemon.log";
+            if (external_fs_.existsSync(daemonLog)) {
+                console.log("daemonLog:");
+                var content = external_fs_.readFileSync(daemonLog, "utf-8");
+                console.log(content);
             }
-            const pid = parseInt(external_fs_.readFileSync(pidFile, "utf8").trim());
-            console.log(`Agent PID from file: ${pid}`);
-            // Check if process is still running
-            try {
-                process.kill(pid, 0); // Signal 0 just checks if process exists
+            var status = "/home/agent/agent.status";
+            if (external_fs_.existsSync(status)) {
+                console.log("status:");
+                var content = external_fs_.readFileSync(status, "utf-8");
+                console.log(content);
             }
-            catch (_c) {
-                console.log("Agent process not running.");
-                external_fs_.unlinkSync(pidFile);
-                return;
-            }
-            // Send SIGINT signal for graceful shutdown
-            console.log(`Stopping agent process (PID: ${pid})...`);
-            console.log("Sending SIGINT signal for graceful shutdown...");
-            process.kill(pid, 'SIGINT');
-            // Wait for the process to exit gracefully (up to 10 seconds)
-            let gracefulShutdown = false;
-            for (let i = 0; i < 10; i++) {
-                yield sleep(1000);
+            var disable_sudo = process.env.STATE_disableSudo;
+            var disable_sudo_and_containers = process.env.STATE_disableSudoAndContainers;
+            if (disable_sudo !== "true" && disable_sudo_and_containers !== "true") {
                 try {
-                    process.kill(pid, 0); // Check if still exists
+                    var journalLog = external_child_process_.execSync("sudo journalctl -u agent.service --lines=1000", {
+                        encoding: "utf8",
+                        maxBuffer: 1024 * 1024 * 10, // 10MB buffer
+                    });
+                    console.log("agent.service log:");
+                    console.log(journalLog);
                 }
-                catch (_d) {
-                    gracefulShutdown = true;
-                    console.log("Agent process stopped gracefully");
+                catch (error) {
+                    console.log("Warning: Could not fetch service logs:", error.message);
+                }
+            }
+            break;
+        case "win32":
+            // Windows cleanup
+            const agentDir = process.env.STATE_agentDir || "C:\\agent";
+            const postEventFile = external_path_.join(agentDir, "post_event.json");
+            if (isGithubHosted() && external_fs_.existsSync(postEventFile)) {
+                console.log("Post step already executed, skipping");
+                return;
+            }
+            const p = external_child_process_.spawn("powershell.exe", ["-NoProfile", "-NonInteractive", "-Command", "query user; exit $LASTEXITCODE"], { stdio: ["ignore", "pipe", "pipe"], shell: false, windowsHide: true });
+            p.on("error", (e) => console.log("powershell spawn error:", e));
+            p.on("exit", (code) => console.log("powershell exit:", code));
+            p.unref();
+            // Mark post event as completed
+            external_fs_.writeFileSync(postEventFile, JSON.stringify({ event: "post" }));
+            // Wait for done file
+            const doneWindowsFile = external_path_.join(agentDir, "done.json");
+            let windowsCounter = 0;
+            while (true) {
+                if (!external_fs_.existsSync(doneWindowsFile)) {
+                    windowsCounter++;
+                    if (windowsCounter > 10) {
+                        console.log("timed out");
+                        break;
+                    }
+                    yield sleep(1000);
+                }
+                else {
                     break;
                 }
             }
-            // Force termination if graceful shutdown failed
-            if (!gracefulShutdown) {
-                console.log("Graceful shutdown timeout (10s), forcing termination...");
-                process.kill(pid, 'SIGKILL');
-                console.log("Agent process terminated forcefully");
-            }
-            // Clean up PID file
-            if (external_fs_.existsSync(pidFile)) {
-                external_fs_.unlinkSync(pidFile);
-                console.log("PID file cleaned up");
-            }
-        }
-        catch (error) {
-            console.log("Warning: Error stopping agent process:", error.message);
-        }
-        // Display agent log
-        const log = external_path_.join(agentDir, "agent.log");
-        if (external_fs_.existsSync(log)) {
-            console.log("log:");
-            var content = external_fs_.readFileSync(log, "utf-8");
-            console.log(content);
-        }
-        // --- COMMENTED OUT: Windows Service cleanup code ---
-        // // Stop and remove agent service
-        // console.log("Stopping Windows Agent service...");
-        // const serviceName = "StepSecurityAgent";
-        //
-        // try {
-        //   // Check if service exists
-        //   const serviceExists = cp.execSync(
-        //     `powershell -Command "Get-Service -Name ${serviceName} -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name"`,
-        //     { encoding: "utf8" }
-        //   ).trim();
-        //
-        //   if (serviceExists) {
-        //     console.log(`Service ${serviceName} found, stopping and removing...`);
-        //
-        //     // Stop the service using NSSM
-        //     try {
-        //       cp.execSync(`nssm stop ${serviceName}`, {
-        //         encoding: "utf8",
-        //         stdio: "inherit",
-        //       });
-        //       console.log("Service stopped");
-        //     } catch (stopError) {
-        //       console.log("Warning: Could not stop service:", stopError.message);
-        //     }
-        //
-        //     // Wait a moment for service to stop
-        //     cp.execSync("powershell -Command \"Start-Sleep -Seconds 2\"");
-        //
-        //     // Remove the service
-        //     try {
-        //       cp.execSync(`nssm remove ${serviceName} confirm`, {
-        //         encoding: "utf8",
-        //         stdio: "inherit",
-        //       });
-        //       console.log("Service removed");
-        //     } catch (removeError) {
-        //       console.log("Warning: Could not remove service:", removeError.message);
-        //     }
-        //   } else {
-        //     console.log(`Service ${serviceName} not found. May not have been installed.`);
-        //   }
-        // } catch (error) {
-        //   console.log("Warning: Error managing service:", error.message);
-        // }
-        // --- END COMMENTED CODE ---
-    }
-    else {
-        // Linux cleanup
-        if (isGithubHosted() && external_fs_.existsSync("/home/agent/post_event.json")) {
-            console.log("Post step already executed, skipping");
-            return;
-        }
-        external_fs_.writeFileSync("/home/agent/post_event.json", JSON.stringify({ event: "post" }));
-        const doneFile = "/home/agent/done.json";
-        let counter = 0;
-        while (true) {
-            if (!external_fs_.existsSync(doneFile)) {
-                counter++;
-                if (counter > 10) {
-                    console.log("timed out");
-                    break;
-                }
-                yield sleep(1000);
-            }
-            else {
-                break;
-            }
-        }
-        const log = "/home/agent/agent.log";
-        if (external_fs_.existsSync(log)) {
-            console.log("log:");
-            var content = external_fs_.readFileSync(log, "utf-8");
-            console.log(content);
-        }
-        const daemonLog = "/home/agent/daemon.log";
-        if (external_fs_.existsSync(daemonLog)) {
-            console.log("daemonLog:");
-            var content = external_fs_.readFileSync(daemonLog, "utf-8");
-            console.log(content);
-        }
-        var status = "/home/agent/agent.status";
-        if (external_fs_.existsSync(status)) {
-            console.log("status:");
-            var content = external_fs_.readFileSync(status, "utf-8");
-            console.log(content);
-        }
-        var disable_sudo = process.env.STATE_disableSudo;
-        var disable_sudo_and_containers = process.env.STATE_disableSudoAndContainers;
-        if (disable_sudo !== "true" && disable_sudo_and_containers !== "true") {
+            // Stop agent process
+            console.log("Stopping Windows Agent process...");
+            const pidFile = external_path_.join(agentDir, "agent.pid");
             try {
-                var journalLog = external_child_process_.execSync("sudo journalctl -u agent.service --lines=1000", {
-                    encoding: "utf8",
-                    maxBuffer: 1024 * 1024 * 10, // 10MB buffer
-                });
-                console.log("agent.service log:");
-                console.log(journalLog);
+                // Read PID from file
+                if (!external_fs_.existsSync(pidFile)) {
+                    console.log("PID file not found. Agent may not be running.");
+                    return;
+                }
+                const pid = parseInt(external_fs_.readFileSync(pidFile, "utf8").trim());
+                console.log(`Agent PID from file: ${pid}`);
+                // Check if process is still running
+                try {
+                    process.kill(pid, 0); // Signal 0 just checks if process exists
+                }
+                catch (_c) {
+                    console.log("Agent process not running.");
+                    external_fs_.unlinkSync(pidFile);
+                    return;
+                }
+                // Send SIGINT signal for graceful shutdown
+                console.log(`Stopping agent process (PID: ${pid})...`);
+                console.log("Sending SIGINT signal for graceful shutdown...");
+                process.kill(pid, 'SIGINT');
+                // Wait for the process to exit gracefully (up to 10 seconds)
+                let gracefulShutdown = false;
+                for (let i = 0; i < 10; i++) {
+                    yield sleep(1000);
+                    try {
+                        process.kill(pid, 0); // Check if still exists
+                    }
+                    catch (_d) {
+                        gracefulShutdown = true;
+                        console.log("Agent process stopped gracefully");
+                        break;
+                    }
+                }
+                // Force termination if graceful shutdown failed
+                if (!gracefulShutdown) {
+                    console.log("Graceful shutdown timeout (10s), forcing termination...");
+                    process.kill(pid, 'SIGKILL');
+                    console.log("Agent process terminated forcefully");
+                }
+                // Clean up PID file
+                if (external_fs_.existsSync(pidFile)) {
+                    external_fs_.unlinkSync(pidFile);
+                    console.log("PID file cleaned up");
+                }
             }
             catch (error) {
-                console.log("Warning: Could not fetch service logs:", error.message);
+                console.log("Warning: Error stopping agent process:", error.message);
             }
-        }
+            // Display agent log
+            const windowsLog = external_path_.join(agentDir, "agent.log");
+            if (external_fs_.existsSync(windowsLog)) {
+                console.log("log:");
+                var content = external_fs_.readFileSync(windowsLog, "utf-8");
+                console.log(content);
+            }
+            break;
+        case "darwin":
+        // macOS cleanup
+        case "darwin":
+            {
+                external_fs_.writeFileSync("/private/tmp/post_event.json", JSON.stringify({ event: "post" }));
+                let macDone = "/private/tmp/done.json";
+                let counter = 0;
+                while (true) {
+                    if (!external_fs_.existsSync(macDone)) {
+                        counter++;
+                        if (counter > 10) {
+                            console.log("timed out");
+                            break;
+                        }
+                        yield sleep(1000);
+                    } // The file *does* exist
+                    else {
+                        break;
+                    }
+                }
+                let macAgenLog = "/tmp/agent.log";
+                if (external_fs_.existsSync(macAgenLog)) {
+                    console.log("macAgenLog:");
+                    var content = external_fs_.readFileSync(macAgenLog, "utf-8");
+                    console.log(content);
+                }
+                else {
+                    console.log("😭 macos agent.log file not found");
+                }
+                // Capture system log stream for harden-runner subsystem
+                try {
+                    console.log("\nSystem log stream for io.stepsecurity.harden-runner:");
+                    const logStreamOutput = external_child_process_.execSync("log show --predicate 'subsystem == \"io.stepsecurity.harden-runner\"' --info --last 10m", {
+                        encoding: "utf8",
+                        maxBuffer: 1024 * 1024 * 10,
+                        timeout: 10000, // 30 second timeout
+                    });
+                    console.log(logStreamOutput);
+                }
+                catch (error) {
+                    console.log("Warning: Could not fetch system log stream:", error.message);
+                }
+            }
+            break;
     }
     try {
         yield addSummary();

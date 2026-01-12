@@ -85250,7 +85250,7 @@ function addSummary() {
 const STATUS_HARDEN_RUNNER_UNAVAILABLE = "409";
 const CONTAINER_MESSAGE = "This job is running in a container. Such jobs can be monitored by installing Harden Runner in a custom VM image for GitHub-hosted runners.";
 const UBUNTU_MESSAGE = "This job is not running in a GitHub Actions Hosted Runner Ubuntu VM. Harden Runner is only supported on Ubuntu VM. This job will not be monitored.";
-const UNSUPPORTED_PLATFORM_MESSAGE = "This job is not running on a supported platform. Harden Runner supports Linux (Ubuntu) and Windows runners. This job will not be monitored.";
+const UNSUPPORTED_PLATFORM_MESSAGE = "This job is not running on a supported platform. Harden Runner supports Linux (Ubuntu), Windows and MacOS runners. This job will not be monitored.";
 const SELF_HOSTED_RUNNER_MESSAGE = "This job is running on a self-hosted runner.";
 const HARDEN_RUNNER_UNAVAILABLE_MESSAGE = "Sorry, we are currently experiencing issues with the Harden Runner installation process. It is currently unavailable.";
 const ARC_RUNNER_MESSAGE = "Workflow is currently being executed in ARC based runner.";
@@ -85862,6 +85862,103 @@ function installWindowsAgent(configStr) {
         }
     });
 }
+function installMacosAgent(confgStr) {
+    return install_agent_awaiter(this, void 0, void 0, function* () {
+        // Note: to avoid github rate limiting
+        const token = lib_core.getInput("token", { required: true });
+        const auth = `token ${token}`;
+        try {
+            // Write config file
+            console.log("Creating agent.json");
+            external_fs_.writeFileSync("/tmp/agent.json", confgStr);
+            lib_core.info("✓ Successfully created agent.json at /tmp/agent.json");
+            // Disable gatekeeper
+            // core.info("Disabling gatekeeper");
+            // cp.execSync("sudo spctl --master-disable");
+            // Download the Agent3.app package from placeholder URL
+            // TODO: Update this URL with the actual release URL
+            const downloadUrl = "https://github.com/h0x0er/playground/releases/download/v0.0.2/HardenRunner.tar.gz";
+            lib_core.info("Downloading macOS agent...");
+            const downloadPath = yield tool_cache.downloadTool(downloadUrl, undefined, auth);
+            lib_core.info(`✓ Successfully downloaded agent to: ${downloadPath}`);
+            // Extract the downloaded package
+            const extractPath = yield tool_cache.extractTar(downloadPath);
+            lib_core.info(`✓ Successfully extracted agent to: ${extractPath}`);
+            // Step 2: Install Agent3.app to /Applications
+            lib_core.info("Step 2: Installing Agent3.app...");
+            const agentAppPath = external_path_.join(extractPath, "HardenRunner.app");
+            lib_core.info(`Agent app path: ${agentAppPath}`);
+            external_child_process_.execSync(`sudo cp -r "${agentAppPath}" /Applications/`);
+            lib_core.info("✓ Successfully copied Agent3.app to /Applications");
+            lib_core.info("✓ Step 2 completed: Agent3.app installed");
+            lib_core.info("Deleting exisiting networkextension preference files");
+            external_child_process_.execSync("sudo rm /Library/Preferences/com.apple.networkextension*");
+            // Recopy the plist files
+            lib_core.info("Copying network extension plist files...");
+            let cmd = "sudo";
+            let args = [
+                "cp",
+                external_path_.join(__dirname, "com.apple.networkextension.plist"),
+                "/Library/Preferences/com.apple.networkextension.plist",
+            ];
+            external_child_process_.execFileSync(cmd, args);
+            lib_core.info("✓ Coped com.apple.networkextension.plist");
+            // Launch the agent with log file
+            lib_core.info("Launching Agent3...");
+            if (!external_fs_.existsSync("/Applications/HardenRunner.app/Contents/MacOS/HardenRunner")) {
+                lib_core.warning("✗ Agent3 binary not found at expected path");
+            }
+            else {
+                lib_core.info("✓ Agent3 binary verified at /Applications/HardenRunner.app/Contents/MacOS/HardenRunner");
+            }
+            external_child_process_.execSync("sudo /Applications/HardenRunner.app/Contents/MacOS/HardenRunner >> /tmp/agent.log 2>&1 &", {
+                shell: "/bin/bash",
+            });
+            lib_core.info("✓ Agent3 launched in background");
+            // Step 3: Fix user permission - Modify system extensions database
+            lib_core.info("Step 3: Modifying system extensions database...");
+            lib_core.info("Waiting 5 seconds for system extension to initialize...");
+            external_child_process_.execSync("sleep 5");
+            lib_core.info("✓ Wait completed");
+            lib_core.info("Converting db.plist to xml1 format...");
+            external_child_process_.execSync("sudo plutil -convert xml1 /Library/SystemExtensions/db.plist");
+            lib_core.info("✓ Successfully converted db.plist to xml1");
+            lib_core.info("Modifying system extension state...");
+            external_child_process_.execSync("sudo sed -i -e 's/activated_waiting_for_user/activated_enabling/g' /Library/SystemExtensions/db.plist");
+            lib_core.info("✓ Successfully modified system extension state");
+            lib_core.info("Converting db.plist back to binary1 format...");
+            external_child_process_.execSync("sudo plutil -convert binary1 /Library/SystemExtensions/db.plist");
+            lib_core.info("✓ Successfully converted db.plist to binary1");
+            lib_core.info("Checking Agent3 processes...");
+            external_child_process_.execSync("sudo pgrep -fil HardenRunner >> /tmp/agent.log");
+            lib_core.info("✓ Agent3 process status logged");
+            lib_core.info("Killing Agent3 process...");
+            external_child_process_.execSync("sudo killall -9 HardenRunner");
+            lib_core.info("✓ Agent3 process terminated");
+            var content = external_fs_.readFileSync("/tmp/agent.log", "utf-8");
+            console.log("Agent log contents:");
+            console.log(content);
+            lib_core.info("✓ Agent log read and displayed");
+            lib_core.info("Restarting sysextd...");
+            external_child_process_.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");
+            lib_core.info("✓ sysextd restarted");
+            lib_core.info("✓ Step 3 completed: System extensions database modified");
+            // Step 4: Relaunch Agent3
+            lib_core.info("Step 4: Relaunching Agent3...");
+            external_child_process_.execSync("sudo /Applications/HardenRunner.app/Contents/MacOS/HardenRunner >> /tmp/agent.log 2>&1 &", {
+                shell: "/bin/bash",
+            });
+            lib_core.info("✓ Agent3 relaunched successfully");
+            lib_core.info("✓ Step 4 completed: HardenRunner is now running");
+            lib_core.info("✓ macOS agent installation completed successfully");
+            return true;
+        }
+        catch (error) {
+            lib_core.error(`Failed to install macOS agent: ${error}`);
+            return false;
+        }
+    });
+}
 
 ;// CONCATENATED MODULE: ./src/setup.ts
 var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -85904,7 +86001,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
             return;
         }
         // Check platform support
-        if (process.platform !== "linux" && process.platform !== "win32") {
+        if (process.platform !== "linux" && process.platform !== "win32" && process.platform !== "darwin") {
             console.log(UNSUPPORTED_PLATFORM_MESSAGE);
             return;
         }
@@ -86114,24 +86211,35 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         let agentInstalled = false;
         let statusFile;
         let logFile;
-        if (process.platform === "win32") {
-            // Windows installation
-            lib_core.info("Installing Windows Agent...");
-            agentInstalled = yield installWindowsAgent(confgStr);
-            const agentDir = process.env.STATE_agentDir || "C:\\agent";
-            statusFile = external_path_.join(agentDir, "agent.status");
-            logFile = external_path_.join(agentDir, "agent.log");
+        switch (process.platform) {
+            case "linux":
+                // Linux installation
+                external_child_process_.execSync("sudo mkdir -p /home/agent");
+                chownForFolder(process.env.USER, "/home/agent");
+                let isTLS = yield isTLSEnabled(github.context.repo.owner);
+                agentInstalled = yield installAgent(isTLS, confgStr);
+                statusFile = "/home/agent/agent.status";
+                logFile = "/home/agent/agent.log";
+                break;
+            case "win32":
+                // Windows installation
+                agentInstalled = yield installWindowsAgent(confgStr);
+                const agentDir = process.env.STATE_agentDir || "C:\\agent";
+                statusFile = external_path_.join(agentDir, "agent.status");
+                logFile = external_path_.join(agentDir, "agent.log");
+                break;
+            case "darwin":
+                // MacOS installation
+                agentInstalled = yield installMacosAgent(confgStr);
+                if (!agentInstalled) {
+                    lib_core.warning("😭 macos agent installation failed");
+                    return;
+                }
+                console.log("waiting for 5 seconds");
+                yield setup_sleep(1000 * 5); // wait for 10 seconds
+                break;
         }
-        else {
-            // Linux installation
-            external_child_process_.execSync("sudo mkdir -p /home/agent");
-            chownForFolder(process.env.USER, "/home/agent");
-            let isTLS = yield isTLSEnabled(github.context.repo.owner);
-            agentInstalled = yield installAgent(isTLS, confgStr);
-            statusFile = "/home/agent/agent.status";
-            logFile = "/home/agent/agent.log";
-        }
-        // Wait for agent to start (same logic for both platforms)
+        // Wait for agent to start (same logic for all platforms)
         if (agentInstalled) {
             // Check that the file exists locally
             var counter = 0;
