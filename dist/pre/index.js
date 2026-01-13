@@ -88130,7 +88130,6 @@ function installMacosAgent(confgStr) {
             // Notify nesessionmanager to reload configuration (gentle restart)
             lib_core.info("Refreshing network extension manager...");
             try {
-                // Use kickstart instead of bootout/bootstrap - keeps service running
                 external_child_process_.execSync("sudo launchctl kickstart -k system/com.apple.nesessionmanager", {
                     stdio: "ignore",
                 });
@@ -88139,10 +88138,7 @@ function installMacosAgent(confgStr) {
             catch (e) {
                 lib_core.info("Could not refresh nesessionmanager");
             }
-            // Brief pause for cleanup to take effect
-            lib_core.info("Waiting for cleanup to take effect...");
-            external_child_process_.execSync("sleep 1");
-            lib_core.info("✓ Cleanup complete");
+            // REMOVED: No sleep needed here - file operations complete immediately
             // Copy the plist files
             lib_core.info("Copying network extension plist files...");
             let cmd = "sudo";
@@ -88167,28 +88163,54 @@ function installMacosAgent(confgStr) {
             lib_core.info("✓ Agent3 launched in background");
             // Step 3: Fix user permission - Modify system extensions database
             lib_core.info("Step 3: Modifying system extensions database...");
-            lib_core.info("Waiting 5 seconds for system extension to initialize...");
-            external_child_process_.execSync("sleep 5");
-            lib_core.info("✓ Wait completed");
+            // OPTIMIZED: Poll for system extension instead of blind wait
+            lib_core.info("Waiting for system extension to register...");
+            let extensionFound = false;
+            const maxAttempts = 10; // 10 attempts = max 5 seconds (10 * 0.5s)
+            for (let attempt = 0; attempt < maxAttempts; attempt++) {
+                try {
+                    // Check if extension is in the database
+                    const dbContent = external_child_process_.execSync("sudo plutil -convert xml1 -o - /Library/SystemExtensions/db.plist 2>/dev/null || echo ''", { encoding: "utf-8" });
+                    if (dbContent.includes("HardenRunner") ||
+                        dbContent.includes("activated")) {
+                        extensionFound = true;
+                        lib_core.info(`✓ System extension found after ${(attempt + 1) * 0.5} seconds`);
+                        break;
+                    }
+                }
+                catch (e) {
+                    // Continue waiting
+                }
+                // Wait 0.5 seconds before next attempt
+                external_child_process_.execSync("sleep 0.5");
+            }
+            if (!extensionFound) {
+                lib_core.warning("⚠ System extension not found in expected time, proceeding anyway...");
+            }
             lib_core.info("Converting db.plist to xml1 format...");
             external_child_process_.execSync("sudo plutil -convert xml1 /Library/SystemExtensions/db.plist");
             lib_core.info("✓ Successfully converted db.plist to xml1");
             lib_core.info("Modifying system extension state...");
-            external_child_process_.execSync("sudo sed -i -e 's/activated_waiting_for_user/activated_enabling/g' /Library/SystemExtensions/db.plist");
+            external_child_process_.execSync("sudo sed -i '' 's/activated_waiting_for_user/activated_enabling/g' /Library/SystemExtensions/db.plist");
             lib_core.info("✓ Successfully modified system extension state");
             lib_core.info("Converting db.plist back to binary1 format...");
             external_child_process_.execSync("sudo plutil -convert binary1 /Library/SystemExtensions/db.plist");
             lib_core.info("✓ Successfully converted db.plist to binary1");
-            lib_core.info("Checking Agent3 processes...");
-            external_child_process_.execSync("sudo pgrep -fil HardenRunner >> /tmp/agent.log");
-            lib_core.info("✓ Agent3 process status logged");
             lib_core.info("Killing Agent3 process...");
-            external_child_process_.execSync("sudo killall -9 HardenRunner");
-            lib_core.info("✓ Agent3 process terminated");
-            var content = external_fs_.readFileSync("/tmp/agent.log", "utf-8");
-            console.log("Agent log contents:");
-            console.log(content);
-            lib_core.info("✓ Agent log read and displayed");
+            try {
+                external_child_process_.execSync("sudo killall -9 HardenRunner 2>/dev/null");
+                lib_core.info("✓ Agent3 process terminated");
+            }
+            catch (e) {
+                lib_core.info("No Agent3 process to terminate");
+            }
+            // Show logs if they exist
+            if (external_fs_.existsSync("/tmp/agent.log")) {
+                var content = external_fs_.readFileSync("/tmp/agent.log", "utf-8");
+                console.log("Agent log contents:");
+                console.log(content);
+                lib_core.info("✓ Agent log read and displayed");
+            }
             lib_core.info("Restarting sysextd...");
             external_child_process_.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");
             lib_core.info("✓ sysextd restarted");

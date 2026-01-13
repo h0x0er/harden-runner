@@ -145,7 +145,6 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     // Notify nesessionmanager to reload configuration (gentle restart)
     core.info("Refreshing network extension manager...");
     try {
-      // Use kickstart instead of bootout/bootstrap - keeps service running
       cp.execSync(
         "sudo launchctl kickstart -k system/com.apple.nesessionmanager",
         {
@@ -157,10 +156,7 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
       core.info("Could not refresh nesessionmanager");
     }
 
-    // Brief pause for cleanup to take effect
-    core.info("Waiting for cleanup to take effect...");
-    cp.execSync("sleep 1");
-    core.info("✓ Cleanup complete");
+    // REMOVED: No sleep needed here - file operations complete immediately
 
     // Copy the plist files
     core.info("Copying network extension plist files...");
@@ -196,9 +192,43 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
 
     // Step 3: Fix user permission - Modify system extensions database
     core.info("Step 3: Modifying system extensions database...");
-    core.info("Waiting 5 seconds for system extension to initialize...");
-    cp.execSync("sleep 5");
-    core.info("✓ Wait completed");
+
+    // OPTIMIZED: Poll for system extension instead of blind wait
+    core.info("Waiting for system extension to register...");
+    let extensionFound = false;
+    const maxAttempts = 10; // 10 attempts = max 5 seconds (10 * 0.5s)
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        // Check if extension is in the database
+        const dbContent = cp.execSync(
+          "sudo plutil -convert xml1 -o - /Library/SystemExtensions/db.plist 2>/dev/null || echo ''",
+          { encoding: "utf-8" }
+        );
+
+        if (
+          dbContent.includes("HardenRunner") ||
+          dbContent.includes("activated")
+        ) {
+          extensionFound = true;
+          core.info(
+            `✓ System extension found after ${(attempt + 1) * 0.5} seconds`
+          );
+          break;
+        }
+      } catch (e) {
+        // Continue waiting
+      }
+
+      // Wait 0.5 seconds before next attempt
+      cp.execSync("sleep 0.5");
+    }
+
+    if (!extensionFound) {
+      core.warning(
+        "⚠ System extension not found in expected time, proceeding anyway..."
+      );
+    }
 
     core.info("Converting db.plist to xml1 format...");
     cp.execSync("sudo plutil -convert xml1 /Library/SystemExtensions/db.plist");
@@ -206,7 +236,7 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
 
     core.info("Modifying system extension state...");
     cp.execSync(
-      "sudo sed -i -e 's/activated_waiting_for_user/activated_enabling/g' /Library/SystemExtensions/db.plist"
+      "sudo sed -i '' 's/activated_waiting_for_user/activated_enabling/g' /Library/SystemExtensions/db.plist"
     );
     core.info("✓ Successfully modified system extension state");
 
@@ -216,18 +246,21 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     );
     core.info("✓ Successfully converted db.plist to binary1");
 
-    core.info("Checking Agent3 processes...");
-    cp.execSync("sudo pgrep -fil HardenRunner >> /tmp/agent.log");
-    core.info("✓ Agent3 process status logged");
-
     core.info("Killing Agent3 process...");
-    cp.execSync("sudo killall -9 HardenRunner");
-    core.info("✓ Agent3 process terminated");
+    try {
+      cp.execSync("sudo killall -9 HardenRunner 2>/dev/null");
+      core.info("✓ Agent3 process terminated");
+    } catch (e) {
+      core.info("No Agent3 process to terminate");
+    }
 
-    var content = fs.readFileSync("/tmp/agent.log", "utf-8");
-    console.log("Agent log contents:");
-    console.log(content);
-    core.info("✓ Agent log read and displayed");
+    // Show logs if they exist
+    if (fs.existsSync("/tmp/agent.log")) {
+      var content = fs.readFileSync("/tmp/agent.log", "utf-8");
+      console.log("Agent log contents:");
+      console.log(content);
+      core.info("✓ Agent log read and displayed");
+    }
 
     core.info("Restarting sysextd...");
     cp.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");
