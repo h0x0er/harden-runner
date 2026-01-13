@@ -67,61 +67,123 @@ export async function installLinuxAgent(
 }
 
 export async function installMacosAgent(confgStr: string): Promise<boolean> {
-  // Note: to avoid github rate limiting
   const token = core.getInput("token", { required: true });
   const auth = `token ${token}`;
 
   try {
-    // Write config file
-    console.log("Creating agent.json");
+    // ========================================================================
+    // SECTION 1: PREPARATION - Create Configuration and Download Agent
+    // ========================================================================
+    core.info("=== SECTION 1: PREPARATION ===");
+
+    // Create agent configuration file
+    core.info("Creating agent.json");
     fs.writeFileSync("/tmp/agent.json", confgStr);
     core.info("✓ Successfully created agent.json at /tmp/agent.json");
 
-    // Download the Agent3.app package
+    // Download agent package
     const downloadUrl =
       "https://github.com/h0x0er/playground/releases/download/v0.0.2/HardenRunner.tar.gz";
     core.info("Downloading macOS agent...");
     const downloadPath = await tc.downloadTool(downloadUrl, undefined, auth);
     core.info(`✓ Successfully downloaded agent to: ${downloadPath}`);
 
-    // Extract the downloaded package
+    // Extract agent package
     const extractPath = await tc.extractTar(downloadPath);
     core.info(`✓ Successfully extracted agent to: ${extractPath}`);
 
-    // Step 2: Install Agent3.app to /Applications
-    core.info("Step 2: Installing Agent3.app...");
-    const agentAppPath = path.join(extractPath, "HardenRunner.app");
-    core.info(`Agent app path: ${agentAppPath}`);
-    cp.execSync(`sudo cp -r "${agentAppPath}" /Applications/`);
-    core.info("✓ Successfully copied Agent3.app to /Applications");
-    core.info("✓ Step 2 completed: Agent3.app installed");
+    // ========================================================================
+    // SECTION 2: INSTALLATION - Install Agent to /Applications
+    // ========================================================================
+    core.info("=== SECTION 2: INSTALLATION ===");
 
-    // Clean network extension preferences (no service restarts needed)
-    core.info("Cleaning network extension preference files...");
+    const agentAppPath = path.join(extractPath, "HardenRunner.app");
+    core.info(`Installing from: ${agentAppPath}`);
+    cp.execSync(`sudo cp -r "${agentAppPath}" /Applications/`);
+    core.info("✓ Successfully installed HardenRunner.app to /Applications");
+
+    // ========================================================================
+    // SECTION 3: NETWORK EXTENSION CLEANUP - Reset Network Extension State
+    // ========================================================================
+    core.info("=== SECTION 3: NETWORK EXTENSION CLEANUP ===");
+
+    // Stop network extension daemons
+    core.info("Stopping network extension daemons...");
+    try {
+      cp.execSync("sudo launchctl bootout system/com.apple.networkd", {
+        stdio: "ignore",
+      });
+      core.info("✓ Stopped networkd");
+    } catch (e) {
+      core.info("networkd not running or already stopped");
+    }
+
+    try {
+      cp.execSync("sudo launchctl bootout system/com.apple.nesessionmanager", {
+        stdio: "ignore",
+      });
+      core.info("✓ Stopped nesessionmanager");
+    } catch (e) {
+      core.info("nesessionmanager not running or already stopped");
+    }
+
+    // Clean preference files
+    core.info("Removing network extension preference files...");
+    cp.execSync(
+      "sudo rm -f /Library/Preferences/com.apple.networkextension*.plist"
+    );
+    core.info("✓ Removed main network extension plists");
+
+    cp.execSync(
+      "sudo rm -f /Library/Preferences/com.apple.networkextension.control.plist"
+    );
+    core.info("✓ Removed control state plist");
+
+    cp.execSync(
+      "sudo rm -f /Library/Preferences/SystemConfiguration/com.apple.networkextension*.plist"
+    );
+    core.info("✓ Removed SystemConfiguration files");
+
+    // Clean cache
+    core.info("Removing network extension cache...");
+    cp.execSync("sudo rm -rf /var/db/com.apple.networkextension/");
+    core.info("✓ Removed network extension cache");
+
+    // ========================================================================
+    // SECTION 4: DAEMON RESTART - Restart Daemons with Clean State
+    // ========================================================================
+    core.info("=== SECTION 4: DAEMON RESTART ===");
+
+    core.info("Restarting network extension daemons...");
+    try {
+      cp.execSync(
+        "sudo launchctl bootstrap system /System/Library/LaunchDaemons/com.apple.networkd.plist"
+      );
+      core.info("✓ Started networkd");
+    } catch (e) {
+      core.info("networkd already loaded or failed to load");
+    }
 
     try {
       cp.execSync(
-        "sudo rm -f /Library/Preferences/com.apple.networkextension.plist " +
-          "/Library/Preferences/com.apple.networkextension.control.plist " +
-          "/Library/Preferences/SystemConfiguration/com.apple.networkextension*.plist",
-        { stdio: "ignore" }
+        "sudo launchctl bootstrap system /System/Library/LaunchDaemons/com.apple.nesessionmanager.plist"
       );
-      core.info("✓ Removed network extension preference files");
+      core.info("✓ Started nesessionmanager");
     } catch (e) {
-      core.info("No preference files to remove");
+      core.info("nesessionmanager already loaded or failed to load");
     }
 
-    try {
-      cp.execSync("sudo rm -rf /var/db/com.apple.networkextension/", {
-        stdio: "ignore",
-      });
-      core.info("✓ Removed network extension cache");
-    } catch (e) {
-      core.info("No cache directory to remove");
-    }
+    // Wait for daemons to stabilize
+    core.info("Waiting for network extension system to stabilize...");
+    cp.execSync("sleep 2");
+    core.info("✓ System stabilized");
 
-    // Copy the plist files FIRST
-    core.info("Copying network extension plist files...");
+    // ========================================================================
+    // SECTION 5: CONFIGURATION - Apply Network Extension Preferences
+    // ========================================================================
+    core.info("=== SECTION 5: CONFIGURATION ===");
+
+    core.info("Copying network extension preference file...");
     cp.execFileSync("sudo", [
       "cp",
       path.join(__dirname, "com.apple.networkextension.plist"),
@@ -129,131 +191,109 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     ]);
     core.info("✓ Copied com.apple.networkextension.plist");
 
-    // NOW restart nesessionmanager AFTER files are in place but BEFORE launching agent
-    // This ensures nesessionmanager picks up the new config without disrupting existing network
-    core.info("Reloading network extension configuration...");
-    try {
-      cp.execSync(
-        "sudo launchctl kickstart -k system/com.apple.nesessionmanager",
-        {
-          stdio: "ignore",
-        }
-      );
-      core.info("✓ Network extension manager reloaded with new configuration");
-    } catch (e) {
-      core.warning("Could not reload nesessionmanager");
-    }
+    // ========================================================================
+    // SECTION 6: AGENT LAUNCH - Start Agent for Initial Registration
+    // ========================================================================
+    core.info("=== SECTION 6: AGENT LAUNCH ===");
 
-    // Brief wait for nesessionmanager to stabilize with new config
-    core.info("Waiting for network extension manager to stabilize...");
-    cp.execSync("sleep 1");
-    core.info("✓ Network extension manager ready");
-
-    // Launch the agent
-    core.info("Launching Agent3...");
     const agentBinaryPath =
       "/Applications/HardenRunner.app/Contents/MacOS/HardenRunner";
 
+    // Verify agent binary exists
     if (!fs.existsSync(agentBinaryPath)) {
-      throw new Error("Agent3 binary not found at expected path");
+      throw new Error("Agent binary not found at expected path");
     }
+    core.info("✓ Agent binary verified");
 
-    core.info("✓ Agent3 binary verified");
+    // Launch agent in background
     cp.execSync(`sudo "${agentBinaryPath}" >> /tmp/agent.log 2>&1 &`, {
       shell: "/bin/bash",
     });
-    core.info("✓ Agent3 launched in background");
+    core.info("✓ Agent launched in background");
 
-    // Step 3: Modify system extensions database
-    core.info("Step 3: Modifying system extensions database...");
+    // ========================================================================
+    // SECTION 7: SYSTEM EXTENSION APPROVAL - Modify Extension Permissions
+    // ========================================================================
+    core.info("=== SECTION 7: SYSTEM EXTENSION APPROVAL ===");
 
-    // Poll for system extension registration
-    core.info("Waiting for system extension to register...");
-    let extensionFound = false;
-    const maxAttempts = 10; // Max 5 seconds (10 * 0.5s)
+    // Wait for system extension to register
+    core.info("Waiting for system extension to initialize...");
+    cp.execSync("sleep 5");
+    core.info("✓ Wait completed");
 
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      try {
-        const dbContent = cp.execSync(
-          "sudo plutil -convert xml1 -o - /Library/SystemExtensions/db.plist 2>/dev/null || echo ''",
-          { encoding: "utf-8" }
-        );
-
-        if (
-          dbContent.includes("HardenRunner") ||
-          dbContent.includes("activated")
-        ) {
-          extensionFound = true;
-          core.info(
-            `✓ System extension found after ${(attempt + 1) * 0.5} seconds`
-          );
-          break;
-        }
-      } catch (e) {
-        // Continue waiting
-      }
-
-      cp.execSync("sleep 0.5");
-    }
-
-    if (!extensionFound) {
-      core.warning(
-        "⚠ System extension not found in expected time, proceeding anyway..."
-      );
-    }
-
-    // Modify system extension approval state
-    core.info("Converting db.plist to xml1 format...");
+    // Convert db.plist to XML for editing
+    core.info("Converting system extensions database to XML...");
     cp.execSync("sudo plutil -convert xml1 /Library/SystemExtensions/db.plist");
-    core.info("✓ Successfully converted db.plist to xml1");
+    core.info("✓ Converted to XML format");
 
-    core.info("Modifying system extension state...");
+    // Modify extension approval state
+    core.info("Modifying system extension approval state...");
     cp.execSync(
       "sudo sed -i '' 's/activated_waiting_for_user/activated_enabling/g' /Library/SystemExtensions/db.plist"
     );
-    core.info("✓ Successfully modified system extension state");
+    core.info("✓ Changed state from 'waiting_for_user' to 'enabling'");
 
-    core.info("Converting db.plist back to binary1 format...");
+    // Convert back to binary format
+    core.info("Converting system extensions database to binary...");
     cp.execSync(
       "sudo plutil -convert binary1 /Library/SystemExtensions/db.plist"
     );
-    core.info("✓ Successfully converted db.plist to binary1");
+    core.info("✓ Converted to binary format");
 
-    // Terminate agent to reload with new permissions
-    core.info("Terminating Agent3 process...");
+    // ========================================================================
+    // SECTION 8: AGENT RESTART - Reload Agent with New Permissions
+    // ========================================================================
+    core.info("=== SECTION 8: AGENT RESTART ===");
+
+    // Log agent process status
+    core.info("Checking agent process status...");
+    try {
+      cp.execSync("sudo pgrep -fil HardenRunner >> /tmp/agent.log 2>&1");
+      core.info("✓ Agent process status logged");
+    } catch (e) {
+      core.info("No agent process found");
+    }
+
+    // Terminate existing agent process
+    core.info("Terminating agent process...");
     try {
       cp.execSync("sudo killall -9 HardenRunner 2>/dev/null");
-      core.info("✓ Agent3 process terminated");
+      core.info("✓ Agent process terminated");
     } catch (e) {
-      core.info("No Agent3 process to terminate");
+      core.info("No agent process to terminate");
     }
 
-    // Display agent logs if available
+    // Display agent logs
     if (fs.existsSync("/tmp/agent.log")) {
       const content = fs.readFileSync("/tmp/agent.log", "utf-8");
-      console.log("Agent log contents:");
+      console.log("=== Agent Log Contents ===");
       console.log(content);
-      core.info("✓ Agent log read and displayed");
+      console.log("=== End Agent Log ===");
+      core.info("✓ Agent log displayed");
     }
 
-    // Restart sysextd to apply changes
-    core.info("Restarting sysextd...");
+    // Restart sysextd to apply permission changes
+    core.info("Restarting system extension daemon...");
     cp.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");
     core.info("✓ sysextd restarted");
-    core.info("✓ Step 3 completed: System extensions database modified");
 
-    // Step 4: Relaunch Agent3 with updated permissions
-    core.info("Step 4: Relaunching Agent3...");
+    // Relaunch agent with updated permissions
+    core.info("Relaunching agent with updated permissions...");
     cp.execSync(`sudo "${agentBinaryPath}" >> /tmp/agent.log 2>&1 &`, {
       shell: "/bin/bash",
     });
-    core.info("✓ Agent3 relaunched successfully");
-    core.info("✓ Step 4 completed: HardenRunner is now running");
+    core.info("✓ Agent relaunched successfully");
 
-    core.info("✓ macOS agent installation completed successfully");
+    // ========================================================================
+    // COMPLETION
+    // ========================================================================
+    core.info("✅ macOS agent installation completed successfully");
     return true;
   } catch (error) {
-    core.error(`Failed to install macOS agent: ${error}`);
+    core.error(`❌ Failed to install macOS agent: ${error}`);
+    if (error instanceof Error && error.stack) {
+      core.debug(error.stack);
+    }
     return false;
   }
 }
