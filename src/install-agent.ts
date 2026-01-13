@@ -109,14 +109,14 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
 
     // Stop network extension daemons
     core.info("Stopping network extension daemons...");
-    try {
-      cp.execSync("sudo launchctl bootout system/com.apple.networkd", {
-        stdio: "ignore",
-      });
-      core.info("✓ Stopped networkd");
-    } catch (e) {
-      core.info("networkd not running or already stopped");
-    }
+    // try {
+    //   cp.execSync("sudo launchctl bootout system/com.apple.networkd", {
+    //     stdio: "ignore",
+    //   });
+    //   core.info("✓ Stopped networkd");
+    // } catch (e) {
+    //   core.info("networkd not running or already stopped");
+    // }
 
     try {
       cp.execSync("sudo launchctl bootout system/com.apple.nesessionmanager", {
@@ -154,15 +154,15 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     // ========================================================================
     core.info("=== SECTION 4: DAEMON RESTART ===");
 
-    core.info("Restarting network extension daemons...");
-    try {
-      cp.execSync(
-        "sudo launchctl bootstrap system /System/Library/LaunchDaemons/com.apple.networkd.plist"
-      );
-      core.info("✓ Started networkd");
-    } catch (e) {
-      core.info("networkd already loaded or failed to load");
-    }
+    // core.info("Restarting network extension daemons...");
+    // try {
+    //   cp.execSync(
+    //     "sudo launchctl bootstrap system /System/Library/LaunchDaemons/com.apple.networkd.plist"
+    //   );
+    //   core.info("✓ Started networkd");
+    // } catch (e) {
+    //   core.info("networkd already loaded or failed to load");
+    // }
 
     try {
       cp.execSync(
