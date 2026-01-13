@@ -88521,8 +88521,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
                     return;
                 }
                 console.log("waiting for 5 seconds");
-                external_child_process_.execSync("curl https://int.stepsecurity.io");
-                yield setup_sleep(1000 * 7); // wait for 10 seconds
+                external_child_process_.execSync("curl --retry 4 --max-time 10 https://int.stepsecurity.io");
         }
     }
     catch (error) {
