@@ -88187,15 +88187,6 @@ function installMacosAgent(confgStr) {
             // SECTION 8: AGENT RESTART - Reload Agent with New Permissions
             // ========================================================================
             lib_core.info("=== SECTION 8: AGENT RESTART ===");
-            // Log agent process status
-            lib_core.info("Checking agent process status...");
-            try {
-                external_child_process_.execSync("sudo pgrep -fil HardenRunner >> /tmp/agent.log 2>&1");
-                lib_core.info("✓ Agent process status logged");
-            }
-            catch (e) {
-                lib_core.info("No agent process found");
-            }
             // Terminate existing agent process
             lib_core.info("Terminating agent process...");
             try {

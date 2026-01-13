@@ -227,15 +227,6 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     // ========================================================================
     core.info("=== SECTION 8: AGENT RESTART ===");
 
-    // Log agent process status
-    core.info("Checking agent process status...");
-    try {
-      cp.execSync("sudo pgrep -fil HardenRunner >> /tmp/agent.log 2>&1");
-      core.info("✓ Agent process status logged");
-    } catch (e) {
-      core.info("No agent process found");
-    }
-
     // Terminate existing agent process
     core.info("Terminating agent process...");
     try {
