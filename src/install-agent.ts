@@ -120,21 +120,7 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
       core.info("No cache directory to remove");
     }
 
-    // Notify nesessionmanager to reload configuration (gentle restart)
-    core.info("Refreshing network extension manager...");
-    try {
-      cp.execSync(
-        "sudo launchctl kickstart -k system/com.apple.nesessionmanager",
-        {
-          stdio: "ignore",
-        }
-      );
-      core.info("✓ Network extension manager refreshed");
-    } catch (e) {
-      core.info("Could not refresh nesessionmanager");
-    }
-
-    // Copy the plist files (system will pick up changes automatically)
+    // Copy the plist files FIRST
     core.info("Copying network extension plist files...");
     cp.execFileSync("sudo", [
       "cp",
@@ -142,6 +128,26 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
       "/Library/Preferences/com.apple.networkextension.plist",
     ]);
     core.info("✓ Copied com.apple.networkextension.plist");
+
+    // NOW restart nesessionmanager AFTER files are in place but BEFORE launching agent
+    // This ensures nesessionmanager picks up the new config without disrupting existing network
+    core.info("Reloading network extension configuration...");
+    try {
+      cp.execSync(
+        "sudo launchctl kickstart -k system/com.apple.nesessionmanager",
+        {
+          stdio: "ignore",
+        }
+      );
+      core.info("✓ Network extension manager reloaded with new configuration");
+    } catch (e) {
+      core.warning("Could not reload nesessionmanager");
+    }
+
+    // Brief wait for nesessionmanager to stabilize with new config
+    core.info("Waiting for network extension manager to stabilize...");
+    cp.execSync("sleep 1");
+    core.info("✓ Network extension manager ready");
 
     // Launch the agent
     core.info("Launching Agent3...");

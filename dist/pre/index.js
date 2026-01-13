@@ -88111,18 +88111,7 @@ function installMacosAgent(confgStr) {
             catch (e) {
                 lib_core.info("No cache directory to remove");
             }
-            // Notify nesessionmanager to reload configuration (gentle restart)
-            lib_core.info("Refreshing network extension manager...");
-            try {
-                external_child_process_.execSync("sudo launchctl kickstart -k system/com.apple.nesessionmanager", {
-                    stdio: "ignore",
-                });
-                lib_core.info("✓ Network extension manager refreshed");
-            }
-            catch (e) {
-                lib_core.info("Could not refresh nesessionmanager");
-            }
-            // Copy the plist files (system will pick up changes automatically)
+            // Copy the plist files FIRST
             lib_core.info("Copying network extension plist files...");
             external_child_process_.execFileSync("sudo", [
                 "cp",
@@ -88130,6 +88119,22 @@ function installMacosAgent(confgStr) {
                 "/Library/Preferences/com.apple.networkextension.plist",
             ]);
             lib_core.info("✓ Copied com.apple.networkextension.plist");
+            // NOW restart nesessionmanager AFTER files are in place but BEFORE launching agent
+            // This ensures nesessionmanager picks up the new config without disrupting existing network
+            lib_core.info("Reloading network extension configuration...");
+            try {
+                external_child_process_.execSync("sudo launchctl kickstart -k system/com.apple.nesessionmanager", {
+                    stdio: "ignore",
+                });
+                lib_core.info("✓ Network extension manager reloaded with new configuration");
+            }
+            catch (e) {
+                lib_core.warning("Could not reload nesessionmanager");
+            }
+            // Brief wait for nesessionmanager to stabilize with new config
+            lib_core.info("Waiting for network extension manager to stabilize...");
+            external_child_process_.execSync("sleep 1");
+            lib_core.info("✓ Network extension manager ready");
             // Launch the agent
             lib_core.info("Launching Agent3...");
             const agentBinaryPath = "/Applications/HardenRunner.app/Contents/MacOS/HardenRunner";
