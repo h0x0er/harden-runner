@@ -88076,7 +88076,7 @@ function installMacosAgent(confgStr) {
             console.log("Creating agent.json");
             external_fs_.writeFileSync("/tmp/agent.json", confgStr);
             lib_core.info("✓ Successfully created agent.json at /tmp/agent.json");
-            // Download the Agent3.app package from placeholder URL
+            // Download the Agent3.app package
             const downloadUrl = "https://github.com/h0x0er/playground/releases/download/v0.0.2/HardenRunner.tar.gz";
             lib_core.info("Downloading macOS agent...");
             const downloadPath = yield tool_cache.downloadTool(downloadUrl, undefined, auth);
@@ -88091,33 +88091,17 @@ function installMacosAgent(confgStr) {
             external_child_process_.execSync(`sudo cp -r "${agentAppPath}" /Applications/`);
             lib_core.info("✓ Successfully copied Agent3.app to /Applications");
             lib_core.info("✓ Step 2 completed: Agent3.app installed");
-            // Clean network extension preferences WITHOUT stopping network services
+            // Clean network extension preferences (no service restarts needed)
             lib_core.info("Cleaning network extension preference files...");
-            // Remove main network extension plist
             try {
-                external_child_process_.execSync("sudo rm -f /Library/Preferences/com.apple.networkextension.plist", { stdio: "ignore" });
-                lib_core.info("✓ Removed main network extension plist");
+                external_child_process_.execSync("sudo rm -f /Library/Preferences/com.apple.networkextension.plist " +
+                    "/Library/Preferences/com.apple.networkextension.control.plist " +
+                    "/Library/Preferences/SystemConfiguration/com.apple.networkextension*.plist", { stdio: "ignore" });
+                lib_core.info("✓ Removed network extension preference files");
             }
             catch (e) {
-                lib_core.info("No main plist to remove");
+                lib_core.info("No preference files to remove");
             }
-            // Remove control plist (the critical one for "stale configuration")
-            try {
-                external_child_process_.execSync("sudo rm -f /Library/Preferences/com.apple.networkextension.control.plist", { stdio: "ignore" });
-                lib_core.info("✓ Removed network extension control state");
-            }
-            catch (e) {
-                lib_core.info("No control plist to remove");
-            }
-            // Clean SystemConfiguration network extension files
-            try {
-                external_child_process_.execSync("sudo rm -f /Library/Preferences/SystemConfiguration/com.apple.networkextension*.plist", { stdio: "ignore" });
-                lib_core.info("✓ Cleaned SystemConfiguration files");
-            }
-            catch (e) {
-                lib_core.info("No SystemConfiguration files to remove");
-            }
-            // Clean network extension database/cache
             try {
                 external_child_process_.execSync("sudo rm -rf /var/db/com.apple.networkextension/", {
                     stdio: "ignore",
@@ -88127,49 +88111,33 @@ function installMacosAgent(confgStr) {
             catch (e) {
                 lib_core.info("No cache directory to remove");
             }
-            // Notify nesessionmanager to reload configuration (gentle restart)
-            lib_core.info("Refreshing network extension manager...");
-            try {
-                external_child_process_.execSync("sudo launchctl kickstart -k system/com.apple.nesessionmanager", {
-                    stdio: "ignore",
-                });
-                lib_core.info("✓ Network extension manager refreshed");
-            }
-            catch (e) {
-                lib_core.info("Could not refresh nesessionmanager");
-            }
-            // REMOVED: No sleep needed here - file operations complete immediately
-            // Copy the plist files
+            // Copy the plist files (system will pick up changes automatically)
             lib_core.info("Copying network extension plist files...");
-            let cmd = "sudo";
-            let args = [
+            external_child_process_.execFileSync("sudo", [
                 "cp",
                 external_path_.join(__dirname, "com.apple.networkextension.plist"),
                 "/Library/Preferences/com.apple.networkextension.plist",
-            ];
-            external_child_process_.execFileSync(cmd, args);
+            ]);
             lib_core.info("✓ Copied com.apple.networkextension.plist");
-            // Launch the agent with log file
+            // Launch the agent
             lib_core.info("Launching Agent3...");
-            if (!external_fs_.existsSync("/Applications/HardenRunner.app/Contents/MacOS/HardenRunner")) {
-                lib_core.warning("✗ Agent3 binary not found at expected path");
+            const agentBinaryPath = "/Applications/HardenRunner.app/Contents/MacOS/HardenRunner";
+            if (!external_fs_.existsSync(agentBinaryPath)) {
+                throw new Error("Agent3 binary not found at expected path");
             }
-            else {
-                lib_core.info("✓ Agent3 binary verified at /Applications/HardenRunner.app/Contents/MacOS/HardenRunner");
-            }
-            external_child_process_.execSync("sudo /Applications/HardenRunner.app/Contents/MacOS/HardenRunner >> /tmp/agent.log 2>&1 &", {
+            lib_core.info("✓ Agent3 binary verified");
+            external_child_process_.execSync(`sudo "${agentBinaryPath}" >> /tmp/agent.log 2>&1 &`, {
                 shell: "/bin/bash",
             });
             lib_core.info("✓ Agent3 launched in background");
-            // Step 3: Fix user permission - Modify system extensions database
+            // Step 3: Modify system extensions database
             lib_core.info("Step 3: Modifying system extensions database...");
-            // OPTIMIZED: Poll for system extension instead of blind wait
+            // Poll for system extension registration
             lib_core.info("Waiting for system extension to register...");
             let extensionFound = false;
-            const maxAttempts = 10; // 10 attempts = max 5 seconds (10 * 0.5s)
+            const maxAttempts = 10; // Max 5 seconds (10 * 0.5s)
             for (let attempt = 0; attempt < maxAttempts; attempt++) {
                 try {
-                    // Check if extension is in the database
                     const dbContent = external_child_process_.execSync("sudo plutil -convert xml1 -o - /Library/SystemExtensions/db.plist 2>/dev/null || echo ''", { encoding: "utf-8" });
                     if (dbContent.includes("HardenRunner") ||
                         dbContent.includes("activated")) {
@@ -88181,12 +88149,12 @@ function installMacosAgent(confgStr) {
                 catch (e) {
                     // Continue waiting
                 }
-                // Wait 0.5 seconds before next attempt
                 external_child_process_.execSync("sleep 0.5");
             }
             if (!extensionFound) {
                 lib_core.warning("⚠ System extension not found in expected time, proceeding anyway...");
             }
+            // Modify system extension approval state
             lib_core.info("Converting db.plist to xml1 format...");
             external_child_process_.execSync("sudo plutil -convert xml1 /Library/SystemExtensions/db.plist");
             lib_core.info("✓ Successfully converted db.plist to xml1");
@@ -88196,7 +88164,8 @@ function installMacosAgent(confgStr) {
             lib_core.info("Converting db.plist back to binary1 format...");
             external_child_process_.execSync("sudo plutil -convert binary1 /Library/SystemExtensions/db.plist");
             lib_core.info("✓ Successfully converted db.plist to binary1");
-            lib_core.info("Killing Agent3 process...");
+            // Terminate agent to reload with new permissions
+            lib_core.info("Terminating Agent3 process...");
             try {
                 external_child_process_.execSync("sudo killall -9 HardenRunner 2>/dev/null");
                 lib_core.info("✓ Agent3 process terminated");
@@ -88204,20 +88173,21 @@ function installMacosAgent(confgStr) {
             catch (e) {
                 lib_core.info("No Agent3 process to terminate");
             }
-            // Show logs if they exist
+            // Display agent logs if available
             if (external_fs_.existsSync("/tmp/agent.log")) {
-                var content = external_fs_.readFileSync("/tmp/agent.log", "utf-8");
+                const content = external_fs_.readFileSync("/tmp/agent.log", "utf-8");
                 console.log("Agent log contents:");
                 console.log(content);
                 lib_core.info("✓ Agent log read and displayed");
             }
+            // Restart sysextd to apply changes
             lib_core.info("Restarting sysextd...");
             external_child_process_.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");
             lib_core.info("✓ sysextd restarted");
             lib_core.info("✓ Step 3 completed: System extensions database modified");
-            // Step 4: Relaunch Agent3
+            // Step 4: Relaunch Agent3 with updated permissions
             lib_core.info("Step 4: Relaunching Agent3...");
-            external_child_process_.execSync("sudo /Applications/HardenRunner.app/Contents/MacOS/HardenRunner >> /tmp/agent.log 2>&1 &", {
+            external_child_process_.execSync(`sudo "${agentBinaryPath}" >> /tmp/agent.log 2>&1 &`, {
                 shell: "/bin/bash",
             });
             lib_core.info("✓ Agent3 relaunched successfully");
