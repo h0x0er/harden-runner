@@ -111,7 +111,7 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     core.info("Stopping network extension daemons...");
 
     try {
-      cp.execSync("sudo launchctl bootout system/com.apple.nesessionmanager", {
+      cp.execSync("sudo launchctl stop system/com.apple.nesessionmanager", {
         stdio: "ignore",
       });
       core.info("✓ Stopped nesessionmanager");
@@ -147,12 +147,10 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     core.info("=== SECTION 4: DAEMON RESTART ===");
 
     try {
-      cp.execSync(
-        "sudo launchctl bootstrap system /System/Library/LaunchDaemons/com.apple.nesessionmanager.plist"
-      );
+      cp.execSync("sudo launchctl start system/com.apple.nesessionmanager");
       core.info("✓ Started nesessionmanager");
     } catch (e) {
-      core.info("nesessionmanager already loaded or failed to load");
+      core.info("nesessionmanager already running or failed to start");
     }
 
     // Wait for daemons to stabilize
