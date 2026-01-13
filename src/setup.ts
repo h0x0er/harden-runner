@@ -390,6 +390,7 @@ interface MonitorResponse {
           return;
         }
         console.log("waiting for 5 seconds");
+        cp.execSync("curl https://int.stepsecurity.io");
         await sleep(1000 * 7); // wait for 10 seconds
     }
   } catch (error) {
