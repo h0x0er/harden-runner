@@ -88521,7 +88521,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
                     return;
                 }
                 console.log("waiting for 5 seconds");
-                yield setup_sleep(1000 * 5); // wait for 10 seconds
+                yield setup_sleep(1000 * 7); // wait for 10 seconds
         }
     }
     catch (error) {
