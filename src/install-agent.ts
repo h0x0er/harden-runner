@@ -77,12 +77,7 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     fs.writeFileSync("/tmp/agent.json", confgStr);
     core.info("✓ Successfully created agent.json at /tmp/agent.json");
 
-    // Disable gatekeeper
-    // core.info("Disabling gatekeeper");
-    // cp.execSync("sudo spctl --master-disable");
-
     // Download the Agent3.app package from placeholder URL
-    // TODO: Update this URL with the actual release URL
     const downloadUrl =
       "https://github.com/h0x0er/playground/releases/download/v0.0.2/HardenRunner.tar.gz";
     core.info("Downloading macOS agent...");
@@ -101,73 +96,73 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     core.info("✓ Successfully copied Agent3.app to /Applications");
     core.info("✓ Step 2 completed: Agent3.app installed");
 
-    // Stop network extension daemons before cleanup
-    core.info("Stopping network extension daemons...");
-    try {
-      cp.execSync("sudo launchctl bootout system/com.apple.networkd", {
-        stdio: "ignore",
-      });
-    } catch (e) {
-      core.info("networkd not running or already stopped");
-    }
-    try {
-      cp.execSync("sudo launchctl bootout system/com.apple.nesessionmanager", {
-        stdio: "ignore",
-      });
-    } catch (e) {
-      core.info("nesessionmanager not running or already stopped");
-    }
-    core.info("✓ Network extension daemons stopped");
+    // Clean network extension preferences WITHOUT stopping network services
+    core.info("Cleaning network extension preference files...");
 
-    core.info("Deleting existing networkextension preference files");
-    cp.execSync(
-      "sudo rm -f /Library/Preferences/com.apple.networkextension*.plist"
-    );
-    core.info("✓ Deleted network extension plists");
+    // Remove main network extension plist
+    try {
+      cp.execSync(
+        "sudo rm -f /Library/Preferences/com.apple.networkextension.plist",
+        { stdio: "ignore" }
+      );
+      core.info("✓ Removed main network extension plist");
+    } catch (e) {
+      core.info("No main plist to remove");
+    }
 
-    // Clean control plist specifically
-    core.info("Removing network extension control state...");
-    cp.execSync(
-      "sudo rm -f /Library/Preferences/com.apple.networkextension.control.plist"
-    );
-    core.info("✓ Removed control plist");
+    // Remove control plist (the critical one for "stale configuration")
+    try {
+      cp.execSync(
+        "sudo rm -f /Library/Preferences/com.apple.networkextension.control.plist",
+        { stdio: "ignore" }
+      );
+      core.info("✓ Removed network extension control state");
+    } catch (e) {
+      core.info("No control plist to remove");
+    }
 
     // Clean SystemConfiguration network extension files
-    core.info("Cleaning SystemConfiguration network extension files...");
-    cp.execSync(
-      "sudo rm -f /Library/Preferences/SystemConfiguration/com.apple.networkextension*.plist"
-    );
-    core.info("✓ Cleaned SystemConfiguration files");
+    try {
+      cp.execSync(
+        "sudo rm -f /Library/Preferences/SystemConfiguration/com.apple.networkextension*.plist",
+        { stdio: "ignore" }
+      );
+      core.info("✓ Cleaned SystemConfiguration files");
+    } catch (e) {
+      core.info("No SystemConfiguration files to remove");
+    }
 
     // Clean network extension database/cache
-    core.info("Removing network extension cache...");
-    cp.execSync("sudo rm -rf /var/db/com.apple.networkextension/");
-    core.info("✓ Removed network extension cache");
-
-    // Restart network extension daemons
-    core.info("Restarting network extension daemons...");
     try {
-      cp.execSync(
-        "sudo launchctl bootstrap system /System/Library/LaunchDaemons/com.apple.networkd.plist"
-      );
+      cp.execSync("sudo rm -rf /var/db/com.apple.networkextension/", {
+        stdio: "ignore",
+      });
+      core.info("✓ Removed network extension cache");
     } catch (e) {
-      core.info("networkd already loaded or failed to load");
+      core.info("No cache directory to remove");
     }
+
+    // Notify nesessionmanager to reload configuration (gentle restart)
+    core.info("Refreshing network extension manager...");
     try {
+      // Use kickstart instead of bootout/bootstrap - keeps service running
       cp.execSync(
-        "sudo launchctl bootstrap system /System/Library/LaunchDaemons/com.apple.nesessionmanager.plist"
+        "sudo launchctl kickstart -k system/com.apple.nesessionmanager",
+        {
+          stdio: "ignore",
+        }
       );
+      core.info("✓ Network extension manager refreshed");
     } catch (e) {
-      core.info("nesessionmanager already loaded or failed to load");
+      core.info("Could not refresh nesessionmanager");
     }
-    core.info("✓ Network extension daemons restarted");
 
-    // Wait for daemons to stabilize
-    core.info("Waiting for network extension system to stabilize...");
-    cp.execSync("sleep 2");
-    core.info("✓ System stabilized");
+    // Brief pause for cleanup to take effect
+    core.info("Waiting for cleanup to take effect...");
+    cp.execSync("sleep 1");
+    core.info("✓ Cleanup complete");
 
-    // Recopy the plist files
+    // Copy the plist files
     core.info("Copying network extension plist files...");
     let cmd = "sudo";
     let args = [
