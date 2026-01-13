@@ -88101,14 +88101,6 @@ function installMacosAgent(confgStr) {
             lib_core.info("=== SECTION 3: NETWORK EXTENSION CLEANUP ===");
             // Stop network extension daemons
             lib_core.info("Stopping network extension daemons...");
-            // try {
-            //   cp.execSync("sudo launchctl bootout system/com.apple.networkd", {
-            //     stdio: "ignore",
-            //   });
-            //   core.info("✓ Stopped networkd");
-            // } catch (e) {
-            //   core.info("networkd not running or already stopped");
-            // }
             try {
                 external_child_process_.execSync("sudo launchctl bootout system/com.apple.nesessionmanager", {
                     stdio: "ignore",
@@ -88134,15 +88126,6 @@ function installMacosAgent(confgStr) {
             // SECTION 4: DAEMON RESTART - Restart Daemons with Clean State
             // ========================================================================
             lib_core.info("=== SECTION 4: DAEMON RESTART ===");
-            // core.info("Restarting network extension daemons...");
-            // try {
-            //   cp.execSync(
-            //     "sudo launchctl bootstrap system /System/Library/LaunchDaemons/com.apple.networkd.plist"
-            //   );
-            //   core.info("✓ Started networkd");
-            // } catch (e) {
-            //   core.info("networkd already loaded or failed to load");
-            // }
             try {
                 external_child_process_.execSync("sudo launchctl bootstrap system /System/Library/LaunchDaemons/com.apple.nesessionmanager.plist");
                 lib_core.info("✓ Started nesessionmanager");
