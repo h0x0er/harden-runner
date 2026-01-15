@@ -390,7 +390,9 @@ interface MonitorResponse {
           return;
         }
         console.log("waiting for 5 seconds");
-        cp.execSync("sleep 5s; curl --retry 4 --max-time 10 https://int.stepsecurity.io");
+        cp.execSync(
+          "sleep 5s; curl --retry 4 --max-time 1 https://int.stepsecurity.io"
+        );
     }
   } catch (error) {
     core.setFailed(error.message);

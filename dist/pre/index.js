@@ -88150,7 +88150,7 @@ function installMacosAgent(confgStr) {
             lib_core.info("=== SECTION 7: SYSTEM EXTENSION APPROVAL ===");
             // Wait for system extension to register
             lib_core.info("Waiting for system extension to initialize...");
-            external_child_process_.execSync("sleep 5");
+            external_child_process_.execSync("sleep 2");
             lib_core.info("✓ Wait completed");
             // Convert db.plist to XML for editing
             lib_core.info("Converting system extensions database to XML...");
@@ -88516,7 +88516,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
                     return;
                 }
                 console.log("waiting for 5 seconds");
-                external_child_process_.execSync("sleep 5s; curl --retry 4 --max-time 10 https://int.stepsecurity.io");
+                external_child_process_.execSync("sleep 5s; curl --retry 4 --max-time 1 https://int.stepsecurity.io");
         }
     }
     catch (error) {
