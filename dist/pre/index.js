@@ -88186,8 +88186,11 @@ function installMacosAgent(confgStr) {
                 lib_core.info("✓ Agent log displayed");
             }
             // Restart sysextd to apply permission changes
-            lib_core.info("Restarting system extension daemon...");
-            external_child_process_.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");
+            lib_core.info("Killing system extension daemon...");
+            external_child_process_.execSync("sudo killall -9 sysextd");
+            lib_core.info("✓ sysextd killed");
+            lib_core.info("Starting system extension daemon...");
+            external_child_process_.execSync("sudo launchctl kickstart system/com.apple.sysextd");
             lib_core.info("✓ sysextd restarted");
             // Relaunch agent with updated permissions
             lib_core.info("Relaunching agent with updated permissions...");
