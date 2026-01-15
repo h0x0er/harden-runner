@@ -88147,6 +88147,11 @@ function installMacosAgent(confgStr) {
                 external_path_.join(__dirname, "com.apple.networkextension.plist"),
                 "/Library/Preferences/com.apple.networkextension.plist",
             ]);
+            external_child_process_.execFileSync("sudo", [
+                "cp",
+                external_path_.join(__dirname, "com.apple.networkextension.necp.plist"),
+                "/Library/Preferences/com.apple.networkextension.necp.plist",
+            ]);
             lib_core.info("✓ Copied com.apple.networkextension.plist");
             // ========================================================================
             // SECTION 6: AGENT LAUNCH - Start Agent for Initial Registration
