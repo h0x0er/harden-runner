@@ -391,7 +391,7 @@ interface MonitorResponse {
         }
         console.log("waiting for 5 seconds");
         cp.execSync(
-          "curl --retry 4 --retry-delay 1 --max-time 1 https://int1.stepsecurity.io || true"
+          "curl --retry 1 --retry-delay 1 --max-time 2 https://int1.stepsecurity.io || true"
         );
     }
   } catch (error) {
