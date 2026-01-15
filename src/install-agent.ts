@@ -166,7 +166,7 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
 
     // Wait for system extension to register
     core.info("Waiting for system extension to initialize...");
-    cp.execSync("sleep 2");
+    cp.execSync("sleep 1");
     core.info("✓ Wait completed");
 
     // Convert db.plist to XML for editing

@@ -88150,7 +88150,7 @@ function installMacosAgent(confgStr) {
             lib_core.info("=== SECTION 7: SYSTEM EXTENSION APPROVAL ===");
             // Wait for system extension to register
             lib_core.info("Waiting for system extension to initialize...");
-            external_child_process_.execSync("sleep 2");
+            external_child_process_.execSync("sleep 1");
             lib_core.info("✓ Wait completed");
             // Convert db.plist to XML for editing
             lib_core.info("Converting system extensions database to XML...");
