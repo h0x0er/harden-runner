@@ -211,33 +211,17 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
       core.info("✓ Agent log displayed");
     }
 
+    // Relaunch agent with updated permissions
+    core.info("Relaunching agent with updated permissions...");
+    cp.exec(`sudo "${agentBinaryPath}" >> /tmp/agent.log 2>&1 &`, {
+      shell: "/bin/bash",
+    });
+    core.info("✓ Agent relaunched successfully");
+
     // Restart sysextd to apply permission changes
     core.info("Restarting system extension daemon...");
     cp.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");
     core.info("✓ sysextd restarted");
-
-    // Reapply network extension preference files
-    core.info("Reapplying network extension preference files...");
-    cp.execFileSync("sudo", [
-      "cp",
-      path.join(__dirname, "com.apple.networkextension.plist"),
-      "/Library/Preferences/com.apple.networkextension.plist",
-    ]);
-    core.info("✓ Recopied com.apple.networkextension.plist");
-
-    cp.execFileSync("sudo", [
-      "cp",
-      path.join(__dirname, "com.apple.networkextension.necp.plist"),
-      "/Library/Preferences/com.apple.networkextension.necp.plist",
-    ]);
-    core.info("✓ Recopied com.apple.networkextension.necp.plist");
-
-    // Relaunch agent with updated permissions
-    core.info("Relaunching agent with updated permissions...");
-    cp.execSync(`sudo "${agentBinaryPath}" >> /tmp/agent.log 2>&1 &`, {
-      shell: "/bin/bash",
-    });
-    core.info("✓ Agent relaunched successfully");
 
     // ========================================================================
     // COMPLETION
