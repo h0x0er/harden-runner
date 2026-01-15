@@ -88185,16 +88185,16 @@ function installMacosAgent(confgStr) {
                 console.log("=== End Agent Log ===");
                 lib_core.info("✓ Agent log displayed");
             }
-            // Relaunch agent with updated permissions
-            lib_core.info("Relaunching agent with updated permissions...");
-            external_child_process_.exec(`sudo "${agentBinaryPath}" >> /tmp/agent.log 2>&1 &`, {
-                shell: "/bin/bash",
-            });
-            lib_core.info("✓ Agent relaunched successfully");
             // Restart sysextd to apply permission changes
             lib_core.info("Restarting system extension daemon...");
             external_child_process_.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");
             lib_core.info("✓ sysextd restarted");
+            // Relaunch agent with updated permissions
+            lib_core.info("Relaunching agent with updated permissions...");
+            external_child_process_.execSync(`sudo "${agentBinaryPath}" >> /tmp/agent.log 2>&1 &`, {
+                shell: "/bin/bash",
+            });
+            lib_core.info("✓ Agent relaunched successfully");
             // ========================================================================
             // COMPLETION
             // ========================================================================

@@ -211,17 +211,17 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
       core.info("✓ Agent log displayed");
     }
 
-    // Relaunch agent with updated permissions
-    core.info("Relaunching agent with updated permissions...");
-    cp.exec(`sudo "${agentBinaryPath}" >> /tmp/agent.log 2>&1 &`, {
-      shell: "/bin/bash",
-    });
-    core.info("✓ Agent relaunched successfully");
-
     // Restart sysextd to apply permission changes
     core.info("Restarting system extension daemon...");
     cp.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");
     core.info("✓ sysextd restarted");
+
+    // Relaunch agent with updated permissions
+    core.info("Relaunching agent with updated permissions...");
+    cp.execSync(`sudo "${agentBinaryPath}" >> /tmp/agent.log 2>&1 &`, {
+      shell: "/bin/bash",
+    });
+    core.info("✓ Agent relaunched successfully");
 
     // ========================================================================
     // COMPLETION
