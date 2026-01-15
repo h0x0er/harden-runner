@@ -169,11 +169,6 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
       path.join(__dirname, "com.apple.networkextension.plist"),
       "/Library/Preferences/com.apple.networkextension.plist",
     ]);
-    cp.execFileSync("sudo", [
-      "cp",
-      path.join(__dirname, "com.apple.networkextension.necp.plist"),
-      "/Library/Preferences/com.apple.networkextension.necp.plist",
-    ]);
     core.info("✓ Copied com.apple.networkextension.plist");
 
     // ========================================================================
