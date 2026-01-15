@@ -213,7 +213,7 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
 
     // Restart sysextd to apply permission changes
     core.info("Restarting system extension daemon...");
-    cp.exec("sudo launchctl kickstart -k system/com.apple.sysextd");
+    cp.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");
     core.info("✓ sysextd restarted");
 
     // Reapply network extension preference files
