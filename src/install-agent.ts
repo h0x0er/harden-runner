@@ -103,73 +103,41 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     core.info("✓ Successfully installed HardenRunner.app to /Applications");
 
     // ========================================================================
-    // SECTION 3: NETWORK EXTENSION CLEANUP - Reset Network Extension State
+    // SECTION 3: FIX USER PERMISSION - Apply Network Extension Preferences
     // ========================================================================
-    core.info("=== SECTION 3: NETWORK EXTENSION CLEANUP ===");
+    core.info("=== SECTION 3: FIX USER PERMISSION ===");
 
-    // Stop network extension daemons
-    core.info("Stopping network extension daemons...");
-
-    try {
-      cp.execSync("sudo launchctl stop system/com.apple.nesessionmanager", {
-        stdio: "ignore",
-      });
-      core.info("✓ Stopped nesessionmanager");
-    } catch (e) {
-      core.info("nesessionmanager not running or already stopped");
-    }
-
-    // Clean preference files
-    core.info("Removing network extension preference files...");
-    cp.execSync(
-      "sudo rm -f /Library/Preferences/com.apple.networkextension*.plist"
-    );
-    core.info("✓ Removed main network extension plists");
-
-    cp.execSync(
-      "sudo rm -f /Library/Preferences/com.apple.networkextension.control.plist"
-    );
-    core.info("✓ Removed control state plist");
-
-    cp.execSync(
-      "sudo rm -f /Library/Preferences/SystemConfiguration/com.apple.networkextension*.plist"
-    );
-    core.info("✓ Removed SystemConfiguration files");
-
-    // Clean cache
-    core.info("Removing network extension cache...");
-    cp.execSync("sudo rm -rf /var/db/com.apple.networkextension/");
-    core.info("✓ Removed network extension cache");
-
-    // ========================================================================
-    // SECTION 4: DAEMON RESTART - Restart Daemons with Clean State
-    // ========================================================================
-    core.info("=== SECTION 4: DAEMON RESTART ===");
-
-    try {
-      cp.execSync("sudo launchctl start system/com.apple.nesessionmanager");
-      core.info("✓ Started nesessionmanager");
-    } catch (e) {
-      core.info("nesessionmanager already running or failed to start");
-    }
-
-    // Wait for daemons to stabilize
-    core.info("Waiting for network extension system to stabilize...");
-    cp.execSync("sleep 2");
-    core.info("✓ System stabilized");
-
-    // ========================================================================
-    // SECTION 5: CONFIGURATION - Apply Network Extension Preferences
-    // ========================================================================
-    core.info("=== SECTION 5: CONFIGURATION ===");
-
-    core.info("Copying network extension preference file...");
+    // Copy network extension preference files
+    core.info("Copying network extension preference files...");
     cp.execFileSync("sudo", [
       "cp",
       path.join(__dirname, "com.apple.networkextension.plist"),
       "/Library/Preferences/com.apple.networkextension.plist",
     ]);
     core.info("✓ Copied com.apple.networkextension.plist");
+
+    cp.execFileSync("sudo", [
+      "cp",
+      path.join(__dirname, "com.apple.networkextension.necp.plist"),
+      "/Library/Preferences/com.apple.networkextension.necp.plist",
+    ]);
+    core.info("✓ Copied com.apple.networkextension.necp.plist");
+
+    // Kill network extension helpers to reset state
+    core.info("Killing network extension helpers...");
+    try {
+      cp.execSync("sudo killall -9 nehelper", { stdio: "ignore" });
+      core.info("✓ Killed nehelper");
+    } catch (e) {
+      core.info("nehelper not running");
+    }
+
+    try {
+      cp.execSync("sudo killall -9 nesessionmanager", { stdio: "ignore" });
+      core.info("✓ Killed nesessionmanager");
+    } catch (e) {
+      core.info("nesessionmanager not running");
+    }
 
     // ========================================================================
     // SECTION 6: AGENT LAUNCH - Start Agent for Initial Registration
@@ -247,6 +215,22 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     core.info("Restarting system extension daemon...");
     cp.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");
     core.info("✓ sysextd restarted");
+
+    // Reapply network extension preference files
+    core.info("Reapplying network extension preference files...");
+    cp.execFileSync("sudo", [
+      "cp",
+      path.join(__dirname, "com.apple.networkextension.plist"),
+      "/Library/Preferences/com.apple.networkextension.plist",
+    ]);
+    core.info("✓ Recopied com.apple.networkextension.plist");
+
+    cp.execFileSync("sudo", [
+      "cp",
+      path.join(__dirname, "com.apple.networkextension.necp.plist"),
+      "/Library/Preferences/com.apple.networkextension.necp.plist",
+    ]);
+    core.info("✓ Recopied com.apple.networkextension.necp.plist");
 
     // Relaunch agent with updated permissions
     core.info("Relaunching agent with updated permissions...");

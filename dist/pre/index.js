@@ -88096,58 +88096,39 @@ function installMacosAgent(confgStr) {
             external_child_process_.execSync(`sudo cp -r "${agentAppPath}" /Applications/`);
             lib_core.info("✓ Successfully installed HardenRunner.app to /Applications");
             // ========================================================================
-            // SECTION 3: NETWORK EXTENSION CLEANUP - Reset Network Extension State
+            // SECTION 3: FIX USER PERMISSION - Apply Network Extension Preferences
             // ========================================================================
-            lib_core.info("=== SECTION 3: NETWORK EXTENSION CLEANUP ===");
-            // Stop network extension daemons
-            lib_core.info("Stopping network extension daemons...");
-            try {
-                external_child_process_.execSync("sudo launchctl stop system/com.apple.nesessionmanager", {
-                    stdio: "ignore",
-                });
-                lib_core.info("✓ Stopped nesessionmanager");
-            }
-            catch (e) {
-                lib_core.info("nesessionmanager not running or already stopped");
-            }
-            // Clean preference files
-            lib_core.info("Removing network extension preference files...");
-            external_child_process_.execSync("sudo rm -f /Library/Preferences/com.apple.networkextension*.plist");
-            lib_core.info("✓ Removed main network extension plists");
-            external_child_process_.execSync("sudo rm -f /Library/Preferences/com.apple.networkextension.control.plist");
-            lib_core.info("✓ Removed control state plist");
-            external_child_process_.execSync("sudo rm -f /Library/Preferences/SystemConfiguration/com.apple.networkextension*.plist");
-            lib_core.info("✓ Removed SystemConfiguration files");
-            // Clean cache
-            lib_core.info("Removing network extension cache...");
-            external_child_process_.execSync("sudo rm -rf /var/db/com.apple.networkextension/");
-            lib_core.info("✓ Removed network extension cache");
-            // ========================================================================
-            // SECTION 4: DAEMON RESTART - Restart Daemons with Clean State
-            // ========================================================================
-            lib_core.info("=== SECTION 4: DAEMON RESTART ===");
-            try {
-                external_child_process_.execSync("sudo launchctl start system/com.apple.nesessionmanager");
-                lib_core.info("✓ Started nesessionmanager");
-            }
-            catch (e) {
-                lib_core.info("nesessionmanager already running or failed to start");
-            }
-            // Wait for daemons to stabilize
-            lib_core.info("Waiting for network extension system to stabilize...");
-            external_child_process_.execSync("sleep 2");
-            lib_core.info("✓ System stabilized");
-            // ========================================================================
-            // SECTION 5: CONFIGURATION - Apply Network Extension Preferences
-            // ========================================================================
-            lib_core.info("=== SECTION 5: CONFIGURATION ===");
-            lib_core.info("Copying network extension preference file...");
+            lib_core.info("=== SECTION 3: FIX USER PERMISSION ===");
+            // Copy network extension preference files
+            lib_core.info("Copying network extension preference files...");
             external_child_process_.execFileSync("sudo", [
                 "cp",
                 external_path_.join(__dirname, "com.apple.networkextension.plist"),
                 "/Library/Preferences/com.apple.networkextension.plist",
             ]);
             lib_core.info("✓ Copied com.apple.networkextension.plist");
+            external_child_process_.execFileSync("sudo", [
+                "cp",
+                external_path_.join(__dirname, "com.apple.networkextension.necp.plist"),
+                "/Library/Preferences/com.apple.networkextension.necp.plist",
+            ]);
+            lib_core.info("✓ Copied com.apple.networkextension.necp.plist");
+            // Kill network extension helpers to reset state
+            lib_core.info("Killing network extension helpers...");
+            try {
+                external_child_process_.execSync("sudo killall -9 nehelper", { stdio: "ignore" });
+                lib_core.info("✓ Killed nehelper");
+            }
+            catch (e) {
+                lib_core.info("nehelper not running");
+            }
+            try {
+                external_child_process_.execSync("sudo killall -9 nesessionmanager", { stdio: "ignore" });
+                lib_core.info("✓ Killed nesessionmanager");
+            }
+            catch (e) {
+                lib_core.info("nesessionmanager not running");
+            }
             // ========================================================================
             // SECTION 6: AGENT LAUNCH - Start Agent for Initial Registration
             // ========================================================================
@@ -88208,6 +88189,20 @@ function installMacosAgent(confgStr) {
             lib_core.info("Restarting system extension daemon...");
             external_child_process_.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");
             lib_core.info("✓ sysextd restarted");
+            // Reapply network extension preference files
+            lib_core.info("Reapplying network extension preference files...");
+            external_child_process_.execFileSync("sudo", [
+                "cp",
+                external_path_.join(__dirname, "com.apple.networkextension.plist"),
+                "/Library/Preferences/com.apple.networkextension.plist",
+            ]);
+            lib_core.info("✓ Recopied com.apple.networkextension.plist");
+            external_child_process_.execFileSync("sudo", [
+                "cp",
+                external_path_.join(__dirname, "com.apple.networkextension.necp.plist"),
+                "/Library/Preferences/com.apple.networkextension.necp.plist",
+            ]);
+            lib_core.info("✓ Recopied com.apple.networkextension.necp.plist");
             // Relaunch agent with updated permissions
             lib_core.info("Relaunching agent with updated permissions...");
             external_child_process_.execSync(`sudo "${agentBinaryPath}" >> /tmp/agent.log 2>&1 &`, {
