@@ -389,7 +389,7 @@ interface MonitorResponse {
           core.warning("😭 macos agent installation failed");
           return;
         }
-        console.log("waiting for 5 seconds");
+        console.log("waiting for 10s seconds");
         cp.execSync(
           "curl --retry 4 --retry-delay 1 --max-time 1 https://int1.stepsecurity.io || true"
         );

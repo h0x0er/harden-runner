@@ -88187,7 +88187,7 @@ function installMacosAgent(confgStr) {
             }
             // Restart sysextd to apply permission changes
             lib_core.info("Restarting system extension daemon...");
-            external_child_process_.execSync("sudo launchctl kickstart -k system/com.apple.sysextd");
+            external_child_process_.exec("sudo launchctl kickstart -k system/com.apple.sysextd");
             lib_core.info("✓ sysextd restarted");
             // Reapply network extension preference files
             lib_core.info("Reapplying network extension preference files...");
@@ -88515,7 +88515,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
                     lib_core.warning("😭 macos agent installation failed");
                     return;
                 }
-                console.log("waiting for 5 seconds");
+                console.log("waiting for 10s seconds");
                 external_child_process_.execSync("curl --retry 4 --retry-delay 1 --max-time 1 https://int1.stepsecurity.io || true");
         }
     }
