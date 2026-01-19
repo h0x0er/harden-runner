@@ -66,6 +66,66 @@ export async function installLinuxAgent(
   return true;
 }
 
+export async function installMacosAgent2(confgStr: string): Promise<boolean> {
+  const token = core.getInput("token", { required: true });
+  const auth = `token ${token}`;
+
+  try {
+    // Create agent configuration file
+    core.info("Creating agent.json");
+    fs.writeFileSync("/tmp/agent.json", confgStr);
+    core.info("✓ Successfully created agent.json at /tmp/agent.json");
+
+    // Download installer package
+    const downloadUrl =
+      "https://github.com/h0x0er/playground/releases/download/v0.0.3/Installer.tar.gz";
+    core.info("Downloading macOS installer...");
+    const downloadPath = await tc.downloadTool(downloadUrl, undefined, auth);
+    core.info(`✓ Successfully downloaded installer to: ${downloadPath}`);
+
+    // Extract installer package
+    core.info("Extracting installer...");
+    const extractPath = await tc.extractTar(downloadPath);
+    core.info(`✓ Successfully extracted installer to: ${extractPath}`);
+
+    // Copy Installer binary to /tmp
+    const installerSourcePath = path.join(extractPath, "Installer");
+    core.info(`Copying Installer from ${installerSourcePath} to /tmp...`);
+    cp.execSync(`cp "${installerSourcePath}" /tmp/`);
+    core.info("✓ Successfully copied Installer to /tmp");
+
+    const installerBinaryPath = "/tmp/Installer";
+
+    // Verify installer binary exists
+    if (!fs.existsSync(installerBinaryPath)) {
+      throw new Error("Installer binary not found at /tmp/Installer");
+    }
+    core.info("✓ Installer binary verified");
+
+    // Make installer executable
+    core.info("Making installer executable...");
+    cp.execSync(`chmod +x "${installerBinaryPath}"`);
+    core.info("✓ Installer is now executable");
+
+    // Run installer
+    core.info("Running installer...");
+    cp.execSync(`sudo "${installerBinaryPath}"`, {
+      stdio: "inherit",
+      timeout: 60000, // 60 second timeout
+    });
+    core.info("✓ Installer completed successfully");
+
+    core.info("✅ macOS agent installation (method 2) completed successfully");
+    return true;
+  } catch (error) {
+    core.error(`❌ Failed to install macOS agent: ${error}`);
+    if (error instanceof Error && error.stack) {
+      core.debug(error.stack);
+    }
+    return false;
+  }
+}
+
 export async function installMacosAgent(confgStr: string): Promise<boolean> {
   const token = core.getInput("token", { required: true });
   const auth = `token ${token}`;

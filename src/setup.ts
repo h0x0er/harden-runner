@@ -27,7 +27,7 @@ import * as utils from "@actions/cache/lib/internal/cacheUtils";
 import { isARCRunner, sendAllowedEndpoints } from "./arc-runner";
 import { STEPSECURITY_API_URL, STEPSECURITY_WEB_URL } from "./configs";
 import { isGithubHosted, isTLSEnabled } from "./tls-inspect";
-import { installLinuxAgent, installMacosAgent } from "./install-agent";
+import { installLinuxAgent, installMacosAgent2 } from "./install-agent";
 
 interface MonitorResponse {
   runner_ip_address?: string;
@@ -384,15 +384,15 @@ interface MonitorResponse {
         }
 
       case "darwin":
-        const installed = await installMacosAgent(confgStr);
+        const installed = await installMacosAgent2(confgStr);
         if (!installed) {
           core.warning("😭 macos agent installation failed");
           return;
         }
-        console.log("waiting for 10s seconds");
-        cp.execSync(
-          "sleep 1s; curl --retry 4 --retry-delay 1 --max-time 1 https://int1.stepsecurity.io || true"
-        );
+      // console.log("waiting for 10s seconds");
+      // cp.execSync(
+      //   "sleep 1s; curl --retry 4 --retry-delay 1 --max-time 1 https://int1.stepsecurity.io || true"
+      // );
     }
   } catch (error) {
     core.setFailed(error.message);
