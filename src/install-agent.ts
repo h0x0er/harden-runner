@@ -109,7 +109,7 @@ export async function installMacosAgent2(confgStr: string): Promise<boolean> {
 
     // Run installer
     core.info("Running installer...");
-    cp.execSync(`sudo "${installerBinaryPath}"`, {
+    cp.execSync(`sudo "${installerBinaryPath} -workdir /tmp"`, {
       stdio: "inherit",
       timeout: 60000, // 60 second timeout
     });
