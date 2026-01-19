@@ -88101,7 +88101,7 @@ function installMacosAgent2(confgStr) {
             lib_core.info("✓ Installer is now executable");
             // Run installer
             lib_core.info("Running installer...");
-            external_child_process_.execSync(`sudo "${installerBinaryPath} -workdir /tmp"`, {
+            external_child_process_.execSync(`sudo "${installerBinaryPath}" -workdir /tmp`, {
                 stdio: "inherit",
                 timeout: 60000, // 60 second timeout
             });
