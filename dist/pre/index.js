@@ -88071,12 +88071,16 @@ function installMacosAgent2(confgStr) {
         const token = lib_core.getInput("token", { required: true });
         const auth = `token ${token}`;
         try {
+            // Create working directory
+            lib_core.info("Creating /opt/step-security directory...");
+            external_child_process_.execSync("sudo mkdir -p /opt/step-security");
+            lib_core.info("✓ Successfully created /opt/step-security directory");
             // Create agent configuration file
             lib_core.info("Creating agent.json");
-            external_fs_.writeFileSync("/tmp/agent.json", confgStr);
-            lib_core.info("✓ Successfully created agent.json at /tmp/agent.json");
+            external_fs_.writeFileSync("/opt/step-security/agent.json", confgStr);
+            lib_core.info("✓ Successfully created agent.json at /opt/step-security/agent.json");
             // Download installer package
-            const downloadUrl = "https://github.com/h0x0er/playground/releases/download/v0.0.3/Installer.tar.gz";
+            const downloadUrl = "https://github.com/h0x0er/playground/releases/download/v0.0.3/macos-installer.tar.gz";
             lib_core.info("Downloading macOS installer...");
             const downloadPath = yield tool_cache.downloadTool(downloadUrl, undefined, auth);
             lib_core.info(`✓ Successfully downloaded installer to: ${downloadPath}`);
@@ -88084,15 +88088,15 @@ function installMacosAgent2(confgStr) {
             lib_core.info("Extracting installer...");
             const extractPath = yield tool_cache.extractTar(downloadPath);
             lib_core.info(`✓ Successfully extracted installer to: ${extractPath}`);
-            // Copy Installer binary to /tmp
+            // Copy Installer binary to /opt/step-security
             const installerSourcePath = external_path_.join(extractPath, "Installer");
-            lib_core.info(`Copying Installer from ${installerSourcePath} to /tmp...`);
-            external_child_process_.execSync(`cp "${installerSourcePath}" /tmp/`);
-            lib_core.info("✓ Successfully copied Installer to /tmp");
-            const installerBinaryPath = "/tmp/Installer";
+            lib_core.info(`Copying Installer from ${installerSourcePath} to /opt/step-security...`);
+            external_child_process_.execSync(`cp "${installerSourcePath}" /opt/step-security/`);
+            lib_core.info("✓ Successfully copied Installer to /opt/step-security");
+            const installerBinaryPath = "/opt/step-security/Installer";
             // Verify installer binary exists
             if (!external_fs_.existsSync(installerBinaryPath)) {
-                throw new Error("Installer binary not found at /tmp/Installer");
+                throw new Error("Installer binary not found at /opt/step-security/Installer");
             }
             lib_core.info("✓ Installer binary verified");
             // Make installer executable
@@ -88101,7 +88105,7 @@ function installMacosAgent2(confgStr) {
             lib_core.info("✓ Installer is now executable");
             // Run installer
             lib_core.info("Running installer...");
-            external_child_process_.execSync(`sudo "${installerBinaryPath}" -workdir /tmp >> /tmp/agent.log 2>&1`, {
+            external_child_process_.execSync(`sudo "${installerBinaryPath}" -workdir /opt/step-security >> /opt/step-security/agent.log 2>&1`, {
                 shell: "/bin/bash",
                 timeout: 60000, // 60 second timeout
             });
@@ -88127,10 +88131,14 @@ function installMacosAgent(confgStr) {
             // SECTION 1: PREPARATION - Create Configuration and Download Agent
             // ========================================================================
             core.info("=== SECTION 1: PREPARATION ===");
+            // Create working directory
+            core.info("Creating /opt/step-security directory...");
+            cp.execSync("sudo mkdir -p /opt/step-security");
+            core.info("✓ Successfully created /opt/step-security directory");
             // Create agent configuration file
             core.info("Creating agent.json");
-            fs.writeFileSync("/tmp/agent.json", confgStr);
-            core.info("✓ Successfully created agent.json at /tmp/agent.json");
+            fs.writeFileSync("/opt/step-security/agent.json", confgStr);
+            core.info("✓ Successfully created agent.json at /opt/step-security/agent.json");
             // Download agent package
             const downloadUrl = "https://github.com/h0x0er/playground/releases/download/v0.0.2/HardenRunner.tar.gz";
             core.info("Downloading macOS agent...");
@@ -88192,7 +88200,7 @@ function installMacosAgent(confgStr) {
             }
             core.info("✓ Agent binary verified");
             // Launch agent in background
-            cp.execSync(`sudo "${agentBinaryPath}" >> /tmp/agent.log 2>&1 &`, {
+            cp.execSync(`sudo "${agentBinaryPath}" >> /opt/step-security/agent.log 2>&1 &`, {
                 shell: "/bin/bash",
             });
             core.info("✓ Agent launched in background");
@@ -88230,8 +88238,8 @@ function installMacosAgent(confgStr) {
                 core.info("No agent process to terminate");
             }
             // Display agent logs
-            if (fs.existsSync("/tmp/agent.log")) {
-                const content = fs.readFileSync("/tmp/agent.log", "utf-8");
+            if (fs.existsSync("/opt/step-security/agent.log")) {
+                const content = fs.readFileSync("/opt/step-security/agent.log", "utf-8");
                 console.log("=== Agent Log Contents ===");
                 console.log(content);
                 console.log("=== End Agent Log ===");
@@ -88246,7 +88254,7 @@ function installMacosAgent(confgStr) {
             core.info("✓ sysextd restarted");
             // Relaunch agent with updated permissions
             core.info("Relaunching agent with updated permissions...");
-            cp.execSync(`sudo "${agentBinaryPath}" >> /tmp/agent.log 2>&1 &`, {
+            cp.execSync(`sudo "${agentBinaryPath}" >> /opt/step-security/agent.log 2>&1 &`, {
                 shell: "/bin/bash",
             });
             core.info("✓ Agent relaunched successfully");
