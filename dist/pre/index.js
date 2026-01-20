@@ -88074,6 +88074,7 @@ function installMacosAgent2(confgStr) {
             // Create working directory
             lib_core.info("Creating /opt/step-security directory...");
             external_child_process_.execSync("sudo mkdir -p /opt/step-security");
+            chownForFolder(process.env.USER, "/opt/step-security");
             lib_core.info("✓ Successfully created /opt/step-security directory");
             // Create agent configuration file
             lib_core.info("Creating agent.json");
@@ -88134,6 +88135,7 @@ function installMacosAgent(confgStr) {
             // Create working directory
             core.info("Creating /opt/step-security directory...");
             cp.execSync("sudo mkdir -p /opt/step-security");
+            chownForFolder(process.env.USER, "/opt/step-security");
             core.info("✓ Successfully created /opt/step-security directory");
             // Create agent configuration file
             core.info("Creating agent.json");
@@ -88272,6 +88274,11 @@ function installMacosAgent(confgStr) {
             return false;
         }
     });
+}
+function chownForFolder(newOwner, target) {
+    let cmd = "sudo";
+    let args = ["chown", "-R", newOwner, target];
+    external_child_process_.execFileSync(cmd, args);
 }
 
 ;// CONCATENATED MODULE: ./src/setup.ts
@@ -88529,7 +88536,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         switch (platform) {
             case "linux":
                 external_child_process_.execSync("sudo mkdir -p /home/agent");
-                chownForFolder(process.env.USER, "/home/agent");
+                setup_chownForFolder(process.env.USER, "/home/agent");
                 let isTLS = yield isTLSEnabled(github.context.repo.owner);
                 const agentInstalled = yield installLinuxAgent(isTLS, confgStr);
                 if (agentInstalled) {
@@ -88581,7 +88588,7 @@ function setup_sleep(ms) {
         setTimeout(resolve, ms);
     });
 }
-function chownForFolder(newOwner, target) {
+function setup_chownForFolder(newOwner, target) {
     let cmd = "sudo";
     let args = ["chown", "-R", newOwner, target];
     external_child_process_.execFileSync(cmd, args);

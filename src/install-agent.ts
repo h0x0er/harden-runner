@@ -74,12 +74,15 @@ export async function installMacosAgent2(confgStr: string): Promise<boolean> {
     // Create working directory
     core.info("Creating /opt/step-security directory...");
     cp.execSync("sudo mkdir -p /opt/step-security");
+    chownForFolder(process.env.USER, "/opt/step-security");
     core.info("✓ Successfully created /opt/step-security directory");
 
     // Create agent configuration file
     core.info("Creating agent.json");
     fs.writeFileSync("/opt/step-security/agent.json", confgStr);
-    core.info("✓ Successfully created agent.json at /opt/step-security/agent.json");
+    core.info(
+      "✓ Successfully created agent.json at /opt/step-security/agent.json"
+    );
 
     // Download installer package
     const downloadUrl =
@@ -95,7 +98,9 @@ export async function installMacosAgent2(confgStr: string): Promise<boolean> {
 
     // Copy Installer binary to /opt/step-security
     const installerSourcePath = path.join(extractPath, "Installer");
-    core.info(`Copying Installer from ${installerSourcePath} to /opt/step-security...`);
+    core.info(
+      `Copying Installer from ${installerSourcePath} to /opt/step-security...`
+    );
     cp.execSync(`cp "${installerSourcePath}" /opt/step-security/`);
     core.info("✓ Successfully copied Installer to /opt/step-security");
 
@@ -103,7 +108,9 @@ export async function installMacosAgent2(confgStr: string): Promise<boolean> {
 
     // Verify installer binary exists
     if (!fs.existsSync(installerBinaryPath)) {
-      throw new Error("Installer binary not found at /opt/step-security/Installer");
+      throw new Error(
+        "Installer binary not found at /opt/step-security/Installer"
+      );
     }
     core.info("✓ Installer binary verified");
 
@@ -114,10 +121,13 @@ export async function installMacosAgent2(confgStr: string): Promise<boolean> {
 
     // Run installer
     core.info("Running installer...");
-    cp.execSync(`sudo "${installerBinaryPath}" -workdir /opt/step-security >> /opt/step-security/agent.log 2>&1`, {
-      shell: "/bin/bash",
-      timeout: 60000, // 60 second timeout
-    });
+    cp.execSync(
+      `sudo "${installerBinaryPath}" -workdir /opt/step-security >> /opt/step-security/agent.log 2>&1`,
+      {
+        shell: "/bin/bash",
+        timeout: 60000, // 60 second timeout
+      }
+    );
     core.info("✓ Installer completed successfully");
 
     core.info("✅ macOS agent installation (method 2) completed successfully");
@@ -144,12 +154,15 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     // Create working directory
     core.info("Creating /opt/step-security directory...");
     cp.execSync("sudo mkdir -p /opt/step-security");
+    chownForFolder(process.env.USER, "/opt/step-security");
     core.info("✓ Successfully created /opt/step-security directory");
 
     // Create agent configuration file
     core.info("Creating agent.json");
     fs.writeFileSync("/opt/step-security/agent.json", confgStr);
-    core.info("✓ Successfully created agent.json at /opt/step-security/agent.json");
+    core.info(
+      "✓ Successfully created agent.json at /opt/step-security/agent.json"
+    );
 
     // Download agent package
     const downloadUrl =
@@ -224,9 +237,12 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     core.info("✓ Agent binary verified");
 
     // Launch agent in background
-    cp.execSync(`sudo "${agentBinaryPath}" >> /opt/step-security/agent.log 2>&1 &`, {
-      shell: "/bin/bash",
-    });
+    cp.execSync(
+      `sudo "${agentBinaryPath}" >> /opt/step-security/agent.log 2>&1 &`,
+      {
+        shell: "/bin/bash",
+      }
+    );
     core.info("✓ Agent launched in background");
 
     // ========================================================================
@@ -292,9 +308,12 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
 
     // Relaunch agent with updated permissions
     core.info("Relaunching agent with updated permissions...");
-    cp.execSync(`sudo "${agentBinaryPath}" >> /opt/step-security/agent.log 2>&1 &`, {
-      shell: "/bin/bash",
-    });
+    cp.execSync(
+      `sudo "${agentBinaryPath}" >> /opt/step-security/agent.log 2>&1 &`,
+      {
+        shell: "/bin/bash",
+      }
+    );
     core.info("✓ Agent relaunched successfully");
 
     // ========================================================================
@@ -309,4 +328,10 @@ export async function installMacosAgent(confgStr: string): Promise<boolean> {
     }
     return false;
   }
+}
+
+function chownForFolder(newOwner: string, target: string) {
+  let cmd = "sudo";
+  let args = ["chown", "-R", newOwner, target];
+  cp.execFileSync(cmd, args);
 }
