@@ -41,11 +41,11 @@ import { context } from "@actions/github";
     case "darwin":
       {
         fs.writeFileSync(
-          "/private/tmp/post_event.json",
+          "/opt/step-security/post_event.json",
           JSON.stringify({ event: "post" })
         );
 
-        let macDone = "/private/tmp/done.json";
+        let macDone = "/opt/step-security/done.json";
         let counter = 0;
         while (true) {
           if (!fs.existsSync(macDone)) {
@@ -62,7 +62,7 @@ import { context } from "@actions/github";
           }
         }
 
-        let macAgenLog = "/tmp/agent.log";
+        let macAgenLog = "/opt/step-security/agent.log";
         if (fs.existsSync(macAgenLog)) {
           console.log("macAgenLog:");
           var content = fs.readFileSync(macAgenLog, "utf-8");

@@ -34661,8 +34661,8 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
     switch (platform) {
         case "darwin":
             {
-                external_fs_.writeFileSync("/private/tmp/post_event.json", JSON.stringify({ event: "post" }));
-                let macDone = "/private/tmp/done.json";
+                external_fs_.writeFileSync("/opt/step-security/post_event.json", JSON.stringify({ event: "post" }));
+                let macDone = "/opt/step-security/done.json";
                 let counter = 0;
                 while (true) {
                     if (!external_fs_.existsSync(macDone)) {
@@ -34677,7 +34677,7 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
                         break;
                     }
                 }
-                let macAgenLog = "/tmp/agent.log";
+                let macAgenLog = "/opt/step-security/agent.log";
                 if (external_fs_.existsSync(macAgenLog)) {
                     console.log("macAgenLog:");
                     var content = external_fs_.readFileSync(macAgenLog, "utf-8");
