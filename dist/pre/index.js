@@ -88090,7 +88090,7 @@ function installMacosAgent2(confgStr) {
             // Download installer package
             const downloadUrl = "https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/agent-macos-installer/int-pr/macos-installer.tar.gz";
             lib_core.info(`Downloading macOS installer.. : ${downloadUrl}`);
-            const downloadPath = yield tool_cache.downloadTool(downloadUrl, undefined, auth);
+            const downloadPath = yield tool_cache.downloadTool(downloadUrl);
             lib_core.info(`✓ Successfully downloaded installer to: ${downloadPath}`);
             // Calculate and print SHA256 checksum
             lib_core.info("Calculating SHA256 checksum of downloaded tar file...");
