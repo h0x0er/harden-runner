@@ -3,7 +3,7 @@ import * as core from "@actions/core";
 import * as cp from "child_process";
 import * as path from "path";
 import * as fs from "fs";
-import { verifyChecksum } from "./checksum";
+import { verifyChecksum, calculateSha256 } from "./checksum";
 import { EOL } from "os";
 import { ARM64_RUNNER_MESSAGE } from "./common";
 
@@ -86,10 +86,15 @@ export async function installMacosAgent2(confgStr: string): Promise<boolean> {
 
     // Download installer package
     const downloadUrl =
-      "https://github.com/h0x0er/playground/releases/download/v0.0.3/macos-installer.tar.gz";
-    core.info("Downloading macOS installer...");
+      "https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/agent-macos-installer/int-pr/macos-installer.tar.gz";
+    core.info(`Downloading macOS installer.. : ${downloadUrl}`);
     const downloadPath = await tc.downloadTool(downloadUrl, undefined, auth);
     core.info(`✓ Successfully downloaded installer to: ${downloadPath}`);
+
+    // Calculate and print SHA256 checksum
+    core.info("Calculating SHA256 checksum of downloaded tar file...");
+    const sha256sum = calculateSha256(downloadPath);
+    core.info(`SHA256: ${sha256sum}`);
 
     // Extract installer package
     core.info("Extracting installer...");

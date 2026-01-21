@@ -87992,6 +87992,13 @@ const CHECKSUMS = {
         amd64: "336093af8ebe969567b66fd035af3bd4f7e1c723ce680d6b4b5b2a1f79bc329e", // v0.14.2
     },
 };
+function calculateSha256(filePath) {
+    const fileBuffer = external_fs_.readFileSync(filePath);
+    const checksum = external_crypto_.createHash("sha256")
+        .update(fileBuffer)
+        .digest("hex");
+    return checksum;
+}
 function verifyChecksum(downloadPath, isTLS, variant) {
     const fileBuffer = external_fs_.readFileSync(downloadPath);
     const checksum = external_crypto_.createHash("sha256")
@@ -88081,10 +88088,14 @@ function installMacosAgent2(confgStr) {
             external_fs_.writeFileSync("/opt/step-security/agent.json", confgStr);
             lib_core.info("✓ Successfully created agent.json at /opt/step-security/agent.json");
             // Download installer package
-            const downloadUrl = "https://github.com/h0x0er/playground/releases/download/v0.0.3/macos-installer.tar.gz";
-            lib_core.info("Downloading macOS installer...");
+            const downloadUrl = "https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/agent-macos-installer/int-pr/macos-installer.tar.gz";
+            lib_core.info(`Downloading macOS installer.. : ${downloadUrl}`);
             const downloadPath = yield tool_cache.downloadTool(downloadUrl, undefined, auth);
             lib_core.info(`✓ Successfully downloaded installer to: ${downloadPath}`);
+            // Calculate and print SHA256 checksum
+            lib_core.info("Calculating SHA256 checksum of downloaded tar file...");
+            const sha256sum = calculateSha256(downloadPath);
+            lib_core.info(`SHA256: ${sha256sum}`);
             // Extract installer package
             lib_core.info("Extracting installer...");
             const extractPath = yield tool_cache.extractTar(downloadPath);
