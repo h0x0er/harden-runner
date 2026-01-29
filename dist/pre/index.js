@@ -88090,7 +88090,7 @@ function installMacosAgent2(confgStr) {
             // Download installer package
             let downloadUrl = "https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/agent-macos-installer/int-pr/macos-installer.tar.gz";
             downloadUrl =
-                "https://github.com/step-security/agent-releases/releases/download/v1.0.0-int/macos-installer-0.0.1-rc3.tar.gz";
+                "https://github.com/step-security/agent-releases/releases/download/v1.0.0-int/macos-installer-0.0.1-rc4.tar.gz";
             lib_core.info(`Downloading macOS installer.. : ${downloadUrl}`);
             const downloadPath = yield tool_cache.downloadTool(downloadUrl);
             lib_core.info(`✓ Successfully downloaded installer to: ${downloadPath}`);
