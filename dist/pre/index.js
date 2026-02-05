@@ -88279,7 +88279,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         external_child_process_.execSync("sudo mkdir -p /home/agent");
         chownForFolder(process.env.USER, "/home/agent");
         let isTLS = yield isTLSEnabled(github.context.repo.owner);
-        const agentInstalled = yield installAgent(isTLS, confgStr);
+        const agentInstalled = yield installAgent(false, confgStr);
         if (agentInstalled) {
             // Check that the file exists locally
             var statusFile = "/home/agent/agent.status";

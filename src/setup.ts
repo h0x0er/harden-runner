@@ -327,7 +327,7 @@ interface MonitorResponse {
 
     let isTLS = await isTLSEnabled(context.repo.owner);
 
-    const agentInstalled = await installAgent(isTLS, confgStr);
+    const agentInstalled = await installAgent(false, confgStr);
 
     if (agentInstalled) {
       // Check that the file exists locally
