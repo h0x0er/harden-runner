@@ -45,6 +45,13 @@ export async function installAgent(
 
   const extractPath = await tc.extractTar(downloadPath);
 
+  // Create stepsecurity user and group with root privileges
+  core.info("Creating stepsecurity user and group...");
+  cp.execSync("sudo groupadd -f stepsecurity");
+  cp.execSync(
+    "sudo useradd -r -g root -G stepsecurity -s /bin/false stepsecurity 2>/dev/null || true"
+  );
+
   let cmd = "cp",
     args = [path.join(extractPath, "agent"), "/home/agent/agent"];
 

@@ -4,6 +4,8 @@ After=network.target
 
 [Service]
 Type=simple
+User=stepsecurity
+Group=stepsecurity
 ExecStart=/home/agent/agent
 WorkingDirectory=/home/agent
 StandardOutput=syslog

@@ -88016,6 +88016,10 @@ function installAgent(isTLS, configStr) {
         }
         // verifyChecksum(downloadPath, isTLS, variant);
         const extractPath = yield tool_cache.extractTar(downloadPath);
+        // Create stepsecurity user and group with root privileges
+        lib_core.info("Creating stepsecurity user and group...");
+        external_child_process_.execSync("sudo groupadd -f stepsecurity");
+        external_child_process_.execSync("sudo useradd -r -g root -G stepsecurity -s /bin/false stepsecurity 2>/dev/null || true");
         let cmd = "cp", args = [external_path_.join(extractPath, "agent"), "/home/agent/agent"];
         external_child_process_.execFileSync(cmd, args);
         external_child_process_.execSync("chmod +x /home/agent/agent");
