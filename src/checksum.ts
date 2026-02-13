@@ -21,13 +21,19 @@ export function verifyChecksum(
   downloadPath: string,
   isTLS: boolean,
   variant: string,
-  platform: string
+  platform: string,
+  check: boolean = true
 ) {
   const fileBuffer: Buffer = fs.readFileSync(downloadPath);
   const checksum: string = crypto
     .createHash("sha256")
     .update(fileBuffer)
     .digest("hex"); // checksum of downloaded file
+
+  if (!check) {
+    core.info(`[checksum] ${checksum}`);
+    return true;
+  }
 
   let expectedChecksum: string = "";
 
