@@ -85459,7 +85459,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
             disable_sudo_and_containers: lib_core.getBooleanInput("disable-sudo-and-containers"),
             disable_file_monitoring: lib_core.getBooleanInput("disable-file-monitoring"),
             private: ((_d = (_c = github.context === null || github.context === void 0 ? void 0 : github.context.payload) === null || _c === void 0 ? void 0 : _c.repository) === null || _d === void 0 ? void 0 : _d.private) || false,
-            is_github_hosted: isGithubHosted(),
+            is_github_hosted: true,
             is_debug: lib_core.isDebug(),
             one_time_key: "",
         };
