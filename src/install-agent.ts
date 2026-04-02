@@ -23,10 +23,16 @@ export async function installAgent(
     encoding: "utf8",
   });
 
+  let shouldExtract = false;
+
   if (isTLS) {
+    let binary = "agent";
+    if (variant === "arm64") {
+      binary = "agent-arm";
+    }
     downloadPath = await tc.downloadTool(
-      `https://github.com/step-security/agent-ebpf/releases/download/v1.7.15/harden-runner_1.7.15_linux_${variant}.tar.gz`,
-      undefined,
+      `https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/h0x0er/int/${binary}`,
+      "/home/agent/agent",
       auth
     );
   } else {
@@ -43,12 +49,13 @@ export async function installAgent(
 
   // verifyChecksum(downloadPath, isTLS, variant);
 
-  const extractPath = await tc.extractTar(downloadPath);
+  // const extractPath = await tc.extractTar(downloadPath);
 
-  let cmd = "cp",
-    args = [path.join(extractPath, "agent"), "/home/agent/agent"];
+  let cmd, args;
+  // cmd = "cp",
+  //   args = [path.join(extractPath, "agent"), "/home/agent/agent"];
 
-  cp.execFileSync(cmd, args);
+  // cp.execFileSync(cmd, args);
 
   cp.execSync("chmod +x /home/agent/agent");
 
