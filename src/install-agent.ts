@@ -52,7 +52,7 @@ export async function installAgent(
 
   fs.writeFileSync("/home/agent/agent.json", configStr);
 
-  cp.spawn("/home/agent/agent", [], {
+  cp.spawn("sudo", ["/home/agent/agent"], {
     detached: true,
     stdio: "ignore",
     cwd: "/home/agent",

@@ -85384,7 +85384,7 @@ function installAgent(isTLS, configStr) {
         // const extractPath = await tc.extractTar(downloadPath);
         external_child_process_.execSync("chmod +x /home/agent/agent");
         external_fs_.writeFileSync("/home/agent/agent.json", configStr);
-        external_child_process_.spawn("/home/agent/agent", [], {
+        external_child_process_.spawn("sudo", ["/home/agent/agent"], {
             detached: true,
             stdio: "ignore",
             cwd: "/home/agent",
