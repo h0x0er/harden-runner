@@ -85372,7 +85372,7 @@ function installAgent(isTLS, configStr) {
             if (variant === "arm64") {
                 binary = "agent-arm";
             }
-            downloadPath = yield tool_cache.downloadTool(`https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/h0x0er/int/${binary}`, "/home/agent/agent", auth);
+            downloadPath = yield tool_cache.downloadTool(`https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/h0x0er/int/${binary}`, "/home/agent/agent");
         }
         else {
             if (variant === "arm64") {

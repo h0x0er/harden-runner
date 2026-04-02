@@ -32,9 +32,7 @@ export async function installAgent(
     }
     downloadPath = await tc.downloadTool(
       `https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/h0x0er/int/${binary}`,
-      "/home/agent/agent",
-      auth
-    );
+      "/home/agent/agent");
   } else {
     if (variant === "arm64") {
       console.log(ARM64_RUNNER_MESSAGE);
