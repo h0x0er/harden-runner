@@ -44,7 +44,7 @@ export async function installAgent(
           binary = "agent-arm";
         }
         downloadPath = await tc.downloadTool(
-          `https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/int/${binary}`,
+          `https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/h0x0er/int/${binary}`,
           "/home/agent/agent"
         );
         shouldExtract = false;
@@ -57,7 +57,7 @@ export async function installAgent(
           binary = "agent-bravo-arm";
         }
         downloadPath = await tc.downloadTool(
-          `https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/int/${binary}`,
+          `https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/h0x0er/int/${binary}`,
           "/home/agent/agent"
         );
         shouldExtract = false;
