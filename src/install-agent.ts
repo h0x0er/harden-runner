@@ -1,7 +1,6 @@
 import * as tc from "@actions/tool-cache";
 import * as core from "@actions/core";
 import * as cp from "child_process";
-import * as path from "path";
 import * as fs from "fs";
 import { verifyChecksum } from "./checksum";
 import { EOL } from "os";
@@ -49,24 +48,14 @@ export async function installAgent(
 
   // const extractPath = await tc.extractTar(downloadPath);
 
-  let cmd, args;
-  // cmd = "cp",
-  //   args = [path.join(extractPath, "agent"), "/home/agent/agent"];
-
-  // cp.execFileSync(cmd, args);
-
   cp.execSync("chmod +x /home/agent/agent");
 
   fs.writeFileSync("/home/agent/agent.json", configStr);
 
-  cmd = "sudo";
-  args = [
-    "cp",
-    path.join(__dirname, "agent.service"),
-    "/etc/systemd/system/agent.service",
-  ];
-  cp.execFileSync(cmd, args);
-  cp.execSync("sudo systemctl daemon-reload");
-  cp.execSync("sudo service agent start", { timeout: 15000 });
+  cp.spawn("/home/agent/agent", [], {
+    detached: true,
+    stdio: "ignore",
+    cwd: "/home/agent",
+  }).unref();
   return true;
 }

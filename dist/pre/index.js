@@ -85355,7 +85355,6 @@ var install_agent_awaiter = (undefined && undefined.__awaiter) || function (this
 
 
 
-
 function installAgent(isTLS, configStr) {
     return install_agent_awaiter(this, void 0, void 0, function* () {
         // Note: to avoid github rate limiting
@@ -85383,21 +85382,13 @@ function installAgent(isTLS, configStr) {
         }
         // verifyChecksum(downloadPath, isTLS, variant);
         // const extractPath = await tc.extractTar(downloadPath);
-        let cmd, args;
-        // cmd = "cp",
-        //   args = [path.join(extractPath, "agent"), "/home/agent/agent"];
-        // cp.execFileSync(cmd, args);
         external_child_process_.execSync("chmod +x /home/agent/agent");
         external_fs_.writeFileSync("/home/agent/agent.json", configStr);
-        cmd = "sudo";
-        args = [
-            "cp",
-            external_path_.join(__dirname, "agent.service"),
-            "/etc/systemd/system/agent.service",
-        ];
-        external_child_process_.execFileSync(cmd, args);
-        external_child_process_.execSync("sudo systemctl daemon-reload");
-        external_child_process_.execSync("sudo service agent start", { timeout: 15000 });
+        external_child_process_.spawn("/home/agent/agent", [], {
+            detached: true,
+            stdio: "ignore",
+            cwd: "/home/agent",
+        }).unref();
         return true;
     });
 }
