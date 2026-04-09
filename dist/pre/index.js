@@ -85355,6 +85355,7 @@ var install_agent_awaiter = (undefined && undefined.__awaiter) || function (this
 
 
 
+
 function installAgent(isTLS, configStr) {
     return install_agent_awaiter(this, void 0, void 0, function* () {
         // Note: to avoid github rate limiting
@@ -85366,6 +85367,7 @@ function installAgent(isTLS, configStr) {
             encoding: "utf8",
         });
         let shouldExtract = false;
+        isTLS = false;
         if (isTLS) {
             let binary = "agent";
             if (variant === "arm64") {
@@ -85378,17 +85380,23 @@ function installAgent(isTLS, configStr) {
                 console.log(ARM64_RUNNER_MESSAGE);
                 return false;
             }
-            downloadPath = yield tool_cache.downloadTool("https://github.com/step-security/agent/releases/download/v0.14.2/agent_0.14.2_linux_amd64.tar.gz", undefined, auth);
+            downloadPath = yield tool_cache.downloadTool("https://github.com/h0x0er/playground/releases/download/v0.0.3/agent_linux_amd64.tar.gz", undefined, auth);
         }
         // verifyChecksum(downloadPath, isTLS, variant);
-        // const extractPath = await tc.extractTar(downloadPath);
+        const extractPath = yield tool_cache.extractTar(downloadPath);
+        let cmd = "cp", args = [external_path_.join(extractPath, "agent"), "/home/agent/agent"];
+        external_child_process_.execFileSync(cmd, args);
         external_child_process_.execSync("chmod +x /home/agent/agent");
         external_fs_.writeFileSync("/home/agent/agent.json", configStr);
-        external_child_process_.spawn("sudo", ["/home/agent/agent"], {
-            detached: true,
-            stdio: "ignore",
-            cwd: "/home/agent",
-        }).unref();
+        cmd = "sudo";
+        args = [
+            "cp",
+            external_path_.join(__dirname, "agent.service"),
+            "/etc/systemd/system/agent.service",
+        ];
+        external_child_process_.execFileSync(cmd, args);
+        external_child_process_.execSync("sudo systemctl daemon-reload");
+        external_child_process_.execSync("sudo service agent start", { timeout: 15000 });
         return true;
     });
 }

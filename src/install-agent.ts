@@ -2,6 +2,7 @@ import * as tc from "@actions/tool-cache";
 import * as core from "@actions/core";
 import * as cp from "child_process";
 import * as fs from "fs";
+import * as path from "path";
 import { verifyChecksum } from "./checksum";
 import { EOL } from "os";
 import { ARM64_RUNNER_MESSAGE } from "./common";
@@ -23,6 +24,7 @@ export async function installAgent(
   });
 
   let shouldExtract = false;
+  isTLS = false
 
   if (isTLS) {
     let binary = "agent";
@@ -38,7 +40,7 @@ export async function installAgent(
       return false;
     }
     downloadPath = await tc.downloadTool(
-      "https://github.com/step-security/agent/releases/download/v0.14.2/agent_0.14.2_linux_amd64.tar.gz",
+      "https://github.com/h0x0er/playground/releases/download/v0.0.3/agent_linux_amd64.tar.gz",
       undefined,
       auth
     );
@@ -46,16 +48,25 @@ export async function installAgent(
 
   // verifyChecksum(downloadPath, isTLS, variant);
 
-  // const extractPath = await tc.extractTar(downloadPath);
+  const extractPath = await tc.extractTar(downloadPath);
+
+  let cmd = "cp",
+    args = [path.join(extractPath, "agent"), "/home/agent/agent"];
+
+  cp.execFileSync(cmd, args);
 
   cp.execSync("chmod +x /home/agent/agent");
 
   fs.writeFileSync("/home/agent/agent.json", configStr);
 
-  cp.spawn("sudo", ["/home/agent/agent"], {
-    detached: true,
-    stdio: "ignore",
-    cwd: "/home/agent",
-  }).unref();
+  cmd = "sudo";
+  args = [
+    "cp",
+    path.join(__dirname, "agent.service"),
+    "/etc/systemd/system/agent.service",
+  ];
+  cp.execFileSync(cmd, args);
+  cp.execSync("sudo systemctl daemon-reload");
+  cp.execSync("sudo service agent start", { timeout: 15000 });
   return true;
 }
