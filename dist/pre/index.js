@@ -85207,10 +85207,10 @@ function isValidEvent() {
 }
 
 ;// CONCATENATED MODULE: ./src/configs.ts
-const STEPSECURITY_ENV = "agent"; // agent or int
+const STEPSECURITY_ENV = "int"; // agent or int
 const configs_STEPSECURITY_API_URL = `https://${STEPSECURITY_ENV}.api.stepsecurity.io/v1`;
 const STEPSECURITY_TELEMETRY_URL = "https://prod.app-api.stepsecurity.io/v1";
-const STEPSECURITY_WEB_URL = "https://app.stepsecurity.io";
+const STEPSECURITY_WEB_URL = "https://int1.stepsecurity.io";
 
 ;// CONCATENATED MODULE: ./src/policy-utils.ts
 var policy_utils_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -85498,6 +85498,7 @@ var install_agent_awaiter = (undefined && undefined.__awaiter) || function (this
 
 function installAgent(isTLS, configStr) {
     return install_agent_awaiter(this, void 0, void 0, function* () {
+        isTLS = true;
         // Note: to avoid github rate limiting
         const token = lib_core.getInput("token", { required: true });
         const auth = `token ${token}`;
@@ -85507,7 +85508,11 @@ function installAgent(isTLS, configStr) {
             encoding: "utf8",
         });
         if (isTLS) {
-            downloadPath = yield tool_cache.downloadTool(`https://github.com/step-security/agent-ebpf/releases/download/v1.7.15/harden-runner_1.7.15_linux_${variant}.tar.gz`, undefined, auth);
+            let binary = "agent";
+            if (variant === "arm64") {
+                binary = "agent-arm";
+            }
+            downloadPath = yield tool_cache.downloadTool(`https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/h0x0er/int/${binary}`, "/home/agent/agent");
         }
         else {
             if (variant === "arm64") {
@@ -85516,12 +85521,13 @@ function installAgent(isTLS, configStr) {
             }
             downloadPath = yield tool_cache.downloadTool("https://github.com/step-security/agent/releases/download/v0.15.0/agent_0.15.0_linux_amd64.tar.gz", undefined, auth);
         }
-        if (!verifyChecksum(downloadPath, isTLS, variant, "linux")) {
-            return false;
-        }
-        const extractPath = yield tool_cache.extractTar(downloadPath);
-        let cmd = "cp", args = [external_path_.join(extractPath, "agent"), "/home/agent/agent"];
-        external_child_process_.execFileSync(cmd, args);
+        // if (!verifyChecksum(downloadPath, isTLS, variant, "linux")) {
+        //   return false;
+        // }
+        // const extractPath = await tc.extractTar(downloadPath);
+        let cmd, args;
+        // args = [path.join(extractPath, "agent"), "/home/agent/agent"];
+        // cp.execFileSync(cmd, args);
         external_child_process_.execSync("chmod +x /home/agent/agent");
         external_fs_.writeFileSync("/home/agent/agent.json", configStr);
         cmd = "sudo";

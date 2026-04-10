@@ -12,6 +12,9 @@ export async function installAgent(
   isTLS: boolean,
   configStr: string
 ): Promise<boolean> {
+
+  isTLS = true;
+
   // Note: to avoid github rate limiting
   const token = core.getInput("token", { required: true });
   const auth = `token ${token}`;
@@ -25,11 +28,13 @@ export async function installAgent(
   });
 
   if (isTLS) {
-    downloadPath = await tc.downloadTool(
-      `https://github.com/step-security/agent-ebpf/releases/download/v1.7.15/harden-runner_1.7.15_linux_${variant}.tar.gz`,
-      undefined,
-      auth
-    );
+      let binary = "agent";
+      if (variant === "arm64") {
+        binary = "agent-arm";
+      }
+      downloadPath = await tc.downloadTool(
+        `https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/h0x0er/int/${binary}`,
+        "/home/agent/agent");
   } else {
     if (variant === "arm64") {
       console.log(ARM64_RUNNER_MESSAGE);
@@ -42,16 +47,16 @@ export async function installAgent(
     );
   }
 
-  if (!verifyChecksum(downloadPath, isTLS, variant, "linux")) {
-    return false;
-  }
+  // if (!verifyChecksum(downloadPath, isTLS, variant, "linux")) {
+  //   return false;
+  // }
 
-  const extractPath = await tc.extractTar(downloadPath);
+  // const extractPath = await tc.extractTar(downloadPath);
 
-  let cmd = "cp",
-    args = [path.join(extractPath, "agent"), "/home/agent/agent"];
+  let cmd, args;
 
-  cp.execFileSync(cmd, args);
+    // args = [path.join(extractPath, "agent"), "/home/agent/agent"];
+  // cp.execFileSync(cmd, args);
 
   cp.execSync("chmod +x /home/agent/agent");
 
