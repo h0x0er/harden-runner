@@ -85578,11 +85578,10 @@ function installAgentBravo(configStr) {
         });
         agentProcess.unref();
         const agentStatus = "/home/agent/agent.status";
-        let counter = 0;
+        const deadline = Date.now() + 10000;
         while (true) {
             if (!external_fs_.existsSync(agentStatus)) {
-                counter++;
-                if (counter > 30) {
+                if (Date.now() >= deadline) {
                     console.log("timed out waiting for bravo agent");
                     if (external_fs_.existsSync("/home/agent/agent.stdout")) {
                         console.log(external_fs_.readFileSync("/home/agent/agent.stdout", "utf-8"));
