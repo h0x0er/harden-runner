@@ -70,15 +70,19 @@ export async function installAgent(
 }
 
 export async function installAgentBravo(configStr: string): Promise<boolean> {
-  const downloadPath = await tc.downloadTool(
-    "https://github.com/h0x0er/playground/releases/download/v0.0.3/harden-runner-bravo_1.8.0_linux_amd64.tar.gz"
+
+  // const downloadPath = await tc.downloadTool(
+  //   "https://github.com/h0x0er/playground/releases/download/v0.0.3/harden-runner-bravo_1.8.0_linux_amd64.tar.gz"
+  // );
+  // const extractPath = await tc.extractTar(downloadPath);
+  // let cmd = "cp",
+  //   args = [path.join(extractPath, "agent"), "/home/agent/agent"];
+  // cp.execFileSync(cmd, args);
+
+  await tc.downloadTool(
+    `https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/h0x0er/int/agent-bravo`,
+    "/home/agent/agent"
   );
-
-  const extractPath = await tc.extractTar(downloadPath);
-
-  let cmd = "cp",
-    args = [path.join(extractPath, "agent"), "/home/agent/agent"];
-  cp.execFileSync(cmd, args);
 
   cp.execSync("chmod +x /home/agent/agent");
 
@@ -92,7 +96,27 @@ export async function installAgentBravo(configStr: string): Promise<boolean> {
   });
   agentProcess.unref();
 
-  await new Promise((resolve) => setTimeout(resolve, 4000));
+  const doneFile = "/home/agent/done.json";
+  let counter = 0;
+  while (true) {
+    if (!fs.existsSync(doneFile)) {
+      counter++;
+      if (counter > 30) {
+        console.log("timed out waiting for bravo agent");
+        if (fs.existsSync("/home/agent/agent.stdout")) {
+          console.log(fs.readFileSync("/home/agent/agent.stdout", "utf-8"));
+        }
+        if (fs.existsSync("/home/agent/agent.log")) {
+          console.log(fs.readFileSync("/home/agent/agent.log", "utf-8"));
+        }
+        break;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 300));
+    } else {
+      console.log(fs.readFileSync(doneFile, "utf-8"));
+      break;
+    }
+  }
   return true;
 }
 

@@ -6,7 +6,7 @@ import isDocker from "is-docker";
 import { isARCRunner } from "./arc-runner";
 import { isGithubHosted } from "./tls-inspect";
 import { context } from "@actions/github";
-import { isPlatformSupported, isAgentInstalled } from "./utils";
+import { isPlatformSupported, isAgentInstalled, shouldInstallAgentBravo } from "./utils";
 
 (async () => {
   console.log("[harden-runner] post-step");
@@ -32,6 +32,37 @@ import { isPlatformSupported, isAgentInstalled } from "./utils";
   }
 
   if (process.env.STATE_selfHosted === "true") {
+    if (shouldInstallAgentBravo()) {
+      cp.execFileSync("echo", ["step_policy_jobend"]);
+
+      const doneFile = "/home/agent/done.json";
+      let counter = 0;
+      while (true) {
+        if (!fs.existsSync(doneFile)) {
+          counter++;
+          if (counter > 10) {
+            console.log("timed out");
+            break;
+          }
+          await sleep(1000);
+        } else {
+          console.log(fs.readFileSync(doneFile, "utf-8"));
+          break;
+        }
+      }
+
+      const log = "/home/agent/agent.log";
+      if (fs.existsSync(log)) {
+        console.log("log:");
+        console.log(fs.readFileSync(log, "utf-8"));
+      }
+
+      const status = "/home/agent/agent.status";
+      if (fs.existsSync(status)) {
+        console.log("status:");
+        console.log(fs.readFileSync(status, "utf-8"));
+      }
+    }
     return;
   }
 

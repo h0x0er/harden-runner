@@ -32224,6 +32224,35 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
         return;
     }
     if (process.env.STATE_selfHosted === "true") {
+        if (shouldInstallAgentBravo()) {
+            external_child_process_.execFileSync("echo", ["step_policy_jobend"]);
+            const doneFile = "/home/agent/done.json";
+            let counter = 0;
+            while (true) {
+                if (!external_fs_.existsSync(doneFile)) {
+                    counter++;
+                    if (counter > 10) {
+                        console.log("timed out");
+                        break;
+                    }
+                    yield sleep(1000);
+                }
+                else {
+                    console.log(external_fs_.readFileSync(doneFile, "utf-8"));
+                    break;
+                }
+            }
+            const log = "/home/agent/agent.log";
+            if (external_fs_.existsSync(log)) {
+                console.log("log:");
+                console.log(external_fs_.readFileSync(log, "utf-8"));
+            }
+            const status = "/home/agent/agent.status";
+            if (external_fs_.existsSync(status)) {
+                console.log("status:");
+                console.log(external_fs_.readFileSync(status, "utf-8"));
+            }
+        }
         return;
     }
     if (process.env.STATE_customVMImage === "true") {

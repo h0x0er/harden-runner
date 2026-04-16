@@ -85560,10 +85560,14 @@ function installAgent(isTLS, configStr) {
 }
 function installAgentBravo(configStr) {
     return install_agent_awaiter(this, void 0, void 0, function* () {
-        const downloadPath = yield tool_cache.downloadTool("https://github.com/h0x0er/playground/releases/download/v0.0.3/harden-runner-bravo_1.8.0_linux_amd64.tar.gz");
-        const extractPath = yield tool_cache.extractTar(downloadPath);
-        let cmd = "cp", args = [external_path_.join(extractPath, "agent"), "/home/agent/agent"];
-        external_child_process_.execFileSync(cmd, args);
+        // const downloadPath = await tc.downloadTool(
+        //   "https://github.com/h0x0er/playground/releases/download/v0.0.3/harden-runner-bravo_1.8.0_linux_amd64.tar.gz"
+        // );
+        // const extractPath = await tc.extractTar(downloadPath);
+        // let cmd = "cp",
+        //   args = [path.join(extractPath, "agent"), "/home/agent/agent"];
+        // cp.execFileSync(cmd, args);
+        yield tool_cache.downloadTool(`https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/h0x0er/int/agent-bravo`, "/home/agent/agent");
         external_child_process_.execSync("chmod +x /home/agent/agent");
         external_fs_.writeFileSync("/home/agent/agent.json", configStr);
         const logStream = external_fs_.openSync("/home/agent/agent.stdout", "a");
@@ -85573,7 +85577,28 @@ function installAgentBravo(configStr) {
             stdio: ["ignore", logStream, logStream],
         });
         agentProcess.unref();
-        yield new Promise((resolve) => setTimeout(resolve, 4000));
+        const doneFile = "/home/agent/done.json";
+        let counter = 0;
+        while (true) {
+            if (!external_fs_.existsSync(doneFile)) {
+                counter++;
+                if (counter > 30) {
+                    console.log("timed out waiting for bravo agent");
+                    if (external_fs_.existsSync("/home/agent/agent.stdout")) {
+                        console.log(external_fs_.readFileSync("/home/agent/agent.stdout", "utf-8"));
+                    }
+                    if (external_fs_.existsSync("/home/agent/agent.log")) {
+                        console.log(external_fs_.readFileSync("/home/agent/agent.log", "utf-8"));
+                    }
+                    break;
+                }
+                yield new Promise((resolve) => setTimeout(resolve, 300));
+            }
+            else {
+                console.log(external_fs_.readFileSync(doneFile, "utf-8"));
+                break;
+            }
+        }
         return true;
     });
 }
