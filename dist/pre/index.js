@@ -85567,7 +85567,7 @@ function installAgentBravo(configStr) {
         external_child_process_.execSync("chmod +x /home/agent/agent");
         external_fs_.writeFileSync("/home/agent/agent.json", configStr);
         const logStream = external_fs_.openSync("/home/agent/agent.log", "a");
-        const agentProcess = external_child_process_.spawn("/home/agent/agent", [], {
+        const agentProcess = external_child_process_.spawn("sudo", ["/home/agent/agent"], {
             cwd: "/home/agent",
             detached: true,
             stdio: ["ignore", logStream, logStream],
