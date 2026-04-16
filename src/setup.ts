@@ -38,7 +38,7 @@ import {
   installWindowsAgent,
 } from "./install-agent";
 
-import { chownForFolder, isAgentInstalled, isPlatformSupported, shouldDeployAgentOnSelfHosted, shouldInstallAgentBravo } from "./utils";
+import { chownForFolder, isAgentInstalled, isPlatformSupported, shouldDeployAgentOnSelfHosted, shouldInstallAgentBravo as IsThirdPartyRunner } from "./utils";
 
 interface MonitorResponse {
   runner_ip_address?: string;
@@ -65,7 +65,9 @@ interface MonitorResponse {
       return;
     }
 
-    var correlation_id = uuidv4();
+    var correlation_id = IsThirdPartyRunner()
+      ? process.env["RUNNER_NAME"] ?? uuidv4()
+      : uuidv4();
     console.log(`Step Security Job Correlation ID: ${correlation_id}`);
 
     var api_url = STEPSECURITY_API_URL;
@@ -290,7 +292,10 @@ interface MonitorResponse {
     }
 
 
- let _http = new httpm.HttpClient();
+    const runnerName = process.env.RUNNER_NAME || "";
+    core.info(`RUNNER_NAME: ${runnerName}`);
+
+    let _http = new httpm.HttpClient();
     let statusCode: number | undefined;
     _http.requestOptions = { socketTimeout: 3 * 1000 };
     let addSummary = "false";
@@ -343,8 +348,7 @@ interface MonitorResponse {
     }
 
 
-    const runnerName = process.env.RUNNER_NAME || "";
-    core.info(`RUNNER_NAME: ${runnerName}`);
+
     if (!isGithubHosted()) {
       fs.appendFileSync(process.env.GITHUB_STATE, `selfHosted=true${EOL}`, {
         encoding: "utf8",
@@ -352,12 +356,12 @@ interface MonitorResponse {
 
       core.info(common.SELF_HOSTED_RUNNER_MESSAGE);
 
-      if (shouldInstallAgentBravo()) {
-        core.info("Detected bravo runner environment. Installing bravo agent.");
+      if (IsThirdPartyRunner()) {
+        core.info("Detected third-party runner environment. Installing bravo agent.");
         cp.execSync("sudo mkdir -p /home/agent");
         chownForFolder(process.env.USER ?? "", "/home/agent");
         const { use_policy_store, api_key, ...bravoAgentConfig } = confg;
-        await installAgentBravo(JSON.stringify({ ...bravoAgentConfig, is_github_hosted: true, correlation_id: runnerName}));
+        await installAgentBravo(JSON.stringify({ ...bravoAgentConfig, is_github_hosted: true }));
         return;
       }
 

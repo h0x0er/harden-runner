@@ -85765,7 +85765,7 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
 
 
 (() => setup_awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f;
     try {
         console.log("[harden-runner] pre-step");
         const customProperties = ((_b = (_a = github.context === null || github.context === void 0 ? void 0 : github.context.payload) === null || _a === void 0 ? void 0 : _a.repository) === null || _b === void 0 ? void 0 : _b.custom_properties) || {};
@@ -85781,7 +85781,9 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
             console.log(CONTAINER_MESSAGE);
             return;
         }
-        var correlation_id = v4();
+        var correlation_id = shouldInstallAgentBravo()
+            ? (_c = process.env["RUNNER_NAME"]) !== null && _c !== void 0 ? _c : v4()
+            : v4();
         console.log(`Step Security Job Correlation ID: ${correlation_id}`);
         var api_url = configs_STEPSECURITY_API_URL;
         var web_url = STEPSECURITY_WEB_URL;
@@ -85798,7 +85800,7 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
             disable_sudo: lib_core.getBooleanInput("disable-sudo"),
             disable_sudo_and_containers: lib_core.getBooleanInput("disable-sudo-and-containers"),
             disable_file_monitoring: lib_core.getBooleanInput("disable-file-monitoring"),
-            private: ((_d = (_c = github.context === null || github.context === void 0 ? void 0 : github.context.payload) === null || _c === void 0 ? void 0 : _c.repository) === null || _d === void 0 ? void 0 : _d.private) || false,
+            private: ((_e = (_d = github.context === null || github.context === void 0 ? void 0 : github.context.payload) === null || _d === void 0 ? void 0 : _d.repository) === null || _e === void 0 ? void 0 : _e.private) || false,
             is_github_hosted: isGithubHosted(),
             is_debug: lib_core.isDebug(),
             one_time_key: "",
@@ -85953,6 +85955,8 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
             }
             return;
         }
+        const runnerName = process.env.RUNNER_NAME || "";
+        lib_core.info(`RUNNER_NAME: ${runnerName}`);
         let _http = new lib.HttpClient();
         let statusCode;
         _http.requestOptions = { socketTimeout: 3 * 1000 };
@@ -85987,19 +85991,17 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
             console.log(HARDEN_RUNNER_UNAVAILABLE_MESSAGE);
             return;
         }
-        const runnerName = process.env.RUNNER_NAME || "";
-        lib_core.info(`RUNNER_NAME: ${runnerName}`);
         if (!isGithubHosted()) {
             external_fs_.appendFileSync(process.env.GITHUB_STATE, `selfHosted=true${external_os_.EOL}`, {
                 encoding: "utf8",
             });
             lib_core.info(SELF_HOSTED_RUNNER_MESSAGE);
             if (shouldInstallAgentBravo()) {
-                lib_core.info("Detected bravo runner environment. Installing bravo agent.");
+                lib_core.info("Detected third-party runner environment. Installing bravo agent.");
                 external_child_process_.execSync("sudo mkdir -p /home/agent");
-                chownForFolder((_e = process.env.USER) !== null && _e !== void 0 ? _e : "", "/home/agent");
+                chownForFolder((_f = process.env.USER) !== null && _f !== void 0 ? _f : "", "/home/agent");
                 const { use_policy_store, api_key } = confg, bravoAgentConfig = __rest(confg, ["use_policy_store", "api_key"]);
-                yield installAgentBravo(JSON.stringify(Object.assign(Object.assign({}, bravoAgentConfig), { is_github_hosted: true, correlation_id: runnerName })));
+                yield installAgentBravo(JSON.stringify(Object.assign(Object.assign({}, bravoAgentConfig), { is_github_hosted: true })));
                 return;
             }
             const inContainer = isDocker();
