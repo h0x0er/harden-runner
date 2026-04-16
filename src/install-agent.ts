@@ -86,6 +86,7 @@ export async function installAgentBravo(configStr: string): Promise<boolean> {
 
   const logStream = fs.openSync("/home/agent/agent.log", "a");
   const agentProcess = cp.spawn("/home/agent/agent", [], {
+    cwd: "/home/agent",
     detached: true,
     stdio: ["ignore", logStream, logStream],
   });
