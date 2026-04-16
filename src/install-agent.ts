@@ -96,10 +96,10 @@ export async function installAgentBravo(configStr: string): Promise<boolean> {
   });
   agentProcess.unref();
 
-  const doneFile = "/home/agent/done.json";
+  const agentStatus = "/home/agent/agent.status";
   let counter = 0;
   while (true) {
-    if (!fs.existsSync(doneFile)) {
+    if (!fs.existsSync(agentStatus)) {
       counter++;
       if (counter > 30) {
         console.log("timed out waiting for bravo agent");
@@ -113,7 +113,7 @@ export async function installAgentBravo(configStr: string): Promise<boolean> {
       }
       await new Promise((resolve) => setTimeout(resolve, 300));
     } else {
-      console.log(fs.readFileSync(doneFile, "utf-8"));
+      console.log(fs.readFileSync(agentStatus, "utf-8"));
       break;
     }
   }
