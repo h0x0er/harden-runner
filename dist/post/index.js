@@ -32225,7 +32225,7 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
     }
     if (process.env.STATE_selfHosted === "true") {
         if (shouldInstallAgentBravo()) {
-            external_child_process_.execFileSync("echo", ["step_policy_jobend"]);
+            external_child_process_.execFileSync("/usr/bin/echo", ["step_policy_jobend"]);
             const doneFile = "/home/agent/done.json";
             let counter = 0;
             while (true) {

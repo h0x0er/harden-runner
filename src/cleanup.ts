@@ -33,7 +33,7 @@ import { isPlatformSupported, isAgentInstalled, shouldInstallAgentBravo } from "
 
   if (process.env.STATE_selfHosted === "true") {
     if (shouldInstallAgentBravo()) {
-      cp.execFileSync("echo", ["step_policy_jobend"]);
+      cp.execFileSync("/usr/bin/echo", ["step_policy_jobend"]);
 
       const doneFile = "/home/agent/done.json";
       let counter = 0;
