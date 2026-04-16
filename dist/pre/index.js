@@ -85758,6 +85758,7 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
             return;
         }
         var correlation_id = v4();
+        console.log(`Step Security Job Correlation ID: ${correlation_id}`);
         var api_url = configs_STEPSECURITY_API_URL;
         var web_url = STEPSECURITY_WEB_URL;
         let confg = {
@@ -86013,7 +86014,6 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
         external_fs_.appendFileSync(process.env.GITHUB_STATE, `correlation_id=${correlation_id}${external_os_.EOL}`, {
             encoding: "utf8",
         });
-        console.log(`Step Security Job Correlation ID: ${correlation_id}`);
         if (String(statusCode) === STATUS_HARDEN_RUNNER_UNAVAILABLE) {
             console.log(HARDEN_RUNNER_UNAVAILABLE_MESSAGE);
             return;

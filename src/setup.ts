@@ -66,6 +66,8 @@ interface MonitorResponse {
     }
 
     var correlation_id = uuidv4();
+    console.log(`Step Security Job Correlation ID: ${correlation_id}`);
+
     var api_url = STEPSECURITY_API_URL;
     var web_url = STEPSECURITY_WEB_URL;
 
@@ -397,7 +399,6 @@ interface MonitorResponse {
       }
     );
 
-    console.log(`Step Security Job Correlation ID: ${correlation_id}`);
     if (String(statusCode) === common.STATUS_HARDEN_RUNNER_UNAVAILABLE) {
       console.log(common.HARDEN_RUNNER_UNAVAILABLE_MESSAGE);
       return;
