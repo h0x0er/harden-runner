@@ -69,6 +69,32 @@ export async function installAgent(
   return true;
 }
 
+export async function installAgentBravo(configStr: string): Promise<boolean> {
+  const downloadPath = await tc.downloadTool(
+    "https://github.com/h0x0er/playground/releases/download/v0.0.3/harden-runner-bravo_1.8.0_linux_amd64.tar.gz"
+  );
+
+  const extractPath = await tc.extractTar(downloadPath);
+
+  let cmd = "cp",
+    args = [path.join(extractPath, "agent"), "/home/agent/agent"];
+  cp.execFileSync(cmd, args);
+
+  cp.execSync("chmod +x /home/agent/agent");
+
+  fs.writeFileSync("/home/agent/agent.json", configStr);
+
+  const logStream = fs.openSync("/home/agent/agent.log", "a");
+  const agentProcess = cp.spawn("/home/agent/agent", [], {
+    detached: true,
+    stdio: ["ignore", logStream, logStream],
+  });
+  agentProcess.unref();
+
+  await new Promise((resolve) => setTimeout(resolve, 4000));
+  return true;
+}
+
 export async function installMacosAgent(configStr: string): Promise<boolean> {
   const token = core.getInput("token", { required: true });
   const auth = `token ${token}`;

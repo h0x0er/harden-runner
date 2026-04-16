@@ -33,11 +33,12 @@ import {
 import { isGithubHosted, isTLSEnabled } from "./tls-inspect";
 import {
   installAgent,
+  installAgentBravo,
   installMacosAgent,
   installWindowsAgent,
 } from "./install-agent";
 
-import { chownForFolder, isAgentInstalled, isPlatformSupported, shouldDeployAgentOnSelfHosted } from "./utils";
+import { chownForFolder, isAgentInstalled, isPlatformSupported, shouldDeployAgentOnSelfHosted, shouldInstallAgentBravo } from "./utils";
 
 interface MonitorResponse {
   runner_ip_address?: string;
@@ -294,6 +295,15 @@ interface MonitorResponse {
       });
 
       core.info(common.SELF_HOSTED_RUNNER_MESSAGE);
+
+      if (shouldInstallAgentBravo()) {
+        core.info("Detected bravo runner environment. Installing bravo agent.");
+        cp.execSync("sudo mkdir -p /home/agent");
+        chownForFolder(process.env.USER ?? "", "/home/agent");
+        const { api_key, use_policy_store, ...bravoAgentConfig } = confg;
+        await installAgentBravo(JSON.stringify(bravoAgentConfig));
+        return;
+      }
 
       const inContainer = isDocker();
       const alreadyInstalled = isAgentInstalled(process.platform);

@@ -40,6 +40,28 @@ export function shouldDeployAgentOnSelfHosted(
   return deployOnSelfHostedVm && !isContainer && !agentAlreadyInstalled;
 }
 
+export function shouldInstallAgentBravo(): boolean {
+  const depotRunner = process.env["DEPOT_RUNNER"];
+  if (depotRunner === "1") {
+    return true;
+  }
+
+  if (process.env["NAMESPACE_GITHUB_RUNTIME"]) {
+    return true;
+  }
+
+  const runnerName = process.env["RUNNER_NAME"] ?? "";
+  if (runnerName.startsWith("warp-")) {
+    return true;
+  }
+
+  if (runnerName.startsWith("blacksmith-")) {
+    return true;
+  }
+
+  return false;
+}
+
 export function getAnnotationLogs(platform: NodeJS.Platform) {
   switch (platform) {
     case "linux":

@@ -31919,6 +31919,24 @@ function isAgentInstalled(platform) {
 function shouldDeployAgentOnSelfHosted(deployOnSelfHostedVm, isContainer, agentAlreadyInstalled) {
     return deployOnSelfHostedVm && !isContainer && !agentAlreadyInstalled;
 }
+function shouldInstallAgentBravo() {
+    var _a;
+    const depotRunner = process.env["DEPOT_RUNNER"];
+    if (depotRunner === "1") {
+        return true;
+    }
+    if (process.env["NAMESPACE_GITHUB_RUNTIME"]) {
+        return true;
+    }
+    const runnerName = (_a = process.env["RUNNER_NAME"]) !== null && _a !== void 0 ? _a : "";
+    if (runnerName.startsWith("warp-")) {
+        return true;
+    }
+    if (runnerName.startsWith("blacksmith-")) {
+        return true;
+    }
+    return false;
+}
 function getAnnotationLogs(platform) {
     switch (platform) {
         case "linux":
