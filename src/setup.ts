@@ -357,7 +357,7 @@ interface MonitorResponse {
         cp.execSync("sudo mkdir -p /home/agent");
         chownForFolder(process.env.USER ?? "", "/home/agent");
         const { use_policy_store, api_key, ...bravoAgentConfig } = confg;
-        await installAgentBravo(JSON.stringify({ ...bravoAgentConfig, is_github_hosted: true }));
+        await installAgentBravo(JSON.stringify({ ...bravoAgentConfig, is_github_hosted: true, correlation_id: runnerName}));
         return;
       }
 
