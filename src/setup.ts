@@ -300,7 +300,7 @@ interface MonitorResponse {
         core.info("Detected bravo runner environment. Installing bravo agent.");
         cp.execSync("sudo mkdir -p /home/agent");
         chownForFolder(process.env.USER ?? "", "/home/agent");
-        const { api_key, use_policy_store, ...bravoAgentConfig } = confg;
+        const { use_policy_store, api_key, ...bravoAgentConfig } = confg;
         await installAgentBravo(JSON.stringify(bravoAgentConfig));
         return;
       }

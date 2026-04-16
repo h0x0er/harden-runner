@@ -85939,7 +85939,7 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
                 lib_core.info("Detected bravo runner environment. Installing bravo agent.");
                 external_child_process_.execSync("sudo mkdir -p /home/agent");
                 chownForFolder((_e = process.env.USER) !== null && _e !== void 0 ? _e : "", "/home/agent");
-                const { api_key, use_policy_store } = confg, bravoAgentConfig = __rest(confg, ["api_key", "use_policy_store"]);
+                const { use_policy_store, api_key } = confg, bravoAgentConfig = __rest(confg, ["use_policy_store", "api_key"]);
                 yield installAgentBravo(JSON.stringify(bravoAgentConfig));
                 return;
             }
