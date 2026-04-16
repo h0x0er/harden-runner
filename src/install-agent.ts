@@ -84,7 +84,7 @@ export async function installAgentBravo(configStr: string): Promise<boolean> {
 
   fs.writeFileSync("/home/agent/agent.json", configStr);
 
-  const logStream = fs.openSync("/home/agent/agent.log", "a");
+  const logStream = fs.openSync("/home/agent/agent.stdout", "a");
   const agentProcess = cp.spawn("sudo", ["/home/agent/agent"], {
     cwd: "/home/agent",
     detached: true,
