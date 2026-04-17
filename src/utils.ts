@@ -40,26 +40,15 @@ export function shouldDeployAgentOnSelfHosted(
   return deployOnSelfHostedVm && !isContainer && !agentAlreadyInstalled;
 }
 
-export function shouldInstallAgentBravo(): boolean {
-  const depotRunner = process.env["DEPOT_RUNNER"];
-  if (depotRunner === "1") {
-    return true;
-  }
+export type ThirdPartyRunnerProvider = "depot" | "namespace" | "warp" | "blacksmith";
 
-  if (process.env["NAMESPACE_GITHUB_RUNTIME"]) {
-    return true;
-  }
-
+export function detectThirdPartyRunnerProvider(): ThirdPartyRunnerProvider | null {
+  if (process.env["DEPOT_RUNNER"] === "1") return "depot";
+  if (process.env["NAMESPACE_GITHUB_RUNTIME"]) return "namespace";
   const runnerName = process.env["RUNNER_NAME"] ?? "";
-  if (runnerName.startsWith("warp-")) {
-    return true;
-  }
-
-  if (runnerName.startsWith("blacksmith-")) {
-    return true;
-  }
-
-  return false;
+  if (runnerName.startsWith("warp-")) return "warp";
+  if (runnerName.startsWith("blacksmith-")) return "blacksmith";
+  return null;
 }
 
 export function getAnnotationLogs(platform: NodeJS.Platform) {

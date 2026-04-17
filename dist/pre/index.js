@@ -85035,23 +85035,18 @@ function isAgentInstalled(platform) {
 function shouldDeployAgentOnSelfHosted(deployOnSelfHostedVm, isContainer, agentAlreadyInstalled) {
     return deployOnSelfHostedVm && !isContainer && !agentAlreadyInstalled;
 }
-function shouldInstallAgentBravo() {
+function detectThirdPartyRunnerProvider() {
     var _a;
-    const depotRunner = process.env["DEPOT_RUNNER"];
-    if (depotRunner === "1") {
-        return true;
-    }
-    if (process.env["NAMESPACE_GITHUB_RUNTIME"]) {
-        return true;
-    }
+    if (process.env["DEPOT_RUNNER"] === "1")
+        return "depot";
+    if (process.env["NAMESPACE_GITHUB_RUNTIME"])
+        return "namespace";
     const runnerName = (_a = process.env["RUNNER_NAME"]) !== null && _a !== void 0 ? _a : "";
-    if (runnerName.startsWith("warp-")) {
-        return true;
-    }
-    if (runnerName.startsWith("blacksmith-")) {
-        return true;
-    }
-    return false;
+    if (runnerName.startsWith("warp-"))
+        return "warp";
+    if (runnerName.startsWith("blacksmith-"))
+        return "blacksmith";
+    return null;
 }
 function utils_getAnnotationLogs(platform) {
     switch (platform) {
@@ -85781,7 +85776,8 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
             console.log(CONTAINER_MESSAGE);
             return;
         }
-        var correlation_id = shouldInstallAgentBravo()
+        const thirdPartyProvider = detectThirdPartyRunnerProvider();
+        var correlation_id = thirdPartyProvider
             ? (_c = process.env["RUNNER_NAME"]) !== null && _c !== void 0 ? _c : v4()
             : v4();
         console.log(`Step Security Job Correlation ID: ${correlation_id}`);
@@ -85992,18 +85988,18 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
             return;
         }
         if (!isGithubHosted()) {
-            external_fs_.appendFileSync(process.env.GITHUB_STATE, `selfHosted=true${external_os_.EOL}`, {
-                encoding: "utf8",
-            });
-            lib_core.info(SELF_HOSTED_RUNNER_MESSAGE);
-            if (shouldInstallAgentBravo()) {
-                lib_core.info("Detected third-party runner environment. Installing bravo agent.");
+            if (thirdPartyProvider) {
+                lib_core.info(`Detected ${thirdPartyProvider} runner environment. Installing agent-bravo.`);
                 external_child_process_.execSync("sudo mkdir -p /home/agent");
                 chownForFolder((_f = process.env.USER) !== null && _f !== void 0 ? _f : "", "/home/agent");
                 const { use_policy_store, api_key } = confg, bravoAgentConfig = __rest(confg, ["use_policy_store", "api_key"]);
                 yield installAgentBravo(JSON.stringify(Object.assign(Object.assign({}, bravoAgentConfig), { is_github_hosted: true })));
                 return;
             }
+            external_fs_.appendFileSync(process.env.GITHUB_STATE, `selfHosted=true${external_os_.EOL}`, {
+                encoding: "utf8",
+            });
+            lib_core.info(SELF_HOSTED_RUNNER_MESSAGE);
             const inContainer = isDocker();
             const alreadyInstalled = isAgentInstalled(process.platform);
             if (shouldDeployAgentOnSelfHosted(confg.deploy_on_self_hosted_vm, inContainer, alreadyInstalled)) {

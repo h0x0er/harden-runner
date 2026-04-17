@@ -38,7 +38,7 @@ import {
   installWindowsAgent,
 } from "./install-agent";
 
-import { chownForFolder, isAgentInstalled, isPlatformSupported, shouldDeployAgentOnSelfHosted, shouldInstallAgentBravo as IsThirdPartyRunner } from "./utils";
+import { chownForFolder, isAgentInstalled, isPlatformSupported, shouldDeployAgentOnSelfHosted, detectThirdPartyRunnerProvider } from "./utils";
 
 interface MonitorResponse {
   runner_ip_address?: string;
@@ -65,7 +65,8 @@ interface MonitorResponse {
       return;
     }
 
-    var correlation_id = IsThirdPartyRunner()
+    const thirdPartyProvider = detectThirdPartyRunnerProvider();
+    var correlation_id = thirdPartyProvider
       ? process.env["RUNNER_NAME"] ?? uuidv4()
       : uuidv4();
     console.log(`Step Security Job Correlation ID: ${correlation_id}`);
@@ -347,23 +348,21 @@ interface MonitorResponse {
       return;
     }
 
-
-
     if (!isGithubHosted()) {
-      fs.appendFileSync(process.env.GITHUB_STATE, `selfHosted=true${EOL}`, {
-        encoding: "utf8",
-      });
 
-      core.info(common.SELF_HOSTED_RUNNER_MESSAGE);
-
-      if (IsThirdPartyRunner()) {
-        core.info("Detected third-party runner environment. Installing bravo agent.");
+      if (thirdPartyProvider) {
+        core.info(`Detected ${thirdPartyProvider} runner environment. Installing agent-bravo.`);
         cp.execSync("sudo mkdir -p /home/agent");
         chownForFolder(process.env.USER ?? "", "/home/agent");
         const { use_policy_store, api_key, ...bravoAgentConfig } = confg;
         await installAgentBravo(JSON.stringify({ ...bravoAgentConfig, is_github_hosted: true }));
         return;
       }
+
+      fs.appendFileSync(process.env.GITHUB_STATE, `selfHosted=true${EOL}`, {
+        encoding: "utf8",
+      });
+      core.info(common.SELF_HOSTED_RUNNER_MESSAGE);
 
       const inContainer = isDocker();
       const alreadyInstalled = isAgentInstalled(process.platform);

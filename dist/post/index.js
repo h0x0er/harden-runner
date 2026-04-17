@@ -31919,23 +31919,18 @@ function isAgentInstalled(platform) {
 function shouldDeployAgentOnSelfHosted(deployOnSelfHostedVm, isContainer, agentAlreadyInstalled) {
     return deployOnSelfHostedVm && !isContainer && !agentAlreadyInstalled;
 }
-function shouldInstallAgentBravo() {
+function detectThirdPartyRunnerProvider() {
     var _a;
-    const depotRunner = process.env["DEPOT_RUNNER"];
-    if (depotRunner === "1") {
-        return true;
-    }
-    if (process.env["NAMESPACE_GITHUB_RUNTIME"]) {
-        return true;
-    }
+    if (process.env["DEPOT_RUNNER"] === "1")
+        return "depot";
+    if (process.env["NAMESPACE_GITHUB_RUNTIME"])
+        return "namespace";
     const runnerName = (_a = process.env["RUNNER_NAME"]) !== null && _a !== void 0 ? _a : "";
-    if (runnerName.startsWith("warp-")) {
-        return true;
-    }
-    if (runnerName.startsWith("blacksmith-")) {
-        return true;
-    }
-    return false;
+    if (runnerName.startsWith("warp-"))
+        return "warp";
+    if (runnerName.startsWith("blacksmith-"))
+        return "blacksmith";
+    return null;
 }
 function getAnnotationLogs(platform) {
     switch (platform) {
@@ -32223,36 +32218,8 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
         console.log(`[!] ${ARC_RUNNER_MESSAGE}`);
         return;
     }
+    const thirdPartyProvider = detectThirdPartyRunnerProvider();
     if (process.env.STATE_selfHosted === "true") {
-        if (shouldInstallAgentBravo()) {
-            external_child_process_.execFileSync("/usr/bin/echo", ["step_policy_jobend"]);
-            const doneFile = "/home/agent/done.json";
-            let counter = 0;
-            while (true) {
-                if (!external_fs_.existsSync(doneFile)) {
-                    counter++;
-                    if (counter > 10) {
-                        console.log("timed out");
-                        break;
-                    }
-                    yield sleep(1000);
-                }
-                else {
-                    console.log(external_fs_.readFileSync(doneFile, "utf-8"));
-                    break;
-                }
-            }
-            const log = "/home/agent/agent.log";
-            if (external_fs_.existsSync(log)) {
-                console.log("log:");
-                console.log(external_fs_.readFileSync(log, "utf-8"));
-            }
-            const status = "/home/agent/agent.status";
-            if (external_fs_.existsSync(status)) {
-                console.log("status:");
-                console.log(external_fs_.readFileSync(status, "utf-8"));
-            }
-        }
         return;
     }
     if (process.env.STATE_customVMImage === "true") {
@@ -32265,7 +32232,12 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
     }
     switch (process.platform) {
         case "linux":
-            yield handleLinuxCleanup();
+            if (thirdPartyProvider) {
+                yield handleAgentBravoCleanup();
+            }
+            else {
+                yield handleLinuxCleanup();
+            }
             break;
         case "win32":
             yield handleWindowsCleanup();
@@ -32281,6 +32253,37 @@ var cleanup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
         console.log(exception);
     }
 }))();
+function handleAgentBravoCleanup() {
+    return cleanup_awaiter(this, void 0, void 0, function* () {
+        external_child_process_.execFileSync("/usr/bin/echo", ["step_policy_jobend"]);
+        const doneFile = "/home/agent/done.json";
+        let counter = 0;
+        while (true) {
+            if (!external_fs_.existsSync(doneFile)) {
+                counter++;
+                if (counter > 10) {
+                    console.log("timed out");
+                    break;
+                }
+                yield sleep(1000);
+            }
+            else {
+                console.log(external_fs_.readFileSync(doneFile, "utf-8"));
+                break;
+            }
+        }
+        const log = "/home/agent/agent.log";
+        if (external_fs_.existsSync(log)) {
+            console.log("log:");
+            console.log(external_fs_.readFileSync(log, "utf-8"));
+        }
+        const status = "/home/agent/agent.status";
+        if (external_fs_.existsSync(status)) {
+            console.log("status:");
+            console.log(external_fs_.readFileSync(status, "utf-8"));
+        }
+    });
+}
 function handleLinuxCleanup() {
     return cleanup_awaiter(this, void 0, void 0, function* () {
         if (process.env.STATE_isTLS === "false" && process.arch === "arm64") {
