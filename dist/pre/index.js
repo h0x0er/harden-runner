@@ -85452,17 +85452,17 @@ var external_crypto_ = __nccwpck_require__(6982);
 
 const CHECKSUMS = {
     tls: {
-        amd64: "86d042adcdc03eb1ea50d35d265da47622a6d0aedef9657f84ce1eb7f04d6057",
-        arm64: "ea1074a2358d50db9a9fe18ae3971b87305cda63f262c494a5f43b25f4e524ce",
+        amd64: "6105000c6c61f4a3ca27ed3a2796baa206bdb1eb83f0463adb0ec7e565af6e1c",
+        arm64: "0992da262be06580335725263ba6ee5c009dfd0448a948b7768ec077fdb9d3d8",
     },
     non_tls: {
         amd64: "4aaaeebbe10e619d8ce13e8cc4a1acbafc8f891e8cdd319984480b9ec08407b8", // v0.15.0
     },
     bravo: {
         amd64: "2eeaa1b3cfb05adea0a4e2a36e342ccaf95b41aeb82a6a6e217d2971c15f5553",
-        arm64: "8d7035ffbda165ad86de8bd00bf861c038e4a9e6d501adadc53a265945882533", // v1.8.1
+        arm64: "8d7035ffbda165ad86de8bd00bf861c038e4a9e6d501adadc53a265945882533",
     },
-    darwin: "797399a3a3f6f9c4c000a02e0d8c7b16499129c9bdc2ad9cf2a10072c10654fb",
+    darwin: "fe26a1f6af4afe9f1a854d8633832f5d18ab542827003cae445b3a64021d612c",
     windows: {
         amd64: "e98f8b9cf9ecf6566f1e16a470fbe4aef01610a644fd8203a1bab3ff142186c8", // v1.0.0
     },
@@ -85533,7 +85533,7 @@ function installAgent(isTLS, configStr) {
             encoding: "utf8",
         });
         if (isTLS) {
-            downloadPath = yield tool_cache.downloadTool(`https://github.com/step-security/agent-ebpf/releases/download/v1.8.0/harden-runner_1.8.0_linux_${variant}.tar.gz`, undefined, auth);
+            downloadPath = yield tool_cache.downloadTool(`https://github.com/step-security/agent-ebpf/releases/download/v1.8.1/harden-runner_1.8.1_linux_${variant}.tar.gz`, undefined, auth);
         }
         else {
             if (variant === "arm64") {
@@ -85622,7 +85622,7 @@ function installMacosAgent(configStr) {
             external_fs_.writeFileSync("/opt/step-security/agent.json", configStr);
             lib_core.info("✓ Successfully created agent.json at /opt/step-security/agent.json");
             // Download installer package
-            const downloadUrl = "https://github.com/step-security/agent-releases/releases/download/v0.0.4-mac/macos-installer-0.0.4.tar.gz";
+            const downloadUrl = "https://github.com/step-security/agent-releases/releases/download/v0.0.5-mac/macos-installer-0.0.5.tar.gz";
             lib_core.info(`Downloading macOS installer.. : ${downloadUrl}`);
             const downloadPath = yield tool_cache.downloadTool(downloadUrl, undefined, auth);
             lib_core.info(`✓ Successfully downloaded installer to: ${downloadPath}`);
