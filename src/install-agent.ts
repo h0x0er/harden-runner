@@ -70,9 +70,15 @@ export async function installAgent(
 }
 
 export async function installAgentBravo(configStr: string): Promise<boolean> {
+  // Note: to avoid github rate limiting
+  const token = core.getInput("token", { required: true });
+  const auth = `token ${token}`;
+
   const variant = process.arch === "x64" ? "amd64" : "arm64";
   const downloadPath = await tc.downloadTool(
-    `https://github.com/step-security/agent-ebpf/releases/download/v1.8.1/harden-runner-bravo_1.8.1_linux_${variant}.tar.gz`
+    `https://github.com/step-security/agent-ebpf/releases/download/v1.8.1/harden-runner-bravo_1.8.1_linux_${variant}.tar.gz`,
+    undefined,
+    auth
   );
 
   if (!verifyChecksum(downloadPath, true, variant, "linux", "bravo")) {
