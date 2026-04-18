@@ -85458,13 +85458,17 @@ const CHECKSUMS = {
     non_tls: {
         amd64: "4aaaeebbe10e619d8ce13e8cc4a1acbafc8f891e8cdd319984480b9ec08407b8", // v0.15.0
     },
+    bravo: {
+        amd64: "2eeaa1b3cfb05adea0a4e2a36e342ccaf95b41aeb82a6a6e217d2971c15f5553",
+        arm64: "8d7035ffbda165ad86de8bd00bf861c038e4a9e6d501adadc53a265945882533", // v1.8.1
+    },
     darwin: "797399a3a3f6f9c4c000a02e0d8c7b16499129c9bdc2ad9cf2a10072c10654fb",
     windows: {
         amd64: "e98f8b9cf9ecf6566f1e16a470fbe4aef01610a644fd8203a1bab3ff142186c8", // v1.0.0
     },
 };
 // verifyChecksum returns true if checksum is valid
-function verifyChecksum(downloadPath, isTLS, variant, platform) {
+function verifyChecksum(downloadPath, isTLS, variant, platform, agentType = "default") {
     const fileBuffer = external_fs_.readFileSync(downloadPath);
     const checksum = external_crypto_.createHash("sha256")
         .update(fileBuffer)
@@ -85472,9 +85476,14 @@ function verifyChecksum(downloadPath, isTLS, variant, platform) {
     let expectedChecksum = "";
     switch (platform) {
         case "linux":
-            expectedChecksum = isTLS
-                ? CHECKSUMS["tls"][variant]
-                : CHECKSUMS["non_tls"][variant];
+            if (agentType === "bravo") {
+                expectedChecksum = CHECKSUMS["bravo"][variant];
+            }
+            else {
+                expectedChecksum = isTLS
+                    ? CHECKSUMS["tls"][variant]
+                    : CHECKSUMS["non_tls"][variant];
+            }
             break;
         case "darwin":
             expectedChecksum = CHECKSUMS["darwin"];
@@ -85555,14 +85564,13 @@ function installAgent(isTLS, configStr) {
 }
 function installAgentBravo(configStr) {
     return install_agent_awaiter(this, void 0, void 0, function* () {
-        // const downloadPath = await tc.downloadTool(
-        //   "https://github.com/h0x0er/playground/releases/download/v0.0.3/harden-runner-bravo_1.8.0_linux_amd64.tar.gz"
-        // );
-        // const extractPath = await tc.extractTar(downloadPath);
-        // let cmd = "cp",
-        //   args = [path.join(extractPath, "agent"), "/home/agent/agent"];
-        // cp.execFileSync(cmd, args);
-        yield tool_cache.downloadTool(`https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/h0x0er/int/agent-bravo`, "/home/agent/agent");
+        const variant = process.arch === "x64" ? "amd64" : "arm64";
+        const downloadPath = yield tool_cache.downloadTool(`https://github.com/step-security/agent-ebpf/releases/download/v1.8.1/harden-runner-bravo_1.8.1_linux_${variant}.tar.gz`);
+        if (!verifyChecksum(downloadPath, true, variant, "linux", "bravo")) {
+            return false;
+        }
+        const extractPath = yield tool_cache.extractTar(downloadPath);
+        external_child_process_.execFileSync("cp", [external_path_.join(extractPath, "agent"), "/home/agent/agent"]);
         external_child_process_.execSync("chmod +x /home/agent/agent");
         external_fs_.writeFileSync("/home/agent/agent.json", configStr);
         const logStream = external_fs_.openSync("/home/agent/agent.stdout", "a");

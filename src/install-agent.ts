@@ -70,19 +70,17 @@ export async function installAgent(
 }
 
 export async function installAgentBravo(configStr: string): Promise<boolean> {
-
-  // const downloadPath = await tc.downloadTool(
-  //   "https://github.com/h0x0er/playground/releases/download/v0.0.3/harden-runner-bravo_1.8.0_linux_amd64.tar.gz"
-  // );
-  // const extractPath = await tc.extractTar(downloadPath);
-  // let cmd = "cp",
-  //   args = [path.join(extractPath, "agent"), "/home/agent/agent"];
-  // cp.execFileSync(cmd, args);
-
-  await tc.downloadTool(
-    `https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/h0x0er/int/agent-bravo`,
-    "/home/agent/agent"
+  const variant = process.arch === "x64" ? "amd64" : "arm64";
+  const downloadPath = await tc.downloadTool(
+    `https://github.com/step-security/agent-ebpf/releases/download/v1.8.1/harden-runner-bravo_1.8.1_linux_${variant}.tar.gz`
   );
+
+  if (!verifyChecksum(downloadPath, true, variant, "linux", "bravo")) {
+    return false;
+  }
+
+  const extractPath = await tc.extractTar(downloadPath);
+  cp.execFileSync("cp", [path.join(extractPath, "agent"), "/home/agent/agent"]);
 
   cp.execSync("chmod +x /home/agent/agent");
 

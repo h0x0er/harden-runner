@@ -10,6 +10,10 @@ const CHECKSUMS = {
   non_tls: {
     amd64: "4aaaeebbe10e619d8ce13e8cc4a1acbafc8f891e8cdd319984480b9ec08407b8", // v0.15.0
   },
+  bravo: {
+    amd64: "2eeaa1b3cfb05adea0a4e2a36e342ccaf95b41aeb82a6a6e217d2971c15f5553", // v1.8.1
+    arm64: "8d7035ffbda165ad86de8bd00bf861c038e4a9e6d501adadc53a265945882533", // v1.8.1
+  },
   darwin: "797399a3a3f6f9c4c000a02e0d8c7b16499129c9bdc2ad9cf2a10072c10654fb", // v0.0.4
   windows: {
     amd64: "e98f8b9cf9ecf6566f1e16a470fbe4aef01610a644fd8203a1bab3ff142186c8", // v1.0.0
@@ -21,7 +25,8 @@ export function verifyChecksum(
   downloadPath: string,
   isTLS: boolean,
   variant: string,
-  platform: string
+  platform: string,
+  agentType: "default" | "bravo" = "default"
 ) {
   const fileBuffer: Buffer = fs.readFileSync(downloadPath);
   const checksum: string = crypto
@@ -33,9 +38,13 @@ export function verifyChecksum(
 
   switch (platform) {
     case "linux":
-      expectedChecksum = isTLS
-        ? CHECKSUMS["tls"][variant]
-        : CHECKSUMS["non_tls"][variant];
+      if (agentType === "bravo") {
+        expectedChecksum = CHECKSUMS["bravo"][variant];
+      } else {
+        expectedChecksum = isTLS
+          ? CHECKSUMS["tls"][variant]
+          : CHECKSUMS["non_tls"][variant];
+      }
       break;
     case "darwin":
       expectedChecksum = CHECKSUMS["darwin"];
