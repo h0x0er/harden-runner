@@ -303,7 +303,7 @@ interface MonitorResponse {
         cp.execSync("sudo mkdir -p /home/agent");
         chownForFolder(process.env.USER ?? "", "/home/agent");
         const { use_policy_store, api_key, ...bravoAgentConfig } = confg;
-        await installAgentBravo(JSON.stringify({ ...bravoAgentConfig, api_key: uuidv4() }));
+        await installAgentBravo(JSON.stringify({ ...bravoAgentConfig, api_key: uuidv4(), customer: context.repo.owner }));
         return;
       }
 

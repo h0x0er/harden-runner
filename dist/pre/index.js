@@ -85970,7 +85970,7 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
                 external_child_process_.execSync("sudo mkdir -p /home/agent");
                 chownForFolder((_f = process.env.USER) !== null && _f !== void 0 ? _f : "", "/home/agent");
                 const { use_policy_store, api_key } = confg, bravoAgentConfig = __rest(confg, ["use_policy_store", "api_key"]);
-                yield installAgentBravo(JSON.stringify(Object.assign(Object.assign({}, bravoAgentConfig), { api_key: v4() })));
+                yield installAgentBravo(JSON.stringify(Object.assign(Object.assign({}, bravoAgentConfig), { api_key: v4(), customer: github.context.repo.owner })));
                 return;
             }
             external_fs_.appendFileSync(process.env.GITHUB_STATE, `selfHosted=true${external_os_.EOL}`, {
