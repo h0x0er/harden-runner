@@ -85964,15 +85964,7 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
         }
         const runnerName = process.env.RUNNER_NAME || "";
         lib_core.info(`RUNNER_NAME: ${runnerName}`);
-        if (!isGithubHosted()) {
-            if (thirdPartyProvider) {
-                lib_core.info(`Detected ${thirdPartyProvider} runner environment. Installing agent-bravo.`);
-                external_child_process_.execSync("sudo mkdir -p /home/agent");
-                chownForFolder((_f = process.env.USER) !== null && _f !== void 0 ? _f : "", "/home/agent");
-                const { use_policy_store, api_key } = confg, bravoAgentConfig = __rest(confg, ["use_policy_store", "api_key"]);
-                yield installAgentBravo(JSON.stringify(Object.assign(Object.assign({}, bravoAgentConfig), { api_key: v4(), customer: github.context.repo.owner })));
-                return;
-            }
+        if (!isGithubHosted() && !thirdPartyProvider) {
             external_fs_.appendFileSync(process.env.GITHUB_STATE, `selfHosted=true${external_os_.EOL}`, {
                 encoding: "utf8",
             });
@@ -86049,6 +86041,14 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
         });
         if (String(statusCode) === STATUS_HARDEN_RUNNER_UNAVAILABLE) {
             console.log(HARDEN_RUNNER_UNAVAILABLE_MESSAGE);
+            return;
+        }
+        if (thirdPartyProvider) {
+            lib_core.info(`Detected ${thirdPartyProvider} runner environment. Installing agent-bravo.`);
+            external_child_process_.execSync("sudo mkdir -p /home/agent");
+            chownForFolder((_f = process.env.USER) !== null && _f !== void 0 ? _f : "", "/home/agent");
+            const { use_policy_store, api_key } = confg, bravoAgentConfig = __rest(confg, ["use_policy_store", "api_key"]);
+            yield installAgentBravo(JSON.stringify(Object.assign(Object.assign({}, bravoAgentConfig), { is_github_hosted: true })));
             return;
         }
         const { api_key, use_policy_store } = confg, agentConfig = __rest(confg, ["api_key", "use_policy_store"]);

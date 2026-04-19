@@ -296,16 +296,7 @@ interface MonitorResponse {
     const runnerName = process.env.RUNNER_NAME || "";
     core.info(`RUNNER_NAME: ${runnerName}`);
 
-    if (!isGithubHosted()) {
-
-      if (thirdPartyProvider) {
-        core.info(`Detected ${thirdPartyProvider} runner environment. Installing agent-bravo.`);
-        cp.execSync("sudo mkdir -p /home/agent");
-        chownForFolder(process.env.USER ?? "", "/home/agent");
-        const { use_policy_store, api_key, ...bravoAgentConfig } = confg;
-        await installAgentBravo(JSON.stringify({ ...bravoAgentConfig, api_key: uuidv4(), customer: context.repo.owner }));
-        return;
-      }
+    if (!isGithubHosted() && !thirdPartyProvider) {
 
       fs.appendFileSync(process.env.GITHUB_STATE, `selfHosted=true${EOL}`, {
         encoding: "utf8",
@@ -407,6 +398,16 @@ interface MonitorResponse {
 
     if (String(statusCode) === common.STATUS_HARDEN_RUNNER_UNAVAILABLE) {
       console.log(common.HARDEN_RUNNER_UNAVAILABLE_MESSAGE);
+      return;
+    }
+
+
+    if (thirdPartyProvider) {
+      core.info(`Detected ${thirdPartyProvider} runner environment. Installing agent-bravo.`);
+      cp.execSync("sudo mkdir -p /home/agent");
+      chownForFolder(process.env.USER ?? "", "/home/agent");
+      const { use_policy_store, api_key, ...bravoAgentConfig } = confg;
+      await installAgentBravo(JSON.stringify({ ...bravoAgentConfig, is_github_hosted: true }));
       return;
     }
 
