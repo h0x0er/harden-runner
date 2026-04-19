@@ -296,58 +296,6 @@ interface MonitorResponse {
     const runnerName = process.env.RUNNER_NAME || "";
     core.info(`RUNNER_NAME: ${runnerName}`);
 
-    let _http = new httpm.HttpClient();
-    let statusCode: number | undefined;
-    _http.requestOptions = { socketTimeout: 3 * 1000 };
-    let addSummary = "false";
-    try {
-      const monitorRequestData = {
-        correlation_id: correlation_id,
-        job: process.env["GITHUB_JOB"],
-      };
-      const resp = await _http.postJson<MonitorResponse>(
-        `${api_url}/github/${process.env["GITHUB_REPOSITORY"]}/actions/runs/${process.env["GITHUB_RUN_ID"]}/monitor`,
-        monitorRequestData
-      );
-
-      const responseData = resp.result;
-      statusCode = resp.statusCode; // adding error code to check whether agent is getting installed or not.
-      fs.appendFileSync(
-        process.env.GITHUB_STATE,
-        `monitorStatusCode=${statusCode}${EOL}`,
-        {
-          encoding: "utf8",
-        }
-      );
-
-      if (statusCode === 200 && responseData) {
-        console.log(`Runner IP Address: ${responseData.runner_ip_address}`);
-        confg.one_time_key = responseData.one_time_key;
-        addSummary = responseData.monitoring_started ? "true" : "false";
-      }
-    } catch (e) {
-      console.log(`error in connecting to ${api_url}: ${e}`);
-    }
-    fs.appendFileSync(
-      process.env.GITHUB_STATE,
-      `addSummary=${addSummary}${EOL}`,
-      {
-        encoding: "utf8",
-      }
-    );
-    fs.appendFileSync(
-      process.env.GITHUB_STATE,
-      `correlation_id=${correlation_id}${EOL}`,
-      {
-        encoding: "utf8",
-      }
-    );
-
-    if (String(statusCode) === common.STATUS_HARDEN_RUNNER_UNAVAILABLE) {
-      console.log(common.HARDEN_RUNNER_UNAVAILABLE_MESSAGE);
-      return;
-    }
-
     if (!isGithubHosted()) {
 
       if (thirdPartyProvider) {
@@ -355,7 +303,7 @@ interface MonitorResponse {
         cp.execSync("sudo mkdir -p /home/agent");
         chownForFolder(process.env.USER ?? "", "/home/agent");
         const { use_policy_store, api_key, ...bravoAgentConfig } = confg;
-        await installAgentBravo(JSON.stringify({ ...bravoAgentConfig, is_github_hosted: true }));
+        await installAgentBravo(JSON.stringify({ ...bravoAgentConfig, api_key: uuidv4() }));
         return;
       }
 
@@ -410,6 +358,57 @@ interface MonitorResponse {
     }
 
 
+    let _http = new httpm.HttpClient();
+    let statusCode: number | undefined;
+    _http.requestOptions = { socketTimeout: 3 * 1000 };
+    let addSummary = "false";
+    try {
+      const monitorRequestData = {
+        correlation_id: correlation_id,
+        job: process.env["GITHUB_JOB"],
+      };
+      const resp = await _http.postJson<MonitorResponse>(
+        `${api_url}/github/${process.env["GITHUB_REPOSITORY"]}/actions/runs/${process.env["GITHUB_RUN_ID"]}/monitor`,
+        monitorRequestData
+      );
+
+      const responseData = resp.result;
+      statusCode = resp.statusCode; // adding error code to check whether agent is getting installed or not.
+      fs.appendFileSync(
+        process.env.GITHUB_STATE,
+        `monitorStatusCode=${statusCode}${EOL}`,
+        {
+          encoding: "utf8",
+        }
+      );
+
+      if (statusCode === 200 && responseData) {
+        console.log(`Runner IP Address: ${responseData.runner_ip_address}`);
+        confg.one_time_key = responseData.one_time_key;
+        addSummary = responseData.monitoring_started ? "true" : "false";
+      }
+    } catch (e) {
+      console.log(`error in connecting to ${api_url}: ${e}`);
+    }
+    fs.appendFileSync(
+      process.env.GITHUB_STATE,
+      `addSummary=${addSummary}${EOL}`,
+      {
+        encoding: "utf8",
+      }
+    );
+    fs.appendFileSync(
+      process.env.GITHUB_STATE,
+      `correlation_id=${correlation_id}${EOL}`,
+      {
+        encoding: "utf8",
+      }
+    );
+
+    if (String(statusCode) === common.STATUS_HARDEN_RUNNER_UNAVAILABLE) {
+      console.log(common.HARDEN_RUNNER_UNAVAILABLE_MESSAGE);
+      return;
+    }
 
     const { api_key, use_policy_store, ...agentConfig } = confg;
     const configStr = JSON.stringify(agentConfig);
