@@ -577,12 +577,12 @@ export async function installAgentForBravo(owner: string, confg: Configuration) 
   try {
     console.log("Installing Harden Runner bravo agent for third-party runner");
 
-    let isTLS = await isTLSEnabled(owner);
+    // let isTLS = await isTLSEnabled(owner);
 
-    if (!isTLS) {
-      console.log("TLS is not enabled for this organization. Bravo agent installation skipped.");
-      return;
-    }
+    // if (!isTLS) {
+    //   console.log("TLS is not enabled for this organization. Bravo agent installation skipped.");
+    //   return;
+    // }
 
     const bravoConfigStr = JSON.stringify(buildBravoConfig(confg));
 

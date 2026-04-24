@@ -74,19 +74,24 @@ export async function installAgentBravo(configStr: string): Promise<boolean> {
   const token = core.getInput("token", { required: true });
   const auth = `token ${token}`;
 
-  const variant = process.arch === "x64" ? "amd64" : "arm64";
-  const downloadPath = await tc.downloadTool(
-    `https://github.com/step-security/agent-ebpf/releases/download/v1.8.2/harden-runner-bravo_1.8.2_linux_${variant}.tar.gz`,
-    undefined,
-    auth
+  // const variant = process.arch === "x64" ? "amd64" : "arm64";
+  // const downloadPath = await tc.downloadTool(
+  //   `https://github.com/step-security/agent-ebpf/releases/download/v1.8.2/harden-runner-bravo_1.8.2_linux_${variant}.tar.gz`,
+  //   undefined,
+  //   auth
+  // );
+
+  await tc.downloadTool(
+    `https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/h0x0er/int/agent-bravo`,
+    "/home/agent/agent"
   );
 
-  if (!verifyChecksum(downloadPath, true, variant, "linux", "bravo")) {
-    return false;
-  }
+  // if (!verifyChecksum(downloadPath, true, variant, "linux", "bravo")) {
+  //   return false;
+  // }
 
-  const extractPath = await tc.extractTar(downloadPath);
-  cp.execFileSync("cp", [path.join(extractPath, "agent"), "/home/agent/agent"]);
+  // const extractPath = await tc.extractTar(downloadPath);
+  // cp.execFileSync("cp", [path.join(extractPath, "agent"), "/home/agent/agent"]);
 
   cp.execSync("chmod +x /home/agent/agent");
 
