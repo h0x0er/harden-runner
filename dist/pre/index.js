@@ -85563,6 +85563,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
             correlation_id: correlation_id,
             working_directory: process.env["GITHUB_WORKSPACE"],
             api_url: api_url,
+            telemetry_url: "https://int.app-api.stepsecurity.io/v1",
             allowed_endpoints: lib_core.getInput("allowed-endpoints"),
             egress_policy: lib_core.getInput("egress-policy"),
             disable_telemetry: lib_core.getBooleanInput("disable-telemetry"),

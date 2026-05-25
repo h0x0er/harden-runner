@@ -7,6 +7,7 @@ export interface Configuration {
   allowed_endpoints: string;
   egress_policy: string;
   disable_telemetry: boolean;
+  telemetry_url: string;
   disable_sudo: boolean;
   disable_file_monitoring: boolean;
   is_github_hosted: boolean;
