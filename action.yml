@@ -35,7 +35,7 @@ inputs:
   tls-env:
     description: "environment for tls-capture"
     required: false
-    default: "int-pull"
+    default: "agent"
   disable-sudo-and-containers:
     description: "Disable sudo and container access for the runner account"
     required: false
