@@ -27767,9 +27767,9 @@ function isDocker() {
 }
 
 ;// CONCATENATED MODULE: ./src/configs.ts
-const STEPSECURITY_ENV = "int"; // agent or int
+const STEPSECURITY_ENV = "agent"; // agent or int
 const STEPSECURITY_API_URL = (/* unused pure expression or super */ null && (`https://${STEPSECURITY_ENV}.api.stepsecurity.io/v1`));
-const configs_STEPSECURITY_WEB_URL = `https://${STEPSECURITY_ENV === "int" ? "int1" : "app"}.stepsecurity.io`;
+const configs_STEPSECURITY_WEB_URL = `https://app.stepsecurity.io`;
 
 ;// CONCATENATED MODULE: ./src/index.ts
 var src_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {

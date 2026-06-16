@@ -27602,9 +27602,9 @@ var external_child_process_ = __nccwpck_require__(5317);
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
 var core = __nccwpck_require__(7484);
 ;// CONCATENATED MODULE: ./src/configs.ts
-const STEPSECURITY_ENV = "int"; // agent or int
+const STEPSECURITY_ENV = "agent"; // agent or int
 const STEPSECURITY_API_URL = (/* unused pure expression or super */ null && (`https://${STEPSECURITY_ENV}.api.stepsecurity.io/v1`));
-const STEPSECURITY_WEB_URL = `https://${STEPSECURITY_ENV === "int" ? "int1" : "app"}.stepsecurity.io`;
+const STEPSECURITY_WEB_URL = `https://app.stepsecurity.io`;
 
 ;// CONCATENATED MODULE: ./src/common.ts
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {

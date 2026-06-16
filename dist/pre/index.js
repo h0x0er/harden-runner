@@ -85190,9 +85190,9 @@ function isValidEvent() {
 }
 
 ;// CONCATENATED MODULE: ./src/configs.ts
-const STEPSECURITY_ENV = "int"; // agent or int
+const STEPSECURITY_ENV = "agent"; // agent or int
 const configs_STEPSECURITY_API_URL = `https://${STEPSECURITY_ENV}.api.stepsecurity.io/v1`;
-const configs_STEPSECURITY_WEB_URL = `https://${STEPSECURITY_ENV === "int" ? "int1" : "app"}.stepsecurity.io`;
+const configs_STEPSECURITY_WEB_URL = `https://app.stepsecurity.io`;
 
 ;// CONCATENATED MODULE: ./src/policy-utils.ts
 var policy_utils_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -85563,7 +85563,7 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
             correlation_id: correlation_id,
             working_directory: process.env["GITHUB_WORKSPACE"],
             api_url: api_url,
-            telemetry_url: "https://int.app-api.stepsecurity.io/v1",
+            telemetry_url: "https://prod.app-api.stepsecurity.io/v1",
             allowed_endpoints: lib_core.getInput("allowed-endpoints"),
             egress_policy: lib_core.getInput("egress-policy"),
             disable_telemetry: lib_core.getBooleanInput("disable-telemetry"),
