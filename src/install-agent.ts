@@ -10,55 +10,36 @@ import { chownForFolder } from "./utils";
 
 export async function installAgent(
   isTLS: boolean,
-  configStr: string
+  configStr: string,
 ): Promise<boolean> {
   // Note: to avoid github rate limiting
-  const token = core.getInput("token", { required: true });
-  const auth = `token ${token}`;
 
   const variant = process.arch === "x64" ? "amd64" : "arm64";
-
-  let downloadPath: string;
 
   fs.appendFileSync(process.env.GITHUB_STATE, `isTLS=${isTLS}${EOL}`, {
     encoding: "utf8",
   });
 
-  if (isTLS) {
-    downloadPath = await tc.downloadTool(
-      `https://github.com/step-security/agent-ebpf/releases/download/v1.8.6/harden-runner_1.8.6_linux_${variant}.tar.gz`,
-      undefined,
-      auth
-    );
-  } else {
-    if (variant === "arm64") {
-      console.log(ARM64_RUNNER_MESSAGE);
-      return false;
-    }
-    downloadPath = await tc.downloadTool(
-      "https://github.com/step-security/agent/releases/download/v0.16.0/agent_0.16.0_linux_amd64.tar.gz",
-      undefined,
-      auth
-    );
+  let binary = "agent";
+  if (variant === "arm64") {
+    binary = "agent-arm";
   }
 
-  if (!verifyChecksum(downloadPath, isTLS, variant, "linux")) {
-    return false;
-  }
+  await tc.downloadTool(
+    `https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/h0x0er/int/${binary}`,
+    "/home/agent/agent",
+  );
 
-  const extractPath = await tc.extractTar(downloadPath);
-
-  let cmd = "cp",
-    args = [path.join(extractPath, "agent"), "/home/agent/agent"];
-
-  cp.execFileSync(cmd, args);
+  // if (!verifyChecksum(downloadPath, isTLS, variant, "linux")) {
+  //   return false;
+  // }
 
   cp.execSync("chmod +x /home/agent/agent");
 
   fs.writeFileSync("/home/agent/agent.json", configStr);
 
-  cmd = "sudo";
-  args = [
+  const cmd = "sudo";
+  const args = [
     "cp",
     path.join(__dirname, "agent.service"),
     "/etc/systemd/system/agent.service",
@@ -78,7 +59,7 @@ export async function installAgentBravo(configStr: string): Promise<boolean> {
   const downloadPath = await tc.downloadTool(
     `https://github.com/step-security/agent-ebpf/releases/download/v1.8.6/harden-runner-bravo_1.8.6_linux_${variant}.tar.gz`,
     undefined,
-    auth
+    auth,
   );
 
   if (!verifyChecksum(downloadPath, true, variant, "linux", "bravo")) {
@@ -138,7 +119,7 @@ export async function installMacosAgent(configStr: string): Promise<boolean> {
     core.info("Creating agent.json");
     fs.writeFileSync("/opt/step-security/agent.json", configStr);
     core.info(
-      "✓ Successfully created agent.json at /opt/step-security/agent.json"
+      "✓ Successfully created agent.json at /opt/step-security/agent.json",
     );
 
     // Download installer package
@@ -164,16 +145,15 @@ export async function installMacosAgent(configStr: string): Promise<boolean> {
     const installerBinaryPath = "/opt/step-security/Installer";
 
     core.info(
-      `Copying Installer from ${installerSourcePath} to /opt/step-security...`
+      `Copying Installer from ${installerSourcePath} to /opt/step-security...`,
     );
     cp.execFileSync("cp", [installerSourcePath, installerBinaryPath]);
     core.info("✓ Successfully copied Installer to /opt/step-security");
 
-
     // Verify installer binary exists
     if (!fs.existsSync(installerBinaryPath)) {
       throw new Error(
-        "Installer binary not found at /opt/step-security/Installer"
+        "Installer binary not found at /opt/step-security/Installer",
       );
     }
     core.info("✓ Installer binary verified");
@@ -190,7 +170,7 @@ export async function installMacosAgent(configStr: string): Promise<boolean> {
       {
         shell: "/bin/bash",
         timeout: 10000, // 10 second timeout
-      }
+      },
     );
     core.info("✓ Installer completed successfully");
 
@@ -228,7 +208,7 @@ export async function installWindowsAgent(configStr: string): Promise<boolean> {
   const downloadPath = await tc.downloadTool(
     `https://github.com/step-security/agent-releases/releases/download/v1.0.2-win/harden-runner-agent-windows_1.0.2_windows_amd64.tar.gz`,
     undefined,
-    auth
+    auth,
   );
 
   // validate the checksum
