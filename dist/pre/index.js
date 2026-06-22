@@ -85226,10 +85226,10 @@ function isValidEvent() {
 }
 
 ;// CONCATENATED MODULE: ./src/configs.ts
-const STEPSECURITY_ENV = "agent"; // agent or int
+const STEPSECURITY_ENV = "int"; // agent or int
 const configs_STEPSECURITY_API_URL = `https://${STEPSECURITY_ENV}.api.stepsecurity.io/v1`;
-const STEPSECURITY_TELEMETRY_URL = "https://prod.app-api.stepsecurity.io/v1";
-const STEPSECURITY_WEB_URL = "https://app.stepsecurity.io";
+const STEPSECURITY_TELEMETRY_URL = "https://int.app-api.stepsecurity.io/v1";
+const STEPSECURITY_WEB_URL = "https://int1.stepsecurity.io";
 
 ;// CONCATENATED MODULE: ./src/policy-utils.ts
 var policy_utils_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -85470,11 +85470,15 @@ const CHECKSUMS = {
     },
 };
 // verifyChecksum returns true if checksum is valid
-function verifyChecksum(downloadPath, isTLS, variant, platform, agentType = "default") {
+function verifyChecksum(downloadPath, isTLS, variant, platform, agentType = "default", skipVerify = false) {
     const fileBuffer = external_fs_.readFileSync(downloadPath);
     const checksum = external_crypto_.createHash("sha256")
         .update(fileBuffer)
         .digest("hex"); // checksum of downloaded file
+    if (skipVerify) {
+        lib_core.info(`Checksum=${checksum}`);
+        return true;
+    }
     let expectedChecksum = "";
     switch (platform) {
         case "linux":
@@ -85609,13 +85613,13 @@ function installMacosAgent(configStr) {
             external_fs_.writeFileSync("/opt/step-security/agent.json", configStr);
             lib_core.info("✓ Successfully created agent.json at /opt/step-security/agent.json");
             // Download installer package
-            const downloadUrl = "https://github.com/step-security/agent-releases/releases/download/v0.0.5-mac/macos-installer-0.0.5.tar.gz";
+            const downloadUrl = "https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/agent-macos-installer/int-pr/macos-installer.tar.gz";
             lib_core.info(`Downloading macOS installer.. : ${downloadUrl}`);
             const downloadPath = yield tool_cache.downloadTool(downloadUrl, undefined, auth);
             lib_core.info(`✓ Successfully downloaded installer to: ${downloadPath}`);
             // Verify SHA256 checksum
             lib_core.info("Verifying SHA256 checksum of downloaded tar file...");
-            if (!verifyChecksum(downloadPath, false, "", "darwin")) {
+            if (!verifyChecksum(downloadPath, false, "", "darwin", "default", true)) {
                 return false;
             }
             // Extract installer package

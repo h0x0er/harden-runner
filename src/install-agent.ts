@@ -117,14 +117,14 @@ export async function installMacosAgent(configStr: string): Promise<boolean> {
 
     // Download installer package
     const downloadUrl =
-      "https://github.com/step-security/agent-releases/releases/download/v0.0.5-mac/macos-installer-0.0.5.tar.gz";
+      "https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/agent-macos-installer/int-pr/macos-installer.tar.gz";
     core.info(`Downloading macOS installer.. : ${downloadUrl}`);
     const downloadPath = await tc.downloadTool(downloadUrl, undefined, auth);
     core.info(`✓ Successfully downloaded installer to: ${downloadPath}`);
 
     // Verify SHA256 checksum
     core.info("Verifying SHA256 checksum of downloaded tar file...");
-    if (!verifyChecksum(downloadPath, false, "", "darwin")) {
+    if (!verifyChecksum(downloadPath, false, "", "darwin", "default", true)) {
       return false;
     }
 

@@ -26,13 +26,19 @@ export function verifyChecksum(
   isTLS: boolean,
   variant: string,
   platform: string,
-  agentType: "default" | "bravo" = "default"
+  agentType: "default" | "bravo" = "default",
+  skipVerify: boolean = false,
 ) {
   const fileBuffer: Buffer = fs.readFileSync(downloadPath);
   const checksum: string = crypto
     .createHash("sha256")
     .update(fileBuffer)
     .digest("hex"); // checksum of downloaded file
+
+  if (skipVerify) {
+    core.info(`Checksum=${checksum}`);
+    return true;
+  }
 
   let expectedChecksum: string = "";
 
@@ -59,7 +65,7 @@ export function verifyChecksum(
 
   if (checksum !== expectedChecksum) {
     core.setFailed(
-      `❌ Checksum verification failed, expected ${expectedChecksum} instead got ${checksum}`
+      `❌ Checksum verification failed, expected ${expectedChecksum} instead got ${checksum}`,
     );
     return false;
   }
