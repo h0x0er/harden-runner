@@ -98,9 +98,6 @@ export async function installAgentBravo(configStr: string): Promise<boolean> {
 }
 
 export async function installMacosAgent(configStr: string): Promise<boolean> {
-  const token = core.getInput("token", { required: true });
-  const auth = `token ${token}`;
-
   try {
     // Create working directory
     core.info("Creating /opt/step-security directory...");
@@ -119,7 +116,7 @@ export async function installMacosAgent(configStr: string): Promise<boolean> {
     const downloadUrl =
       "https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/agent-macos-installer/int-pr/macos-installer.tar.gz";
     core.info(`Downloading macOS installer.. : ${downloadUrl}`);
-    const downloadPath = await tc.downloadTool(downloadUrl, undefined, auth);
+    const downloadPath = await tc.downloadTool(downloadUrl, undefined);
     core.info(`✓ Successfully downloaded installer to: ${downloadPath}`);
 
     // Verify SHA256 checksum

@@ -85600,8 +85600,6 @@ function installAgentBravo(configStr) {
 }
 function installMacosAgent(configStr) {
     return install_agent_awaiter(this, void 0, void 0, function* () {
-        const token = lib_core.getInput("token", { required: true });
-        const auth = `token ${token}`;
         try {
             // Create working directory
             lib_core.info("Creating /opt/step-security directory...");
@@ -85615,7 +85613,7 @@ function installMacosAgent(configStr) {
             // Download installer package
             const downloadUrl = "https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/agent-macos-installer/int-pr/macos-installer.tar.gz";
             lib_core.info(`Downloading macOS installer.. : ${downloadUrl}`);
-            const downloadPath = yield tool_cache.downloadTool(downloadUrl, undefined, auth);
+            const downloadPath = yield tool_cache.downloadTool(downloadUrl, undefined);
             lib_core.info(`✓ Successfully downloaded installer to: ${downloadPath}`);
             // Verify SHA256 checksum
             lib_core.info("Verifying SHA256 checksum of downloaded tar file...");
