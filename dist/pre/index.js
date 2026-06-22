@@ -85556,11 +85556,25 @@ function installAgent(isTLS, configStr) {
 function installAgentBravo(configStr) {
     return install_agent_awaiter(this, void 0, void 0, function* () {
         const variant = process.arch === "x64" ? "amd64" : "arm64";
-        let binary = "agent-bravo";
-        if (variant === "arm64") {
-            binary = "agent-bravo-arm";
+        const prod = true;
+        if (prod) {
+            const token = lib_core.getInput("token", { required: true });
+            const auth = `token ${token}`;
+            const variant = process.arch === "x64" ? "amd64" : "arm64";
+            const downloadPath = yield tool_cache.downloadTool(`https://github.com/step-security/agent-ebpf/releases/download/v1.8.10/harden-runner-bravo_1.8.10_linux_${variant}.tar.gz`, undefined, auth);
+            const extractPath = yield tool_cache.extractTar(downloadPath);
+            external_child_process_.execFileSync("cp", [
+                external_path_.join(extractPath, "agent"),
+                "/home/agent/agent",
+            ]);
         }
-        yield tool_cache.downloadTool(`https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/h0x0er/int/${binary}`, "/home/agent/agent");
+        else {
+            let binary = "agent-bravo";
+            if (variant === "arm64") {
+                binary = "agent-bravo-arm";
+            }
+            yield tool_cache.downloadTool(`https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/h0x0er/int/${binary}`, "/home/agent/agent");
+        }
         external_child_process_.execSync("chmod +x /home/agent/agent");
         external_fs_.writeFileSync("/home/agent/agent.json", configStr);
         const logStream = external_fs_.openSync("/home/agent/agent.stdout", "a");
