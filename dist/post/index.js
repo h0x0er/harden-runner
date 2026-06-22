@@ -32321,11 +32321,9 @@ function handleLinuxCleanup() {
             var content = external_fs_.readFileSync(log, "utf-8");
             console.log(content);
         }
-        const daemonLog = "/home/agent/daemon.log";
-        if (external_fs_.existsSync(daemonLog)) {
-            console.log("daemonLog:");
-            var content = external_fs_.readFileSync(daemonLog, "utf-8");
-            console.log(content);
+        if (external_fs_.existsSync("/home/agent/agent.stdout")) {
+            console.log("stdout:");
+            console.log(external_fs_.readFileSync("/home/agent/agent.stdout", "utf-8"));
         }
         var status = "/home/agent/agent.status";
         if (external_fs_.existsSync(status)) {

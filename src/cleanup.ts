@@ -6,14 +6,21 @@ import isDocker from "is-docker";
 import { isARCRunner } from "./arc-runner";
 import { isGithubHosted } from "./tls-inspect";
 import { context } from "@actions/github";
-import { isPlatformSupported, isAgentInstalled, detectThirdPartyRunnerProvider } from "./utils";
+import {
+  isPlatformSupported,
+  isAgentInstalled,
+  detectThirdPartyRunnerProvider,
+} from "./utils";
 
 (async () => {
   console.log("[harden-runner] post-step");
 
-  const customProperties = context?.payload?.repository?.custom_properties || {};
+  const customProperties =
+    context?.payload?.repository?.custom_properties || {};
   if (customProperties["skip-harden-runner"] === "true") {
-    console.log("Skipping harden-runner: custom property 'skip-harden-runner' is set to 'true'");
+    console.log(
+      "Skipping harden-runner: custom property 'skip-harden-runner' is set to 'true'",
+    );
     return;
   }
 
@@ -121,7 +128,7 @@ async function handleLinuxCleanup() {
 
   fs.writeFileSync(
     "/home/agent/post_event.json",
-    JSON.stringify({ event: "post" })
+    JSON.stringify({ event: "post" }),
   );
 
   const doneFile = "/home/agent/done.json";
@@ -148,11 +155,10 @@ async function handleLinuxCleanup() {
     console.log(content);
   }
 
-  const daemonLog = "/home/agent/daemon.log";
-  if (fs.existsSync(daemonLog)) {
-    console.log("daemonLog:");
-    var content = fs.readFileSync(daemonLog, "utf-8");
-    console.log(content);
+  if (fs.existsSync("/home/agent/agent.stdout")) {
+    console.log("stdout:");
+
+    console.log(fs.readFileSync("/home/agent/agent.stdout", "utf-8"));
   }
 
   var status = "/home/agent/agent.status";
@@ -172,7 +178,7 @@ async function handleLinuxCleanup() {
         {
           encoding: "utf8",
           maxBuffer: 1024 * 1024 * 10, // 10MB buffer
-        }
+        },
       );
       console.log("agent.service log:");
       console.log(journalLog);
@@ -229,7 +235,7 @@ async function handleMacosCleanup() {
         encoding: "utf8",
         maxBuffer: 1024 * 1024 * 10, // 10MB buffer
         timeout: 5000, // 5 seconds timeout
-      }
+      },
     );
     console.log(logStreamOutput);
   } catch (error) {
@@ -260,7 +266,7 @@ async function handleWindowsCleanup() {
       "-Command",
       "query user; exit $LASTEXITCODE",
     ],
-    { stdio: ["ignore", "pipe", "pipe"], shell: false, windowsHide: true }
+    { stdio: ["ignore", "pipe", "pipe"], shell: false, windowsHide: true },
   );
   p.unref();
 
