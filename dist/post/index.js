@@ -32277,15 +32277,19 @@ function handleAgentBravoCleanup() {
                 break;
             }
         }
+        const status = "/home/agent/agent.status";
+        if (external_fs_.existsSync(status)) {
+            console.log("status:");
+            console.log(external_fs_.readFileSync(status, "utf-8"));
+        }
         const log = "/home/agent/agent.log";
         if (external_fs_.existsSync(log)) {
             console.log("log:");
             console.log(external_fs_.readFileSync(log, "utf-8"));
         }
-        const status = "/home/agent/agent.status";
-        if (external_fs_.existsSync(status)) {
-            console.log("status:");
-            console.log(external_fs_.readFileSync(status, "utf-8"));
+        if (external_fs_.existsSync("/home/agent/agent.stdout")) {
+            console.log("stdout:");
+            console.log(external_fs_.readFileSync("/home/agent/agent.stdout", "utf-8"));
         }
     });
 }
@@ -32320,10 +32324,6 @@ function handleLinuxCleanup() {
             console.log("log:");
             var content = external_fs_.readFileSync(log, "utf-8");
             console.log(content);
-        }
-        if (external_fs_.existsSync("/home/agent/agent.stdout")) {
-            console.log("stdout:");
-            console.log(external_fs_.readFileSync("/home/agent/agent.stdout", "utf-8"));
         }
         var status = "/home/agent/agent.status";
         if (external_fs_.existsSync(status)) {
