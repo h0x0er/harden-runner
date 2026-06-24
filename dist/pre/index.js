@@ -85042,6 +85042,8 @@ function detectThirdPartyRunnerProvider() {
         return "depot";
     if (process.env["NAMESPACE_GITHUB_RUNTIME"])
         return "namespace";
+    if (process.env["BITRISE_IO"])
+        return "bitrise";
     const runnerName = (_a = process.env["RUNNER_NAME"]) !== null && _a !== void 0 ? _a : "";
     if (runnerName.startsWith("warp-"))
         return "warp";
@@ -85992,13 +85994,21 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
             const thirdPartyProvider = detectThirdPartyRunnerProvider();
             if (thirdPartyProvider) {
                 const providerLabel = thirdPartyProvider.charAt(0).toUpperCase() + thirdPartyProvider.slice(1);
-                if (process.platform !== "linux") {
-                    lib_core.info(`Detected ${providerLabel} runner on ${process.platform}. Bravo agent is Linux-only, skipping install.`);
+                if (process.platform !== "linux" && process.platform !== "darwin") {
+                    lib_core.info(`Detected ${providerLabel} runner on ${process.platform}. Bravo agent is not supported on this platform, skipping install.`);
                     return;
                 }
                 lib_core.info(`Detected ${providerLabel} runner environment. Installing agent-bravo.`);
                 confg.correlation_id = runnerName || confg.correlation_id;
                 yield callMonitorEndpoint(api_url, confg);
+                if (process.platform === "darwin") {
+                    const bravoConfigStr = JSON.stringify(buildBravoConfig(confg));
+                    const installed = yield installMacosAgent(bravoConfigStr);
+                    if (!installed) {
+                        lib_core.warning("😭 macos bravo agent installation failed");
+                    }
+                    return;
+                }
                 yield installAgentForBravo(github.context.repo.owner, confg);
                 return;
             }
