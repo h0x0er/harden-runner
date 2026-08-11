@@ -85330,11 +85330,11 @@ function fetchPolicyFromStore(owner, repo, apiKey, workflow, runId, correlationI
 }
 function mergeConfigs(localConfig, remoteConfig) {
     if (localConfig.allowed_endpoints === "" &&
-        remoteConfig.allowed_endpoints !== undefined) {
+        Array.isArray(remoteConfig.allowed_endpoints)) {
         localConfig.allowed_endpoints = remoteConfig.allowed_endpoints.join(" ");
     }
     if (localConfig.denied_endpoints === "" &&
-        remoteConfig.denied_endpoints !== undefined) {
+        Array.isArray(remoteConfig.denied_endpoints)) {
         localConfig.denied_endpoints = remoteConfig.denied_endpoints.join(" ");
     }
     if (remoteConfig.disable_sudo !== undefined) {
@@ -85856,6 +85856,7 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
                     let result = yield fetchPolicyFromStore(github.context.repo.owner, repoName, confg.api_key, workflow, confg.run_id, confg.correlation_id);
                     if (result !== null) {
                         lib_core.info(`Policy found: ${result.policy_name || "unnamed"}`);
+                        lib_core.info(`Policy response: ${JSON.stringify(result)}`);
                         confg = mergeConfigs(confg, result);
                     }
                     else {
@@ -85881,6 +85882,7 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
             try {
                 let idToken = yield lib_core.getIDToken();
                 let result = yield fetchPolicy(github.context.repo.owner, policyName, idToken);
+                lib_core.info(`Policy response: ${JSON.stringify(result)}`);
                 confg = mergeConfigs(confg, result);
             }
             catch (err) {

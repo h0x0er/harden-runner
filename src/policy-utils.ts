@@ -120,13 +120,13 @@ export function mergeConfigs(
 ) {
   if (
     localConfig.allowed_endpoints === "" &&
-    remoteConfig.allowed_endpoints !== undefined
+    Array.isArray(remoteConfig.allowed_endpoints)
   ) {
     localConfig.allowed_endpoints = remoteConfig.allowed_endpoints.join(" ");
   }
   if (
     localConfig.denied_endpoints === "" &&
-    remoteConfig.denied_endpoints !== undefined
+    Array.isArray(remoteConfig.denied_endpoints)
   ) {
     localConfig.denied_endpoints = remoteConfig.denied_endpoints.join(" ");
   }

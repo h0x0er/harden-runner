@@ -127,6 +127,7 @@ interface MonitorResponse {
           );
           if (result !== null) {
             core.info(`Policy found: ${result.policy_name || "unnamed"}`);
+            core.info(`Policy response: ${JSON.stringify(result)}`);
             confg = mergeConfigs(confg, result);
           } else {
             core.info("No policy found in policy store. Defaulting to audit mode.");
@@ -152,6 +153,7 @@ interface MonitorResponse {
           policyName,
           idToken
         );
+        core.info(`Policy response: ${JSON.stringify(result)}`);
         confg = mergeConfigs(confg, result);
       } catch (err) {
         core.info(`[!] ${err}`);
