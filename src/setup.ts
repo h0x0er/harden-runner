@@ -185,23 +185,13 @@ interface MonitorResponse {
     );
     core.info(`[!] Current Configuration: \n${JSON.stringify(confg)}\n`);
 
-    if (
-      confg.egress_policy !== "audit" &&
-      confg.egress_policy !== "block" &&
-      confg.egress_policy !== "deny"
-    ) {
-      core.setFailed("egress-policy must be audit, block, or deny");
+    if (confg.egress_policy !== "audit" && confg.egress_policy !== "block") {
+      core.setFailed("egress-policy must be either audit or block");
     }
 
     if (confg.egress_policy === "block" && confg.allowed_endpoints === "") {
       core.warning(
         "egress-policy is set to block (default) and allowed-endpoints is empty. No outbound traffic will be allowed for job steps."
-      );
-    }
-
-    if (confg.egress_policy === "deny" && confg.denied_endpoints === "") {
-      core.warning(
-        "egress-policy is set to deny and denied-endpoints is empty. No outbound traffic will be denied for job steps."
       );
     }
 

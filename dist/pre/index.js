@@ -85908,16 +85908,11 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
             encoding: "utf8",
         });
         lib_core.info(`[!] Current Configuration: \n${JSON.stringify(confg)}\n`);
-        if (confg.egress_policy !== "audit" &&
-            confg.egress_policy !== "block" &&
-            confg.egress_policy !== "deny") {
-            lib_core.setFailed("egress-policy must be audit, block, or deny");
+        if (confg.egress_policy !== "audit" && confg.egress_policy !== "block") {
+            lib_core.setFailed("egress-policy must be either audit or block");
         }
         if (confg.egress_policy === "block" && confg.allowed_endpoints === "") {
             lib_core.warning("egress-policy is set to block (default) and allowed-endpoints is empty. No outbound traffic will be allowed for job steps.");
-        }
-        if (confg.egress_policy === "deny" && confg.denied_endpoints === "") {
-            lib_core.warning("egress-policy is set to deny and denied-endpoints is empty. No outbound traffic will be denied for job steps.");
         }
         if (confg.disable_telemetry !== true && confg.disable_telemetry !== false) {
             lib_core.setFailed("disable-telemetry must be a boolean value");
