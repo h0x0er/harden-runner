@@ -83,6 +83,7 @@ interface MonitorResponse {
       api_url: api_url,
       telemetry_url: STEPSECURITY_TELEMETRY_URL,
       allowed_endpoints: core.getInput("allowed-endpoints"),
+      denied_endpoints: core.getInput("denied-endpoints"),
       egress_policy: core.getInput("egress-policy"),
       disable_telemetry: core.getBooleanInput("disable-telemetry"),
       disable_sudo: core.getBooleanInput("disable-sudo"),
@@ -184,13 +185,23 @@ interface MonitorResponse {
     );
     core.info(`[!] Current Configuration: \n${JSON.stringify(confg)}\n`);
 
-    if (confg.egress_policy !== "audit" && confg.egress_policy !== "block") {
-      core.setFailed("egress-policy must be either audit or block");
+    if (
+      confg.egress_policy !== "audit" &&
+      confg.egress_policy !== "block" &&
+      confg.egress_policy !== "deny"
+    ) {
+      core.setFailed("egress-policy must be audit, block, or deny");
     }
 
     if (confg.egress_policy === "block" && confg.allowed_endpoints === "") {
       core.warning(
         "egress-policy is set to block (default) and allowed-endpoints is empty. No outbound traffic will be allowed for job steps."
+      );
+    }
+
+    if (confg.egress_policy === "deny" && confg.denied_endpoints === "") {
+      core.warning(
+        "egress-policy is set to deny and denied-endpoints is empty. No outbound traffic will be denied for job steps."
       );
     }
 
@@ -548,6 +559,7 @@ export async function installAgentForSelfHosted(owner: string, confg: Configurat
       api_url: confg.api_url,
       api_key: uuidv4(),
       allowed_endpoints: confg.allowed_endpoints,
+      denied_endpoints: confg.denied_endpoints,
       egress_policy: confg.egress_policy,
       disable_telemetry: confg.disable_telemetry,
       disable_sudo: confg.disable_sudo,

@@ -32176,7 +32176,7 @@ var src_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argu
         return;
     }
     if (lib_core.getBooleanInput("disable-telemetry") &&
-        lib_core.getInput("egress-policy") === "block") {
+        lib_core.getInput("egress-policy") !== "audit") {
         console.log("Telemetry will not be sent to StepSecurity API as disable-telemetry is set to true");
     }
     else {

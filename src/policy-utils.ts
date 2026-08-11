@@ -102,7 +102,12 @@ export async function fetchPolicyFromStore(
   }
 
   const result = response.result;
-  if (!result || (!result.egress_policy && (!result.allowed_endpoints || result.allowed_endpoints.length === 0))) {
+  if (
+    !result ||
+    (!result.egress_policy &&
+      (!result.allowed_endpoints || result.allowed_endpoints.length === 0) &&
+      (!result.denied_endpoints || result.denied_endpoints.length === 0))
+  ) {
     return null;
   }
 
@@ -113,8 +118,17 @@ export function mergeConfigs(
   localConfig: Configuration,
   remoteConfig: PolicyResponse
 ) {
-  if (localConfig.allowed_endpoints === "") {
+  if (
+    localConfig.allowed_endpoints === "" &&
+    remoteConfig.allowed_endpoints !== undefined
+  ) {
     localConfig.allowed_endpoints = remoteConfig.allowed_endpoints.join(" ");
+  }
+  if (
+    localConfig.denied_endpoints === "" &&
+    remoteConfig.denied_endpoints !== undefined
+  ) {
+    localConfig.denied_endpoints = remoteConfig.denied_endpoints.join(" ");
   }
   if (remoteConfig.disable_sudo !== undefined) {
     localConfig.disable_sudo = remoteConfig.disable_sudo;

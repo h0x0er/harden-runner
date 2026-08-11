@@ -9,6 +9,7 @@ const base: Configuration = {
   api_url: "https://int.api.stepsecurity.io/v1",
   telemetry_url: "https://int.app-api.stepsecurity.io/v1",
   allowed_endpoints: "github.com:443",
+  denied_endpoints: "malicious.example:443",
   egress_policy: "audit",
   disable_telemetry: false,
   disable_sudo: false,
@@ -59,10 +60,11 @@ describe("buildBravoConfig", () => {
     expect(buildBravoConfig(base).private).toBe(base.private);
   });
 
-  test("forwards egress_policy and allowed_endpoints", () => {
+  test("forwards egress_policy and endpoint filters", () => {
     const cfg = buildBravoConfig(base);
     expect(cfg.egress_policy).toBe("audit");
     expect(cfg.allowed_endpoints).toBe("github.com:443");
+    expect(cfg.denied_endpoints).toBe("malicious.example:443");
   });
 
   test("forwards disable_* flags", () => {

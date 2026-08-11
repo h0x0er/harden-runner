@@ -85319,15 +85319,23 @@ function fetchPolicyFromStore(owner, repo, apiKey, workflow, runId, correlationI
             return null;
         }
         const result = response.result;
-        if (!result || (!result.egress_policy && (!result.allowed_endpoints || result.allowed_endpoints.length === 0))) {
+        if (!result ||
+            (!result.egress_policy &&
+                (!result.allowed_endpoints || result.allowed_endpoints.length === 0) &&
+                (!result.denied_endpoints || result.denied_endpoints.length === 0))) {
             return null;
         }
         return result;
     });
 }
 function mergeConfigs(localConfig, remoteConfig) {
-    if (localConfig.allowed_endpoints === "") {
+    if (localConfig.allowed_endpoints === "" &&
+        remoteConfig.allowed_endpoints !== undefined) {
         localConfig.allowed_endpoints = remoteConfig.allowed_endpoints.join(" ");
+    }
+    if (localConfig.denied_endpoints === "" &&
+        remoteConfig.denied_endpoints !== undefined) {
+        localConfig.denied_endpoints = remoteConfig.denied_endpoints.join(" ");
     }
     if (remoteConfig.disable_sudo !== undefined) {
         localConfig.disable_sudo = remoteConfig.disable_sudo;
@@ -85729,6 +85737,7 @@ function buildBravoConfig(confg) {
         telemetry_url: confg.telemetry_url,
         one_time_key: confg.one_time_key,
         allowed_endpoints: confg.allowed_endpoints,
+        denied_endpoints: confg.denied_endpoints,
         egress_policy: confg.egress_policy,
         disable_telemetry: confg.disable_telemetry,
         disable_sudo: confg.disable_sudo,
@@ -85815,6 +85824,7 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
             api_url: api_url,
             telemetry_url: STEPSECURITY_TELEMETRY_URL,
             allowed_endpoints: lib_core.getInput("allowed-endpoints"),
+            denied_endpoints: lib_core.getInput("denied-endpoints"),
             egress_policy: lib_core.getInput("egress-policy"),
             disable_telemetry: lib_core.getBooleanInput("disable-telemetry"),
             disable_sudo: lib_core.getBooleanInput("disable-sudo"),
@@ -85898,11 +85908,16 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
             encoding: "utf8",
         });
         lib_core.info(`[!] Current Configuration: \n${JSON.stringify(confg)}\n`);
-        if (confg.egress_policy !== "audit" && confg.egress_policy !== "block") {
-            lib_core.setFailed("egress-policy must be either audit or block");
+        if (confg.egress_policy !== "audit" &&
+            confg.egress_policy !== "block" &&
+            confg.egress_policy !== "deny") {
+            lib_core.setFailed("egress-policy must be audit, block, or deny");
         }
         if (confg.egress_policy === "block" && confg.allowed_endpoints === "") {
             lib_core.warning("egress-policy is set to block (default) and allowed-endpoints is empty. No outbound traffic will be allowed for job steps.");
+        }
+        if (confg.egress_policy === "deny" && confg.denied_endpoints === "") {
+            lib_core.warning("egress-policy is set to deny and denied-endpoints is empty. No outbound traffic will be denied for job steps.");
         }
         if (confg.disable_telemetry !== true && confg.disable_telemetry !== false) {
             lib_core.setFailed("disable-telemetry must be a boolean value");
@@ -86187,6 +86202,7 @@ function installAgentForSelfHosted(owner, confg) {
                 api_url: confg.api_url,
                 api_key: v4(),
                 allowed_endpoints: confg.allowed_endpoints,
+                denied_endpoints: confg.denied_endpoints,
                 egress_policy: confg.egress_policy,
                 disable_telemetry: confg.disable_telemetry,
                 disable_sudo: confg.disable_sudo,

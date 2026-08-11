@@ -5,15 +5,19 @@ inputs:
     description: "Only these endpoints will be allowed if egress-policy is set to block"
     required: false
     default: ""
+  denied-endpoints:
+    description: "These endpoints will be denied if egress-policy is set to deny"
+    required: false
+    default: ""
   egress-policy:
-    description: "Policy for outbound traffic, can be either audit or block"
+    description: "Policy for outbound traffic, can be audit, block, or deny"
     required: false
     default: "block"
   token:
     description: "Used to avoid github rate limiting"
     default: ${{ github.token }}
   disable-telemetry:
-    description: "Disable sending telemetry to StepSecurity API, can be set to true or false. This can only be set to true when egress-policy is set to block"
+    description: "Disable sending telemetry to StepSecurity API, can be set to true or false. This can only be set to true when egress-policy is set to block or deny"
     required: false
     default: "false"
   disable-sudo:

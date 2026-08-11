@@ -38,7 +38,7 @@ import { isPlatformSupported } from "./utils";
 
   if (
     core.getBooleanInput("disable-telemetry") &&
-    core.getInput("egress-policy") === "block"
+    core.getInput("egress-policy") !== "audit"
   ) {
     console.log(
       "Telemetry will not be sent to StepSecurity API as disable-telemetry is set to true"
