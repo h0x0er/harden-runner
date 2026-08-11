@@ -189,9 +189,13 @@ interface MonitorResponse {
       core.setFailed("egress-policy must be either audit or block");
     }
 
-    if (confg.egress_policy === "block" && confg.allowed_endpoints === "") {
+    if (
+      confg.egress_policy === "block" &&
+      confg.allowed_endpoints === "" &&
+      confg.denied_endpoints === ""
+    ) {
       core.warning(
-        "egress-policy is set to block (default) and allowed-endpoints is empty. No outbound traffic will be allowed for job steps."
+        "egress-policy is set to block (default) and both allowed-endpoints and denied-endpoints are empty. No outbound traffic rules will be configured for job steps."
       );
     }
 
@@ -199,7 +203,11 @@ interface MonitorResponse {
       core.setFailed("disable-telemetry must be a boolean value");
     }
 
-    if (isValidEvent() && confg.egress_policy === "block") {
+    if (
+      isValidEvent() &&
+      confg.egress_policy === "block" &&
+      confg.denied_endpoints === ""
+    ) {
       try {
         const cacheResult = await cache.saveCache(
           [path.join(__dirname, "cache.txt")],
@@ -240,7 +248,6 @@ interface MonitorResponse {
             core.info(
               `Adding cacheHost: ${url.hostname}:443 to allowed-endpoints`
             );
-
             confg.allowed_endpoints += ` ${url.hostname}:443`;
           } catch (e) {
             core.info(`Unable to fetch cacheURL ${e}`);
@@ -271,7 +278,6 @@ interface MonitorResponse {
             core.info(
               `Adding cacheHost: ${url.hostname}:443 to allowed-endpoints`
             );
-
             confg.allowed_endpoints += ` ${url.hostname}:443`;
           } catch (exception) {
             // some exception has occurred.

@@ -85911,13 +85911,17 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
         if (confg.egress_policy !== "audit" && confg.egress_policy !== "block") {
             lib_core.setFailed("egress-policy must be either audit or block");
         }
-        if (confg.egress_policy === "block" && confg.allowed_endpoints === "") {
-            lib_core.warning("egress-policy is set to block (default) and allowed-endpoints is empty. No outbound traffic will be allowed for job steps.");
+        if (confg.egress_policy === "block" &&
+            confg.allowed_endpoints === "" &&
+            confg.denied_endpoints === "") {
+            lib_core.warning("egress-policy is set to block (default) and both allowed-endpoints and denied-endpoints are empty. No outbound traffic rules will be configured for job steps.");
         }
         if (confg.disable_telemetry !== true && confg.disable_telemetry !== false) {
             lib_core.setFailed("disable-telemetry must be a boolean value");
         }
-        if (isValidEvent() && confg.egress_policy === "block") {
+        if (isValidEvent() &&
+            confg.egress_policy === "block" &&
+            confg.denied_endpoints === "") {
             try {
                 const cacheResult = yield cache.saveCache([external_path_.join(__dirname, "cache.txt")], cacheKey);
                 console.log(cacheResult);
