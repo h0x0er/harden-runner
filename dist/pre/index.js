@@ -86106,10 +86106,11 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
                 return;
             }
             if (isEcsFargate) {
-                lib_core.info("ECS Fargate detected");
+                confg.correlation_id = runnerName || confg.correlation_id;
                 yield callMonitorEndpoint(api_url, confg);
+                console.log(`Step Security Job Correlation ID: ${confg.correlation_id}`);
                 const { api_key, use_policy_store } = confg, agentConfig = __rest(confg, ["api_key", "use_policy_store"]);
-                const configStr = JSON.stringify(Object.assign(Object.assign({}, agentConfig), { is_github_hosted: true }));
+                const configStr = JSON.stringify(Object.assign(Object.assign({}, agentConfig), { correlation_id: confg.correlation_id, is_github_hosted: true }));
                 external_child_process_.execSync("sudo mkdir -p /home/agent");
                 external_fs_.writeFileSync("/home/agent/agent.json", configStr);
                 installAgentPtrace();

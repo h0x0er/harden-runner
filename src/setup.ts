@@ -335,11 +335,13 @@ interface MonitorResponse {
       }
 
       if (isEcsFargate) {
-        core.info("ECS Fargate detected");
+        confg.correlation_id = runnerName || confg.correlation_id;
         await callMonitorEndpoint(api_url, confg);
+        console.log(`Step Security Job Correlation ID: ${confg.correlation_id}`);
         const { api_key, use_policy_store, ...agentConfig } = confg;
         const configStr = JSON.stringify({
           ...agentConfig,
+          correlation_id: confg.correlation_id,
           is_github_hosted: true,
         });
 
