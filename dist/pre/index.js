@@ -86196,6 +86196,7 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
                 external_child_process_.execSync("sudo mkdir -p /home/agent");
                 chownForFolder(process.env.USER, "/home/agent");
                 if (process.env.AWS_EXECUTION_ENV === "AWS_ECS_FARGATE") {
+                    lib_core.info("Detected AWS ECS Fargate via AWS_EXECUTION_ENV. Installing agent-ptrace.");
                     external_fs_.writeFileSync("/home/agent/agent.json", configStr);
                     installAgentPtrace();
                     agentInstalled = true;

@@ -453,6 +453,9 @@ interface MonitorResponse {
         chownForFolder(process.env.USER, "/home/agent");
 
         if (process.env.AWS_EXECUTION_ENV === "AWS_ECS_FARGATE") {
+          core.info(
+            "Detected AWS ECS Fargate via AWS_EXECUTION_ENV. Installing agent-ptrace.",
+          );
           fs.writeFileSync("/home/agent/agent.json", configStr);
           installAgentPtrace();
           agentInstalled = true;
