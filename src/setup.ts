@@ -33,6 +33,7 @@ import {
 import { isGithubHosted, isTLSEnabled } from "./tls-inspect";
 import {
   installAgent,
+  installAgentPtrace,
   installAgentBravo,
   installMacosAgent,
   installWindowsAgent,
@@ -451,8 +452,14 @@ interface MonitorResponse {
         cp.execSync("sudo mkdir -p /home/agent");
         chownForFolder(process.env.USER, "/home/agent");
 
-        let isTLS = await isTLSEnabled(context.repo.owner);
-        agentInstalled = await installAgent(isTLS, configStr);
+        if (process.env.AWS_EXECUTION_ENV === "AWS_ECS_FARGATE") {
+          fs.writeFileSync("/home/agent/agent.json", configStr);
+          installAgentPtrace();
+          agentInstalled = true;
+        } else {
+          let isTLS = await isTLSEnabled(context.repo.owner);
+          agentInstalled = await installAgent(isTLS, configStr);
+        }
 
         break;
       case "win32":

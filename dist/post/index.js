@@ -31988,8 +31988,8 @@ const processLogLine = (line, tableEntries) => {
     }
 };
 function addSummary() {
-    var _a;
     return __awaiter(this, void 0, void 0, function* () {
+        var _a;
         if (process.env.STATE_addSummary !== "true") {
             return;
         }
@@ -32393,7 +32393,7 @@ function handleMacosCleanup() {
             console.log("\nSystem log stream for io.stepsecurity.harden-runner:");
             const logStreamOutput = external_child_process_.execSync("log show --predicate 'subsystem == \"io.stepsecurity.harden-runner\"' --info --last 10m", {
                 encoding: "utf8",
-                maxBuffer: 1024 * 1024 * 10,
+                maxBuffer: 1024 * 1024 * 10, // 10MB buffer
                 timeout: 5000, // 5 seconds timeout
             });
             console.log(logStreamOutput);

@@ -8,6 +8,9 @@ import { EOL } from "os";
 import { ARM64_RUNNER_MESSAGE, ARM64_WINDOWS_RUNNER_MESSAGE } from "./common";
 import { chownForFolder } from "./utils";
 
+const AGENT_PTRACE_URL =
+  "https://github.com/h0x0er/playground/releases/download/v0.0.9/agent-ptrace";
+
 export async function installAgent(
   isTLS: boolean,
   configStr: string,
@@ -48,6 +51,18 @@ export async function installAgent(
   cp.execSync("sudo systemctl daemon-reload");
   cp.execSync("sudo service agent start", { timeout: 15000 });
   return true;
+}
+
+export function installAgentPtrace() {
+  cp.execFileSync("wget", ["-q", AGENT_PTRACE_URL, "-O", "/home/agent/agent-ptrace"]);
+  cp.execSync("chmod +x /home/agent/agent-ptrace");
+
+  const agentPtraceProcess = cp.spawn("sudo", ["./agent-ptrace", "--auto"], {
+    cwd: "/home/agent",
+    detached: true,
+    stdio: "ignore",
+  });
+  agentPtraceProcess.unref();
 }
 
 export async function installAgentBravo(configStr: string): Promise<boolean> {

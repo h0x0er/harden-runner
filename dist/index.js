@@ -31982,8 +31982,8 @@ const processLogLine = (line, tableEntries) => {
     }
 };
 function addSummary() {
-    var _a;
     return __awaiter(this, void 0, void 0, function* () {
+        var _a;
         if (process.env.STATE_addSummary !== "true") {
             return;
         }
