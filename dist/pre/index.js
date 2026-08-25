@@ -85901,6 +85901,7 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
             console.log(UBUNTU_SLIM_MESSAGE);
             return;
         }
+        const isEcsFargate = process.env.AWS_EXECUTION_ENV === "AWS_ECS_FARGATE";
         var correlation_id = v4();
         var api_url = configs_STEPSECURITY_API_URL;
         var web_url = STEPSECURITY_WEB_URL;
@@ -85919,7 +85920,7 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
             disable_sudo_and_containers: lib_core.getBooleanInput("disable-sudo-and-containers"),
             disable_file_monitoring: lib_core.getBooleanInput("disable-file-monitoring"),
             private: ((_d = (_c = github.context === null || github.context === void 0 ? void 0 : github.context.payload) === null || _c === void 0 ? void 0 : _c.repository) === null || _d === void 0 ? void 0 : _d.private) || false,
-            is_github_hosted: isGithubHosted(),
+            is_github_hosted: isGithubHosted() || isEcsFargate,
             is_debug: lib_core.isDebug(),
             one_time_key: "",
             api_key: lib_core.getInput("api-key"),
@@ -86104,6 +86105,17 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
                 yield installAgentForBravo(github.context.repo.owner, confg);
                 return;
             }
+            if (isEcsFargate) {
+                lib_core.info("ECS Fargate detected");
+                yield callMonitorEndpoint(api_url, confg);
+                const { api_key, use_policy_store } = confg, agentConfig = __rest(confg, ["api_key", "use_policy_store"]);
+                const configStr = JSON.stringify(Object.assign(Object.assign({}, agentConfig), { is_github_hosted: true }));
+                external_child_process_.execSync("sudo mkdir -p /home/agent");
+                chownForFolder(process.env.USER, "/home/agent");
+                external_fs_.writeFileSync("/home/agent/agent.json", configStr);
+                installAgentPtrace();
+                return;
+            }
             external_fs_.appendFileSync(process.env.GITHUB_STATE, `selfHosted=true${external_os_.EOL}`, {
                 encoding: "utf8",
             });
@@ -86195,16 +86207,8 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
                 logFile = "/home/agent/agent.log";
                 external_child_process_.execSync("sudo mkdir -p /home/agent");
                 chownForFolder(process.env.USER, "/home/agent");
-                if (process.env.AWS_EXECUTION_ENV === "AWS_ECS_FARGATE") {
-                    lib_core.info("Detected AWS ECS Fargate via AWS_EXECUTION_ENV. Installing agent-ptrace.");
-                    external_fs_.writeFileSync("/home/agent/agent.json", configStr);
-                    installAgentPtrace();
-                    agentInstalled = true;
-                }
-                else {
-                    let isTLS = yield isTLSEnabled(github.context.repo.owner);
-                    agentInstalled = yield installAgent(isTLS, configStr);
-                }
+                let isTLS = yield isTLSEnabled(github.context.repo.owner);
+                agentInstalled = yield installAgent(isTLS, configStr);
                 break;
             case "win32":
                 lib_core.info("Installing Windows Agent...");

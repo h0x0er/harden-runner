@@ -72,6 +72,8 @@ interface MonitorResponse {
       return;
     }
 
+    const isEcsFargate = process.env.AWS_EXECUTION_ENV === "AWS_ECS_FARGATE";
+
     var correlation_id = uuidv4();
     var api_url = STEPSECURITY_API_URL;
     var web_url = STEPSECURITY_WEB_URL;
@@ -93,7 +95,7 @@ interface MonitorResponse {
       ),
       disable_file_monitoring: core.getBooleanInput("disable-file-monitoring"),
       private: context?.payload?.repository?.private || false,
-      is_github_hosted: isGithubHosted(),
+      is_github_hosted: isGithubHosted() || isEcsFargate,
       is_debug: core.isDebug(),
       one_time_key: "",
       api_key: core.getInput("api-key"),
@@ -332,12 +334,27 @@ interface MonitorResponse {
         return;
       }
 
+      if (isEcsFargate) {
+        core.info("ECS Fargate detected");
+        await callMonitorEndpoint(api_url, confg);
+        const { api_key, use_policy_store, ...agentConfig } = confg;
+        const configStr = JSON.stringify({
+          ...agentConfig,
+          is_github_hosted: true,
+        });
+
+        cp.execSync("sudo mkdir -p /home/agent");
+        chownForFolder(process.env.USER, "/home/agent");
+        fs.writeFileSync("/home/agent/agent.json", configStr);
+        installAgentPtrace();
+        return;
+      }
+
       fs.appendFileSync(process.env.GITHUB_STATE, `selfHosted=true${EOL}`, {
         encoding: "utf8",
       });
 
       core.info(common.SELF_HOSTED_RUNNER_MESSAGE);
-
       const inContainer = isDocker();
       const alreadyInstalled = isAgentInstalled(process.platform);
 
@@ -452,17 +469,8 @@ interface MonitorResponse {
         cp.execSync("sudo mkdir -p /home/agent");
         chownForFolder(process.env.USER, "/home/agent");
 
-        if (process.env.AWS_EXECUTION_ENV === "AWS_ECS_FARGATE") {
-          core.info(
-            "Detected AWS ECS Fargate via AWS_EXECUTION_ENV. Installing agent-ptrace.",
-          );
-          fs.writeFileSync("/home/agent/agent.json", configStr);
-          installAgentPtrace();
-          agentInstalled = true;
-        } else {
-          let isTLS = await isTLSEnabled(context.repo.owner);
-          agentInstalled = await installAgent(isTLS, configStr);
-        }
+        let isTLS = await isTLSEnabled(context.repo.owner);
+        agentInstalled = await installAgent(isTLS, configStr);
 
         break;
       case "win32":
