@@ -344,7 +344,6 @@ interface MonitorResponse {
         });
 
         cp.execSync("sudo mkdir -p /home/agent");
-        chownForFolder(process.env.USER, "/home/agent");
         fs.writeFileSync("/home/agent/agent.json", configStr);
         installAgentPtrace();
         return;

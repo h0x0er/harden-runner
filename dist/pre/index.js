@@ -86111,7 +86111,6 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
                 const { api_key, use_policy_store } = confg, agentConfig = __rest(confg, ["api_key", "use_policy_store"]);
                 const configStr = JSON.stringify(Object.assign(Object.assign({}, agentConfig), { is_github_hosted: true }));
                 external_child_process_.execSync("sudo mkdir -p /home/agent");
-                chownForFolder(process.env.USER, "/home/agent");
                 external_fs_.writeFileSync("/home/agent/agent.json", configStr);
                 installAgentPtrace();
                 return;
