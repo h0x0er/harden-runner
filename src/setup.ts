@@ -335,9 +335,9 @@ interface MonitorResponse {
       }
 
       if (isEcsFargate) {
-        confg.correlation_id = runnerName || confg.correlation_id;
         await callMonitorEndpoint(api_url, confg);
-        console.log(`Step Security Job Correlation ID: ${confg.correlation_id}`);
+        console.log("Farget env detected");
+        console.log(`[StepSecurity] Generated job correlationId for self-hosted agent: ${confg.correlation_id}`);
         const { api_key, use_policy_store, ...agentConfig } = confg;
         const configStr = JSON.stringify({
           ...agentConfig,
