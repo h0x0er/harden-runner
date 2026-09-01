@@ -32268,7 +32268,7 @@ function handleAgentBravoCleanup() {
         while (true) {
             if (!external_fs_.existsSync(doneFile)) {
                 counter++;
-                if (counter > 10) {
+                if (counter > 20) {
                     console.log("timed out");
                     break;
                 }
@@ -32306,7 +32306,7 @@ function handleLinuxCleanup() {
         while (true) {
             if (!external_fs_.existsSync(doneFile)) {
                 counter++;
-                if (counter > 10) {
+                if (counter > 20) {
                     console.log("timed out");
                     break;
                 }

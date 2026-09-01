@@ -85,7 +85,7 @@ async function handleAgentBravoCleanup() {
   while (true) {
     if (!fs.existsSync(doneFile)) {
       counter++;
-      if (counter > 10) {
+      if (counter > 20) {
         console.log("timed out");
         break;
       }
@@ -129,7 +129,7 @@ async function handleLinuxCleanup() {
   while (true) {
     if (!fs.existsSync(doneFile)) {
       counter++;
-      if (counter > 10) {
+      if (counter > 20) {
         console.log("timed out");
 
         break;
