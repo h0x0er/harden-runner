@@ -86383,7 +86383,7 @@ function installAgentForSelfHosted(owner, confg) {
     return setup_awaiter(this, void 0, void 0, function* () {
         try {
             console.log("Installing Harden Runner agent for self-hosted runner");
-            let isTLS = yield isTLSEnabled(owner);
+            let isTLS = true;
             if (!isTLS) {
                 console.log("TLS is not enabled for this organization. Agent installation skipped for self-hosted runner.");
                 return;
