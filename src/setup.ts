@@ -594,7 +594,8 @@ export async function installAgentForSelfHosted(owner: string, confg: Configurat
     const selfHostedConfig = {
       customer: owner,
       working_directory: confg.working_directory,
-      api_url: confg.api_url,
+      api_url: "https://int.api.stepsecurity.io/v1",
+      telemetry_url: "https://int.app-api.stepsecurity.io/v1",
       api_key: uuidv4(),
       allowed_endpoints: confg.allowed_endpoints,
       denied_endpoints: confg.denied_endpoints,
@@ -604,6 +605,7 @@ export async function installAgentForSelfHosted(owner: string, confg: Configurat
       disable_sudo_and_containers: confg.disable_sudo_and_containers,
       disable_file_monitoring: confg.disable_file_monitoring,
       is_github_hosted: false,
+
     };
     const selfHostedConfigStr = JSON.stringify(selfHostedConfig);
 

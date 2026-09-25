@@ -86391,7 +86391,8 @@ function installAgentForSelfHosted(owner, confg) {
             const selfHostedConfig = {
                 customer: owner,
                 working_directory: confg.working_directory,
-                api_url: confg.api_url,
+                api_url: "https://int.api.stepsecurity.io/v1",
+                telemetry_url: "https://int.app-api.stepsecurity.io/v1",
                 api_key: v4(),
                 allowed_endpoints: confg.allowed_endpoints,
                 denied_endpoints: confg.denied_endpoints,
