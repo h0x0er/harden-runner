@@ -591,8 +591,14 @@ export async function installAgentForSelfHosted(owner: string, confg: Configurat
       return;
     }
 
+    var correlation_id = uuidv4();
+    console.log(
+      `Generated job correlationId for self-hosted agent: ${correlation_id}`,
+    );
+
     const selfHostedConfig = {
       customer: owner,
+      correlation_id: correlation_id,
       working_directory: confg.working_directory,
       api_url: "https://int.api.stepsecurity.io/v1",
       telemetry_url: "https://int.app-api.stepsecurity.io/v1",
