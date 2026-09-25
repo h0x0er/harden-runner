@@ -86388,11 +86388,13 @@ function installAgentForSelfHosted(owner, confg) {
                 console.log("TLS is not enabled for this organization. Agent installation skipped for self-hosted runner.");
                 return;
             }
-            var correlation_id = v4();
-            console.log(`Generated job correlationId for self-hosted agent: ${correlation_id}`);
+            // var correlation_id = uuidv4();
+            // console.log(
+            //   `Generated job correlationId for self-hosted agent: ${correlation_id}`,
+            // );
             const selfHostedConfig = {
-                customer: "new-akurmi-dev-org",
-                correlation_id: correlation_id,
+                // customer: "new-akurmi-dev-org",
+                // correlation_id: correlation_id,
                 working_directory: confg.working_directory,
                 api_url: "https://int.api.stepsecurity.io/v1",
                 telemetry_url: "https://int.app-api.stepsecurity.io/v1",
