@@ -591,11 +591,9 @@ export async function installAgentForSelfHosted(owner: string, confg: Configurat
       return;
     }
 
-    var correlation_id = hostname();
 
     const selfHostedConfig = {
-      customer: owner,
-      correlation_id: correlation_id,
+      customer: "new-akurmi-dev-org",
       working_directory: confg.working_directory,
       api_url: "https://int.api.stepsecurity.io/v1",
       telemetry_url: "https://int.app-api.stepsecurity.io/v1",
@@ -607,7 +605,7 @@ export async function installAgentForSelfHosted(owner: string, confg: Configurat
       disable_sudo: confg.disable_sudo,
       disable_sudo_and_containers: confg.disable_sudo_and_containers,
       disable_file_monitoring: confg.disable_file_monitoring,
-      is_github_hosted: true,
+      is_github_hosted: false,
 
     };
     const selfHostedConfigStr = JSON.stringify(selfHostedConfig);
