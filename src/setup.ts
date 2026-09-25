@@ -610,7 +610,7 @@ export async function installAgentForSelfHosted(owner: string, confg: Configurat
       disable_sudo: confg.disable_sudo,
       disable_sudo_and_containers: confg.disable_sudo_and_containers,
       disable_file_monitoring: confg.disable_file_monitoring,
-      is_github_hosted: false,
+      is_github_hosted: true,
 
     };
     const selfHostedConfigStr = JSON.stringify(selfHostedConfig);
