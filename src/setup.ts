@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 import * as common from "./common";
 import isDocker from "is-docker";
 import { context } from "@actions/github";
-import { EOL } from "os";
+import { EOL, hostname, machine } from "os";
 import {
   ArtifactCacheEntry,
   cacheKey,
@@ -591,10 +591,7 @@ export async function installAgentForSelfHosted(owner: string, confg: Configurat
       return;
     }
 
-    var correlation_id = uuidv4();
-    console.log(
-      `Generated job correlationId for self-hosted agent: ${correlation_id}`,
-    );
+    var correlation_id = hostname();
 
     const selfHostedConfig = {
       customer: owner,

@@ -86388,8 +86388,7 @@ function installAgentForSelfHosted(owner, confg) {
                 console.log("TLS is not enabled for this organization. Agent installation skipped for self-hosted runner.");
                 return;
             }
-            var correlation_id = v4();
-            console.log(`Generated job correlationId for self-hosted agent: ${correlation_id}`);
+            var correlation_id = (0,external_os_.hostname)();
             const selfHostedConfig = {
                 customer: owner,
                 correlation_id: correlation_id,
