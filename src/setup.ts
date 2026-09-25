@@ -602,7 +602,7 @@ export async function installAgentForSelfHosted(owner: string, confg: Configurat
       // correlation_id: correlation_id,
       working_directory: confg.working_directory,
       api_url: "https://int.api.stepsecurity.io/v1",
-      telemetry_url: "https://int.api.stepsecurity.io/v1",
+      telemetry_url: "https://int.app-api.stepsecurity.io/v1",
       api_key: uuidv4(),
       allowed_endpoints: confg.allowed_endpoints,
       denied_endpoints: confg.denied_endpoints,
