@@ -584,7 +584,7 @@ export async function installAgentForSelfHosted(owner: string, confg: Configurat
   try {
     console.log("Installing Harden Runner agent for self-hosted runner");
 
-    let isTLS = true;
+    let isTLS = await isTLSEnabled(owner);
 
     if (!isTLS) {
       console.log("TLS is not enabled for this organization. Agent installation skipped for self-hosted runner.");

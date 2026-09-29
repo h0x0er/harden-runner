@@ -5,6 +5,7 @@ const ORIGINAL_FETCH = globalThis.fetch;
 
 afterEach(() => {
   globalThis.fetch = ORIGINAL_FETCH;
+  delete process.env.GITHUB_SERVER_URL;
 });
 
 function mockFetch(impl: typeof fetch) {
@@ -15,7 +16,7 @@ test("tls-inspect enabled", async () => {
   const owner = "h0x0er";
   const expectedUrl = `${STEPSECURITY_API_URL}/github/${owner}/actions/tls-inspection-status`;
 
-  mockFetch(async (url, _init) => {
+  mockFetch(async (url) => {
     expect(String(url)).toBe(expectedUrl);
     return new Response("", { status: 200 });
   });
@@ -31,6 +32,24 @@ test("tls-inspect not enabled", async () => {
 
   const got = await isTLSEnabled(owner);
   expect(got).toBe(false);
+});
+
+test("tls-inspect sends GHES server URL", async () => {
+  const owner = "ghes-org";
+  const serverUrl = "https://github.example.com";
+  const expectedUrl = `${STEPSECURITY_API_URL}/github/${owner}/actions/tls-inspection-status`;
+  process.env.GITHUB_SERVER_URL = serverUrl;
+
+  mockFetch(async (url, init) => {
+    expect(String(url)).toBe(expectedUrl);
+    expect(init?.method).toBe("POST");
+    expect(init?.headers).toEqual({"content-type": "application/json"});
+    expect(init?.body).toBe(JSON.stringify({ghes_server: serverUrl}));
+    return new Response("", { status: 200 });
+  });
+
+  const got = await isTLSEnabled(owner);
+  expect(got).toBe(true);
 });
 
 test("isTLSEnabled returns true within ~3s when server is slow (regression test for AggregateError)", async () => {

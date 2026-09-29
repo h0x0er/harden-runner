@@ -85549,11 +85549,18 @@ var tls_inspect_awaiter = (undefined && undefined.__awaiter) || function (thisAr
 function isTLSEnabled(owner) {
     return tls_inspect_awaiter(this, void 0, void 0, function* () {
         const tlsStatusEndpoint = `${configs_STEPSECURITY_API_URL}/github/${owner}/actions/tls-inspection-status`;
+        const serverUrl = process.env.GITHUB_SERVER_URL || "https://github.com";
+        const requestOptions = {
+            signal: AbortSignal.timeout(5000),
+        };
+        if (serverUrl !== "https://github.com") {
+            requestOptions.method = "GET";
+            requestOptions.headers = { "content-type": "application/json" };
+            requestOptions.body = JSON.stringify({ ghes_server: serverUrl });
+        }
         lib_core.info(`[!] Checking TLS_STATUS: ${owner}`);
         try {
-            const resp = yield fetch(tlsStatusEndpoint, {
-                signal: AbortSignal.timeout(3000),
-            });
+            const resp = yield fetch(tlsStatusEndpoint, requestOptions);
             if (resp.status === 200) {
                 lib_core.info(`[!] TLS_ENABLED: ${owner}`);
                 return true;
@@ -86383,7 +86390,7 @@ function installAgentForSelfHosted(owner, confg) {
     return setup_awaiter(this, void 0, void 0, function* () {
         try {
             console.log("Installing Harden Runner agent for self-hosted runner");
-            let isTLS = true;
+            let isTLS = yield isTLSEnabled(owner);
             if (!isTLS) {
                 console.log("TLS is not enabled for this organization. Agent installation skipped for self-hosted runner.");
                 return;
