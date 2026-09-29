@@ -32274,9 +32274,9 @@ process.on("unhandledRejection", (reason) => {
         return;
     }
     const thirdPartyProvider = detectThirdPartyRunnerProvider();
-    if (process.env.STATE_selfHosted === "true") {
-        return;
-    }
+    // if (process.env.STATE_selfHosted === "true") {
+    //   return;
+    // }
     if (process.env.STATE_customVMImage === "true") {
         return;
     }
