@@ -9,7 +9,7 @@ export async function isTLSEnabled(owner: string): Promise<boolean> {
   };
 
   if (serverUrl !== "https://github.com") {
-    requestOptions.method = "GET";
+    requestOptions.method = "POST";
     requestOptions.headers = {"content-type": "application/json"};
     requestOptions.body = JSON.stringify({ghes_server: serverUrl});
   }

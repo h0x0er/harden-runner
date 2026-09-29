@@ -85554,7 +85554,7 @@ function isTLSEnabled(owner) {
             signal: AbortSignal.timeout(5000),
         };
         if (serverUrl !== "https://github.com") {
-            requestOptions.method = "GET";
+            requestOptions.method = "POST";
             requestOptions.headers = { "content-type": "application/json" };
             requestOptions.body = JSON.stringify({ ghes_server: serverUrl });
         }
