@@ -13,6 +13,10 @@ export function printInfo(web_url) {
   );
 }
 
+export function isGHES(serverUrl = process.env.GITHUB_SERVER_URL || "https://github.com") {
+  return serverUrl !== "https://github.com";
+}
+
 export const processLogLine = (
   line: string,
   tableEntries: {

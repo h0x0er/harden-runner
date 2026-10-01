@@ -131,6 +131,24 @@ async function resolveCacheHost(): Promise<string | undefined> {
   }
 }
 
+function getPolicyOwner(owner: string, confg: Configuration): string | undefined {
+  if (!confg.is_ghes) {
+    return owner;
+  }
+
+  if (!confg.customer) {
+    core.info("Skipping policy fetch: customer input is required in GitHub Enterprise Server (GHES) environments.");
+    return undefined;
+  }
+
+  if (!confg.server_name) {
+    core.info("Skipping policy fetch: server-name input is required in GitHub Enterprise Server (GHES) environments.");
+    return undefined;
+  }
+
+  return `${confg.customer}::${confg.server_name}::${owner}`;
+}
+
 (async () => {
   try {
     console.log("[harden-runner] pre-step");
@@ -182,6 +200,9 @@ async function resolveCacheHost(): Promise<string | undefined> {
       api_key: core.getInput("api-key"),
       use_policy_store: core.getBooleanInput("use-policy-store"),
       deploy_on_self_hosted_vm: core.getBooleanInput("deploy-on-self-hosted-vm"),
+      customer: core.getInput("customer"),
+      server_name: core.getInput("server-name"),
+      is_ghes: common.isGHES(),
     };
 
     if (confg.api_key !== "") {
@@ -197,58 +218,68 @@ async function resolveCacheHost(): Promise<string | undefined> {
         );
         confg.egress_policy = "audit";
       } else {
-        try {
-          const repoName = (process.env["GITHUB_REPOSITORY"] || "").split("/")[1] || "";
-          const workflowRef = process.env["GITHUB_WORKFLOW_REF"] || "";
-          const workflow = workflowRef.replace(/.*\.github\/workflows\//, "").replace(/@.*/, "");
-          let result: PolicyResponse | null = await fetchPolicyFromStore(
-            context.repo.owner,
-            repoName,
-            confg.api_key,
-            workflow,
-            confg.run_id,
-            confg.correlation_id
-          );
-          if (result !== null) {
-            core.info(`Policy found: ${result.policy_name || "unnamed"}`);
-            confg = mergeConfigs(confg, result);
-          } else {
-            core.info("No policy found in policy store. Defaulting to audit mode.");
-            confg.egress_policy = "audit";
-          }
-        } catch (err) {
-          core.info(`[!] ${err}`);
-          if (err.statusCode >= 400 && err.statusCode < 500) {
-            core.info("Policy not found in policy store. Defaulting to audit mode.");
-            confg.egress_policy = "audit";
-          } else {
-            core.error(`Unexpected error fetching from policy store: ${err}. Falling back to audit mode.`);
-            confg.egress_policy = "audit";
+        const policyOwner = getPolicyOwner(context.repo.owner, confg);
+        if (policyOwner === undefined) {
+          confg.egress_policy = "audit";
+        } else {
+          try {
+            const repoName = (process.env["GITHUB_REPOSITORY"] || "").split("/")[1] || "";
+            const workflowRef = process.env["GITHUB_WORKFLOW_REF"] || "";
+            const workflow = workflowRef.replace(/.*\.github\/workflows\//, "").replace(/@.*/, "");
+            let result: PolicyResponse | null = await fetchPolicyFromStore(
+              policyOwner,
+              repoName,
+              confg.api_key,
+              workflow,
+              confg.run_id,
+              confg.correlation_id
+            );
+            if (result !== null) {
+              core.info(`Policy found: ${result.policy_name || "unnamed"}`);
+              confg = mergeConfigs(confg, result);
+            } else {
+              core.info("No policy found in policy store. Defaulting to audit mode.");
+              confg.egress_policy = "audit";
+            }
+          } catch (err) {
+            core.info(`[!] ${err}`);
+            if (err.statusCode >= 400 && err.statusCode < 500) {
+              core.info("Policy not found in policy store. Defaulting to audit mode.");
+              confg.egress_policy = "audit";
+            } else {
+              core.error(`Unexpected error fetching from policy store: ${err}. Falling back to audit mode.`);
+              confg.egress_policy = "audit";
+            }
           }
         }
       }
     } else if (policyName !== "") {
       console.log(`Fetching policy from API with name: ${policyName}`);
-      try {
-        let idToken: string = await core.getIDToken();
-        let result: PolicyResponse = await fetchPolicy(
-          context.repo.owner,
-          policyName,
-          idToken
-        );
-        confg = mergeConfigs(confg, result);
-      } catch (err) {
-        core.info(`[!] ${err}`);
-        // Only fail the job if ID token is not available
-        if (err.message && err.message.includes('Unable to get ACTIONS_ID_TOKEN_REQUEST')) {
-          core.setFailed('Policy store requires id-token write permission as it uses OIDC to fetch the policy from StepSecurity API. Please add "id-token: write" to your job permissions.');
-        } else {
-          // Handle different HTTP status codes
-          if (err.statusCode >= 400 && err.statusCode < 500) {
-            core.error('Policy not found');
+      const policyOwner = getPolicyOwner(context.repo.owner, confg);
+      if (policyOwner === undefined) {
+        core.info("Policy fetch skipped.");
+      } else {
+        try {
+          let idToken: string = await core.getIDToken();
+          let result: PolicyResponse = await fetchPolicy(
+            policyOwner,
+            policyName,
+            idToken
+          );
+          confg = mergeConfigs(confg, result);
+        } catch (err) {
+          core.info(`[!] ${err}`);
+          // Only fail the job if ID token is not available
+          if (err.message && err.message.includes('Unable to get ACTIONS_ID_TOKEN_REQUEST')) {
+            core.setFailed('Policy store requires id-token write permission as it uses OIDC to fetch the policy from StepSecurity API. Please add "id-token: write" to your job permissions.');
           } else {
-            core.error(`Unexpected error occurred: ${err}. Falling back to egress policy audit`);
-            confg.egress_policy = 'audit';
+            // Handle different HTTP status codes
+            if (err.statusCode >= 400 && err.statusCode < 500) {
+              core.error('Policy not found');
+            } else {
+              core.error(`Unexpected error occurred: ${err}. Falling back to egress policy audit`);
+              confg.egress_policy = 'audit';
+            }
           }
         }
       }
@@ -473,7 +504,11 @@ async function resolveCacheHost(): Promise<string | undefined> {
       return;
     }
 
-    const { api_key, use_policy_store, ...agentConfig } = confg;
+    const agentConfig = { ...confg };
+    delete (agentConfig as Partial<Configuration>).api_key;
+    delete (agentConfig as Partial<Configuration>).use_policy_store;
+    delete (agentConfig as Partial<Configuration>).customer;
+    delete (agentConfig as Partial<Configuration>).server_name;
     const configStr = JSON.stringify(agentConfig);
 
     // platform specific
@@ -598,7 +633,9 @@ export async function installAgentForSelfHosted(owner: string, confg: Configurat
     // );
 
     const selfHostedConfig = {
-      customer: owner, // "new-akurmi-dev-org",
+      customer: confg.customer || owner, // "new-akurmi-dev-org",
+      server_name: confg.server_name,
+      is_ghes: confg.is_ghes,
       // correlation_id: correlation_id,
       working_directory: confg.working_directory,
       api_url: "https://int.api.stepsecurity.io/v1",

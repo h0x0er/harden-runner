@@ -1,4 +1,5 @@
 import { STEPSECURITY_API_URL } from "./configs";
+import { isGHES } from "./common";
 import { isTLSEnabled } from "./tls-inspect";
 
 const ORIGINAL_FETCH = globalThis.fetch;
@@ -52,7 +53,19 @@ test("tls-inspect sends GHES server URL", async () => {
   expect(got).toBe(true);
 });
 
-test("isTLSEnabled returns true within ~3s when server is slow (regression test for AggregateError)", async () => {
+test("isGHES returns false for GitHub.com", () => {
+  expect(isGHES()).toBe(false);
+  expect(isGHES("https://github.com")).toBe(false);
+});
+
+test("isGHES returns true for GitHub Enterprise Server", () => {
+  process.env.GITHUB_SERVER_URL = "https://github.example.com";
+
+  expect(isGHES()).toBe(true);
+  expect(isGHES("https://github.enterprise.local")).toBe(true);
+});
+
+test("isTLSEnabled returns true within ~5s when server is slow (regression test for AggregateError)", async () => {
   const owner = "slow-org";
 
   mockFetch((_url, init) => {
@@ -75,7 +88,7 @@ test("isTLSEnabled returns true within ~3s when server is slow (regression test 
   const elapsed = Date.now() - start;
 
   expect(result).toBe(true);
-  expect(elapsed).toBeLessThan(3500);
+  expect(elapsed).toBeLessThan(5500);
 }, 10_000);
 
 test("isTLSEnabled returns true on connection error without hanging", async () => {
@@ -92,5 +105,5 @@ test("isTLSEnabled returns true on connection error without hanging", async () =
   const elapsed = Date.now() - start;
 
   expect(result).toBe(true);
-  expect(elapsed).toBeLessThan(3500);
+  expect(elapsed).toBeLessThan(5500);
 });

@@ -31995,6 +31995,9 @@ function printInfo(web_url) {
     console.log("\x1b[32m%s\x1b[0m", "View security insights and recommended policy at:");
     console.log(`${web_url}/github/${process.env["GITHUB_REPOSITORY"]}/actions/runs/${process.env["GITHUB_RUN_ID"]}`);
 }
+function common_isGHES(serverUrl = process.env.GITHUB_SERVER_URL || "https://github.com") {
+    return serverUrl !== "https://github.com";
+}
 const processLogLine = (line, tableEntries) => {
     if (line.includes("pid") &&
         line.includes("process") &&
@@ -32140,6 +32143,7 @@ var tls_inspect_awaiter = (undefined && undefined.__awaiter) || function (thisAr
 };
 
 
+
 function isTLSEnabled(owner) {
     return tls_inspect_awaiter(this, void 0, void 0, function* () {
         const tlsStatusEndpoint = `${STEPSECURITY_API_URL}/github/${owner}/actions/tls-inspection-status`;
@@ -32147,7 +32151,7 @@ function isTLSEnabled(owner) {
         const requestOptions = {
             signal: AbortSignal.timeout(5000),
         };
-        if (serverUrl !== "https://github.com") {
+        if (isGHES(serverUrl)) {
             requestOptions.method = "POST";
             requestOptions.headers = { "content-type": "application/json" };
             requestOptions.body = JSON.stringify({ ghes_server: serverUrl });

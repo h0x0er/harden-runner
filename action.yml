@@ -48,6 +48,14 @@ inputs:
     description: "Set to true to deploy the Harden Runner agent directly on a self-hosted runner VM (Linux only). The recommended approach for self-hosted VMs is to bake the agent into the VM image; see docs.stepsecurity.io. Use this option only if baking is not possible, and only for ephemeral runners."
     required: false
     default: "false"
+  customer:
+    description: "Customer name to use when deploying the Harden Runner agent directly on a self-hosted runner VM. Required only in GitHub Enterprise Server (GHES) environments."
+    required: false
+    default: ""
+  server-name:
+    description: "Server name to use when deploying the Harden Runner agent directly on a self-hosted runner VM. Required only in GitHub Enterprise Server (GHES) environments."
+    required: false
+    default: ""
 
 branding:
   icon: "check-square"

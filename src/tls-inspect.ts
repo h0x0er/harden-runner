@@ -1,5 +1,6 @@
 import { STEPSECURITY_API_URL } from "./configs";
 import * as core from "@actions/core";
+import { isGHES } from "./common";
 
 export async function isTLSEnabled(owner: string): Promise<boolean> {
   const tlsStatusEndpoint = `${STEPSECURITY_API_URL}/github/${owner}/actions/tls-inspection-status`;
@@ -8,7 +9,7 @@ export async function isTLSEnabled(owner: string): Promise<boolean> {
     signal: AbortSignal.timeout(5000),
   };
 
-  if (serverUrl !== "https://github.com") {
+  if (isGHES(serverUrl)) {
     requestOptions.method = "POST";
     requestOptions.headers = {"content-type": "application/json"};
     requestOptions.body = JSON.stringify({ghes_server: serverUrl});

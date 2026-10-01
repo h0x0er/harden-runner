@@ -85193,6 +85193,9 @@ function printInfo(web_url) {
     console.log("\x1b[32m%s\x1b[0m", "View security insights and recommended policy at:");
     console.log(`${web_url}/github/${process.env["GITHUB_REPOSITORY"]}/actions/runs/${process.env["GITHUB_RUN_ID"]}`);
 }
+function isGHES(serverUrl = process.env.GITHUB_SERVER_URL || "https://github.com") {
+    return serverUrl !== "https://github.com";
+}
 const processLogLine = (line, tableEntries) => {
     if (line.includes("pid") &&
         line.includes("process") &&
@@ -85546,6 +85549,7 @@ var tls_inspect_awaiter = (undefined && undefined.__awaiter) || function (thisAr
 };
 
 
+
 function isTLSEnabled(owner) {
     return tls_inspect_awaiter(this, void 0, void 0, function* () {
         const tlsStatusEndpoint = `${configs_STEPSECURITY_API_URL}/github/${owner}/actions/tls-inspection-status`;
@@ -85553,7 +85557,7 @@ function isTLSEnabled(owner) {
         const requestOptions = {
             signal: AbortSignal.timeout(5000),
         };
-        if (serverUrl !== "https://github.com") {
+        if (isGHES(serverUrl)) {
             requestOptions.method = "POST";
             requestOptions.headers = { "content-type": "application/json" };
             requestOptions.body = JSON.stringify({ ghes_server: serverUrl });
@@ -85899,17 +85903,6 @@ var setup_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __rest = (undefined && undefined.__rest) || function (s, e) {
-    var t = {};
-    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-        t[p] = s[p];
-    if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
-            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
-                t[p[i]] = s[p[i]];
-        }
-    return t;
-};
 
 
 
@@ -86012,6 +86005,20 @@ function resolveCacheHost() {
         }
     });
 }
+function getPolicyOwner(owner, confg) {
+    if (!confg.is_ghes) {
+        return owner;
+    }
+    if (!confg.customer) {
+        lib_core.info("Skipping policy fetch: customer input is required in GitHub Enterprise Server (GHES) environments.");
+        return undefined;
+    }
+    if (!confg.server_name) {
+        lib_core.info("Skipping policy fetch: server-name input is required in GitHub Enterprise Server (GHES) environments.");
+        return undefined;
+    }
+    return `${confg.customer}::${confg.server_name}::${owner}`;
+}
 (() => setup_awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d;
     try {
@@ -86057,6 +86064,9 @@ function resolveCacheHost() {
             api_key: lib_core.getInput("api-key"),
             use_policy_store: lib_core.getBooleanInput("use-policy-store"),
             deploy_on_self_hosted_vm: lib_core.getBooleanInput("deploy-on-self-hosted-vm"),
+            customer: lib_core.getInput("customer"),
+            server_name: lib_core.getInput("server-name"),
+            is_ghes: isGHES(),
         };
         if (confg.api_key !== "") {
             lib_core.setSecret(confg.api_key);
@@ -86069,54 +86079,66 @@ function resolveCacheHost() {
                 confg.egress_policy = "audit";
             }
             else {
-                try {
-                    const repoName = (process.env["GITHUB_REPOSITORY"] || "").split("/")[1] || "";
-                    const workflowRef = process.env["GITHUB_WORKFLOW_REF"] || "";
-                    const workflow = workflowRef.replace(/.*\.github\/workflows\//, "").replace(/@.*/, "");
-                    let result = yield fetchPolicyFromStore(github.context.repo.owner, repoName, confg.api_key, workflow, confg.run_id, confg.correlation_id);
-                    if (result !== null) {
-                        lib_core.info(`Policy found: ${result.policy_name || "unnamed"}`);
-                        confg = mergeConfigs(confg, result);
-                    }
-                    else {
-                        lib_core.info("No policy found in policy store. Defaulting to audit mode.");
-                        confg.egress_policy = "audit";
-                    }
+                const policyOwner = getPolicyOwner(github.context.repo.owner, confg);
+                if (policyOwner === undefined) {
+                    confg.egress_policy = "audit";
                 }
-                catch (err) {
-                    lib_core.info(`[!] ${err}`);
-                    if (err.statusCode >= 400 && err.statusCode < 500) {
-                        lib_core.info("Policy not found in policy store. Defaulting to audit mode.");
-                        confg.egress_policy = "audit";
+                else {
+                    try {
+                        const repoName = (process.env["GITHUB_REPOSITORY"] || "").split("/")[1] || "";
+                        const workflowRef = process.env["GITHUB_WORKFLOW_REF"] || "";
+                        const workflow = workflowRef.replace(/.*\.github\/workflows\//, "").replace(/@.*/, "");
+                        let result = yield fetchPolicyFromStore(policyOwner, repoName, confg.api_key, workflow, confg.run_id, confg.correlation_id);
+                        if (result !== null) {
+                            lib_core.info(`Policy found: ${result.policy_name || "unnamed"}`);
+                            confg = mergeConfigs(confg, result);
+                        }
+                        else {
+                            lib_core.info("No policy found in policy store. Defaulting to audit mode.");
+                            confg.egress_policy = "audit";
+                        }
                     }
-                    else {
-                        lib_core.error(`Unexpected error fetching from policy store: ${err}. Falling back to audit mode.`);
-                        confg.egress_policy = "audit";
+                    catch (err) {
+                        lib_core.info(`[!] ${err}`);
+                        if (err.statusCode >= 400 && err.statusCode < 500) {
+                            lib_core.info("Policy not found in policy store. Defaulting to audit mode.");
+                            confg.egress_policy = "audit";
+                        }
+                        else {
+                            lib_core.error(`Unexpected error fetching from policy store: ${err}. Falling back to audit mode.`);
+                            confg.egress_policy = "audit";
+                        }
                     }
                 }
             }
         }
         else if (policyName !== "") {
             console.log(`Fetching policy from API with name: ${policyName}`);
-            try {
-                let idToken = yield lib_core.getIDToken();
-                let result = yield fetchPolicy(github.context.repo.owner, policyName, idToken);
-                confg = mergeConfigs(confg, result);
+            const policyOwner = getPolicyOwner(github.context.repo.owner, confg);
+            if (policyOwner === undefined) {
+                lib_core.info("Policy fetch skipped.");
             }
-            catch (err) {
-                lib_core.info(`[!] ${err}`);
-                // Only fail the job if ID token is not available
-                if (err.message && err.message.includes('Unable to get ACTIONS_ID_TOKEN_REQUEST')) {
-                    lib_core.setFailed('Policy store requires id-token write permission as it uses OIDC to fetch the policy from StepSecurity API. Please add "id-token: write" to your job permissions.');
+            else {
+                try {
+                    let idToken = yield lib_core.getIDToken();
+                    let result = yield fetchPolicy(policyOwner, policyName, idToken);
+                    confg = mergeConfigs(confg, result);
                 }
-                else {
-                    // Handle different HTTP status codes
-                    if (err.statusCode >= 400 && err.statusCode < 500) {
-                        lib_core.error('Policy not found');
+                catch (err) {
+                    lib_core.info(`[!] ${err}`);
+                    // Only fail the job if ID token is not available
+                    if (err.message && err.message.includes('Unable to get ACTIONS_ID_TOKEN_REQUEST')) {
+                        lib_core.setFailed('Policy store requires id-token write permission as it uses OIDC to fetch the policy from StepSecurity API. Please add "id-token: write" to your job permissions.');
                     }
                     else {
-                        lib_core.error(`Unexpected error occurred: ${err}. Falling back to egress policy audit`);
-                        confg.egress_policy = 'audit';
+                        // Handle different HTTP status codes
+                        if (err.statusCode >= 400 && err.statusCode < 500) {
+                            lib_core.error('Policy not found');
+                        }
+                        else {
+                            lib_core.error(`Unexpected error occurred: ${err}. Falling back to egress policy audit`);
+                            confg.egress_policy = 'audit';
+                        }
                     }
                 }
             }
@@ -86288,7 +86310,11 @@ function resolveCacheHost() {
             console.log(HARDEN_RUNNER_UNAVAILABLE_MESSAGE);
             return;
         }
-        const { api_key, use_policy_store } = confg, agentConfig = __rest(confg, ["api_key", "use_policy_store"]);
+        const agentConfig = Object.assign({}, confg);
+        delete agentConfig.api_key;
+        delete agentConfig.use_policy_store;
+        delete agentConfig.customer;
+        delete agentConfig.server_name;
         const configStr = JSON.stringify(agentConfig);
         // platform specific
         let statusFile = "";
@@ -86400,7 +86426,9 @@ function installAgentForSelfHosted(owner, confg) {
             //   `Generated job correlationId for self-hosted agent: ${correlation_id}`,
             // );
             const selfHostedConfig = {
-                customer: owner, // "new-akurmi-dev-org",
+                customer: confg.customer || owner, // "new-akurmi-dev-org",
+                server_name: confg.server_name,
+                is_ghes: confg.is_ghes,
                 // correlation_id: correlation_id,
                 working_directory: confg.working_directory,
                 api_url: "https://int.api.stepsecurity.io/v1",

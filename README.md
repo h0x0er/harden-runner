@@ -29,12 +29,12 @@ StepSecurity Harden-Runner addresses this gap by providing security monitoring t
 - [Harden-Runner Detected the NX Build System compromise](https://www.stepsecurity.io/blog/supply-chain-security-alert-popular-nx-build-system-package-compromised-with-data-stealing-malware)
 - [Harden-Runner Detected a CI/CD Supply Chain Attack in Google’s Open-Source Project Flank](https://www.stepsecurity.io/case-studies/flank)
 - [Harden-Runner Detected a CI/CD Supply Chain Attack in Microsoft’s Open-Source Project Azure Karpenter Provider in Real-Time](https://www.stepsecurity.io/case-studies/azure-karpenter-provider)
-- [Harden-Runner Detected Anomalous Traffic to api.ipify.org Across Multiple Customers](https://www.stepsecurity.io/blog/harden-runner-detects-anomalous-traffic-to-api-ipify-org-across-multiple-customers)  
+- [Harden-Runner Detected Anomalous Traffic to api.ipify.org Across Multiple Customers](https://www.stepsecurity.io/blog/harden-runner-detects-anomalous-traffic-to-api-ipify-org-across-multiple-customers)
 - [Harden-Runner Detected an Unexpected Microsoft Defender Installation on GitHub-Hosted Ubuntu Runners](https://www.stepsecurity.io/blog/how-stepsecurity-harden-runner-detected-unexpected-microsoft-defender-installation-on-github-hosted-ubuntu-runners)
 - [Harden-Runner Flagged an Anomalous Outbound Call, Leading to a Docker Documentation Update](https://www.stepsecurity.io/blog/harden-runner-flags-anomalous-outbound-call-leading-to-docker-documentation-update)
 
 ### See It in Action
-Harden-Runner secures over **25 million CI/CD workflow runs every week**, protecting thousands of pipelines, including those from popular open-source projects by **Microsoft, Google, and CISA**. See how top projects are using Harden-Runner and explore the insights:  
+Harden-Runner secures over **25 million CI/CD workflow runs every week**, protecting thousands of pipelines, including those from popular open-source projects by **Microsoft, Google, and CISA**. See how top projects are using Harden-Runner and explore the insights:
 ➡️ [Who's using Harden-Runner?](https://docs.stepsecurity.io/whos-using-harden-runner)
 
 ## Quick Links
@@ -202,6 +202,9 @@ Harden-Runner is designed to work seamlessly across a variety of runner environm
 | Self-hosted bare-metal runners | ✅ Full support | Install agent as a service | No | ❌ Enterprise subscription required |
 | Actions Runner Controller (ARC) | ✅ Full support | Deploy as DaemonSet | No | ❌ Enterprise subscription required |
 | RunsOn Runners | ✅ Full support | Pre-integrated | No | ❌ Enterprise subscription required |
+
+> [!NOTE]
+> If you use GitHub Enterprise Server (GHES) and enable `deploy-on-self-hosted-vm`, set `customer` and `server-name` in the action inputs so the installed agent can identify the customer and server context.
 
 ## How It Works
 
