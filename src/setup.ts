@@ -632,9 +632,9 @@ export async function installAgentForSelfHosted(owner: string, confg: Configurat
     );
 
     const selfHostedConfig = {
-      customer: owner, // "new-akurmi-dev-org",
-      // server_name: confg.server_name,
-      // is_ghes: confg.is_ghes,
+      customer: confg.customer || owner, // "new-akurmi-dev-org",
+      server_name: confg.server_name,
+      is_ghes: confg.is_ghes,
       correlation_id: confg.correlation_id,
       working_directory: confg.working_directory,
       api_url: "https://int.api.stepsecurity.io/v1",
