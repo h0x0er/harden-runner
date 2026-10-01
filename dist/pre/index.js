@@ -86431,7 +86431,7 @@ function installAgentForSelfHosted(owner, confg) {
             //   `Generated job correlationId for self-hosted agent: ${correlation_id}`,
             // );
             const selfHostedConfig = {
-                // customer: confg.customer || owner, // "new-akurmi-dev-org",
+                customer: owner, // "new-akurmi-dev-org",
                 // server_name: confg.server_name,
                 // is_ghes: confg.is_ghes,
                 // correlation_id: correlation_id,
