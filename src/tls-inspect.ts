@@ -3,17 +3,25 @@ import * as core from "@actions/core";
 import { isGHES } from "./common";
 
 export async function isTLSEnabled(owner: string): Promise<boolean> {
-  const tlsStatusEndpoint = `${STEPSECURITY_API_URL}/github/${owner}/actions/tls-inspection-status`;
   const serverUrl = process.env.GITHUB_SERVER_URL || "https://github.com";
+  let tlsStatusOwner = owner;
+
+  if (isGHES(serverUrl)) {
+    const customer = core.getInput("customer");
+    const serverName = core.getInput("server-name");
+
+    if (!customer || !serverName) {
+      core.info("[!] customer and server-name inputs are required to check TLS_STATUS in GitHub Enterprise Server (GHES) environments.");
+      return false;
+    }
+
+    tlsStatusOwner = `${customer}::${serverName}::${owner}`;
+  }
+
+  const tlsStatusEndpoint = `${STEPSECURITY_API_URL}/github/${tlsStatusOwner}/actions/tls-inspection-status`;
   const requestOptions: RequestInit = {
     signal: AbortSignal.timeout(5000),
   };
-
-  if (isGHES(serverUrl)) {
-    requestOptions.method = "POST";
-    requestOptions.headers = {"content-type": "application/json"};
-    requestOptions.body = JSON.stringify({ghes_server: serverUrl});
-  }
 
   core.info(`[!] Checking TLS_STATUS: ${owner}`);
   try {

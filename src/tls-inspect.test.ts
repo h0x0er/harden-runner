@@ -7,6 +7,8 @@ const ORIGINAL_FETCH = globalThis.fetch;
 afterEach(() => {
   globalThis.fetch = ORIGINAL_FETCH;
   delete process.env.GITHUB_SERVER_URL;
+  delete process.env.INPUT_CUSTOMER;
+  delete process.env["INPUT_SERVER-NAME"];
 });
 
 function mockFetch(impl: typeof fetch) {
@@ -35,22 +37,37 @@ test("tls-inspect not enabled", async () => {
   expect(got).toBe(false);
 });
 
-test("tls-inspect sends GHES server URL", async () => {
+test("tls-inspect qualifies owner in GHES", async () => {
   const owner = "ghes-org";
+  const customer = "acme";
+  const serverName = "ghes-prod";
   const serverUrl = "https://github.example.com";
-  const expectedUrl = `${STEPSECURITY_API_URL}/github/${owner}/actions/tls-inspection-status`;
+  const expectedUrl = `${STEPSECURITY_API_URL}/github/${customer}::${serverName}::${owner}/actions/tls-inspection-status`;
   process.env.GITHUB_SERVER_URL = serverUrl;
+  process.env.INPUT_CUSTOMER = customer;
+  process.env["INPUT_SERVER-NAME"] = serverName;
 
   mockFetch(async (url, init) => {
     expect(String(url)).toBe(expectedUrl);
-    expect(init?.method).toBe("POST");
-    expect(init?.headers).toEqual({"content-type": "application/json"});
-    expect(init?.body).toBe(JSON.stringify({ghes_server: serverUrl}));
+    expect(init?.method).toBeUndefined();
+    expect(init?.body).toBeUndefined();
     return new Response("", { status: 200 });
   });
 
   const got = await isTLSEnabled(owner);
   expect(got).toBe(true);
+});
+
+test("tls-inspect returns false when GHES inputs are missing", async () => {
+  process.env.GITHUB_SERVER_URL = "https://github.example.com";
+  process.env.INPUT_CUSTOMER = "acme";
+
+  mockFetch(async () => {
+    throw new Error("fetch should not be called");
+  });
+
+  const got = await isTLSEnabled("ghes-org");
+  expect(got).toBe(false);
 });
 
 test("isGHES returns false for GitHub.com", () => {
