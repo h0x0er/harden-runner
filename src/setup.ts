@@ -627,16 +627,16 @@ export async function installAgentForSelfHosted(owner: string, confg: Configurat
     }
 
 
-    // var correlation_id = uuidv4();
-    // console.log(
-    //   `Generated job correlationId for self-hosted agent: ${correlation_id}`,
-    // );
+    const correlation_id = uuidv4();
+    console.log(
+      `Generated job correlationId for self-hosted agent: ${correlation_id}`,
+    );
 
     const selfHostedConfig = {
       // customer: confg.customer || owner, // "new-akurmi-dev-org",
       // server_name: confg.server_name,
       // is_ghes: confg.is_ghes,
-      // correlation_id: correlation_id,
+      correlation_id: correlation_id,
       working_directory: confg.working_directory,
       api_url: "https://int.api.stepsecurity.io/v1",
       telemetry_url: "https://int.app-api.stepsecurity.io/v1",
