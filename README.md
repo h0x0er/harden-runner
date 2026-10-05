@@ -204,7 +204,20 @@ Harden-Runner is designed to work seamlessly across a variety of runner environm
 | RunsOn Runners | ✅ Full support | Pre-integrated | No | ❌ Enterprise subscription required |
 
 > [!NOTE]
-> If you use GitHub Enterprise Server (GHES) and enable `deploy-on-self-hosted-vm`, set `customer` and `server-name` in the action inputs so the installed agent can identify the customer and server context.
+> If you use GitHub Enterprise Server (GHES), set `customer` and `server-name` for TLS checks and policy fetching.
+
+For an ephemeral Linux VM without the agent already installed, add this as the first job step, using the customer and server names registered with StepSecurity:
+
+```yaml
+- uses: step-security/harden-runner@v2
+  with:
+    deploy-on-self-hosted-vm: true
+    customer: your-stepsecurity-customer
+    server-name: your-ghes-server
+    egress-policy: audit
+```
+
+This requires a StepSecurity subscription with TLS inspection and self-hosted VM support enabled. The action uploads the job's events and prints agent logs during its post step.
 
 ## How It Works
 

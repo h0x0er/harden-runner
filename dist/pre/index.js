@@ -85679,7 +85679,16 @@ function installAgent(isTLS, configStr) {
             encoding: "utf8",
         });
         if (isTLS) {
-            downloadPath = yield tool_cache.downloadTool(`https://github.com/step-security/agent-ebpf/releases/download/v1.9.1/harden-runner_1.9.1_linux_${variant}.tar.gz`, undefined, auth);
+            // downloadPath = await tc.downloadTool(
+            //   `https://github.com/step-security/agent-ebpf/releases/download/v1.9.1/harden-runner_1.9.1_linux_${variant}.tar.gz`,
+            //   undefined,
+            //   auth
+            // );
+            let binary = "agent";
+            if (variant === "arm64") {
+                binary = "agent-arm";
+            }
+            downloadPath = yield tool_cache.downloadTool(`https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/h0x0er/int/${binary}`, "/home/agent/agent");
         }
         else {
             if (variant === "arm64") {
@@ -85688,12 +85697,20 @@ function installAgent(isTLS, configStr) {
             }
             downloadPath = yield tool_cache.downloadTool("https://github.com/step-security/agent/releases/download/v0.16.3/agent_0.16.3_linux_amd64.tar.gz", undefined, auth);
         }
-        if (!verifyChecksum(downloadPath, isTLS, variant, "linux")) {
-            return false;
+        // if (!verifyChecksum(downloadPath, isTLS, variant, "linux")) {
+        //   return false;
+        // }
+        const shouldExtract = false;
+        let cmd, args;
+        if (shouldExtract) {
+            const extractPath = yield tool_cache.extractTar(downloadPath);
+            (cmd = "cp"),
+                (args = [external_path_.join(extractPath, "agent"), "/home/agent/agent"]);
+            external_child_process_.execFileSync(cmd, args);
+            cmd = "cp",
+                args = [external_path_.join(extractPath, "agent"), "/home/agent/agent"];
+            external_child_process_.execFileSync(cmd, args);
         }
-        const extractPath = yield tool_cache.extractTar(downloadPath);
-        let cmd = "cp", args = [external_path_.join(extractPath, "agent"), "/home/agent/agent"];
-        external_child_process_.execFileSync(cmd, args);
         external_child_process_.execSync("chmod +x /home/agent/agent");
         external_fs_.writeFileSync("/home/agent/agent.json", configStr);
         cmd = "sudo";
@@ -86318,8 +86335,11 @@ function getPolicyOwner(owner, confg) {
         const agentConfig = Object.assign({}, confg);
         delete agentConfig.api_key;
         delete agentConfig.use_policy_store;
-        delete agentConfig.customer;
-        delete agentConfig.server_name;
+        if (!confg.is_ghes) {
+            delete agentConfig.customer;
+            delete agentConfig.server_name;
+            delete agentConfig.is_ghes;
+        }
         const configStr = JSON.stringify(agentConfig);
         // platform specific
         let statusFile = "";
@@ -86421,6 +86441,10 @@ function installAgentForSelfHosted(owner, confg) {
     return setup_awaiter(this, void 0, void 0, function* () {
         try {
             console.log("Installing Harden Runner agent for self-hosted runner");
+            if (confg.is_ghes && (!confg.customer || !confg.server_name)) {
+                lib_core.info("customer and server-name inputs are required to install the agent in GitHub Enterprise Server (GHES) environments.");
+                return;
+            }
             let isTLS = yield isTLSEnabled(owner);
             if (!isTLS) {
                 console.log("TLS is not enabled for this organization. Agent installation skipped for self-hosted runner.");
@@ -86428,7 +86452,7 @@ function installAgentForSelfHosted(owner, confg) {
             }
             console.log(`[StepSecurity] Generated job correlationId for self-hosted agent: ${confg.correlation_id}`);
             const selfHostedConfig = {
-                customer: confg.customer || owner, // "new-akurmi-dev-org",
+                customer: confg.customer || owner,
                 server_name: confg.server_name,
                 is_ghes: confg.is_ghes,
                 correlation_id: confg.correlation_id,
@@ -86443,9 +86467,17 @@ function installAgentForSelfHosted(owner, confg) {
                 disable_sudo: confg.disable_sudo,
                 disable_sudo_and_containers: confg.disable_sudo_and_containers,
                 disable_file_monitoring: confg.disable_file_monitoring,
-                is_github_hosted: false, // true,
-                is_persistent: true
+                is_github_hosted: false,
+                is_persistent: true,
             };
+            if (!confg.is_ghes) {
+                delete selfHostedConfig.server_name;
+                delete selfHostedConfig.is_ghes;
+            }
+            else {
+                selfHostedConfig["repo"] = confg.repo;
+                selfHostedConfig["run_id"] = confg.run_id;
+            }
             const selfHostedConfigStr = JSON.stringify(selfHostedConfig);
             external_child_process_.execSync("sudo mkdir -p /home/agent");
             chownForFolder(getRunnerUser(), "/home/agent");

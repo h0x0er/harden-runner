@@ -49,11 +49,11 @@ inputs:
     required: false
     default: "false"
   customer:
-    description: "Customer name to use when deploying the Harden Runner agent directly on a self-hosted runner VM. Required only in GitHub Enterprise Server (GHES) environments."
+    description: "StepSecurity customer name. Required in GitHub Enterprise Server (GHES) environments for TLS checks, policy fetching, and direct self-hosted VM agent installation."
     required: false
     default: ""
   server-name:
-    description: "Server name to use when deploying the Harden Runner agent directly on a self-hosted runner VM. Required only in GitHub Enterprise Server (GHES) environments."
+    description: "GHES server name registered with StepSecurity. Required in GitHub Enterprise Server (GHES) environments for TLS checks, policy fetching, and direct self-hosted VM agent installation."
     required: false
     default: ""
 

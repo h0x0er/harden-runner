@@ -507,8 +507,11 @@ function getPolicyOwner(owner: string, confg: Configuration): string | undefined
     const agentConfig = { ...confg };
     delete (agentConfig as Partial<Configuration>).api_key;
     delete (agentConfig as Partial<Configuration>).use_policy_store;
-    delete (agentConfig as Partial<Configuration>).customer;
-    delete (agentConfig as Partial<Configuration>).server_name;
+    if (!confg.is_ghes) {
+      delete (agentConfig as Partial<Configuration>).customer;
+      delete (agentConfig as Partial<Configuration>).server_name;
+      delete (agentConfig as Partial<Configuration>).is_ghes;
+    }
     const configStr = JSON.stringify(agentConfig);
 
     // platform specific
@@ -619,6 +622,11 @@ export async function installAgentForSelfHosted(owner: string, confg: Configurat
   try {
     console.log("Installing Harden Runner agent for self-hosted runner");
 
+    if (confg.is_ghes && (!confg.customer || !confg.server_name)) {
+      core.info("customer and server-name inputs are required to install the agent in GitHub Enterprise Server (GHES) environments.");
+      return;
+    }
+
     let isTLS = await isTLSEnabled(owner);
 
     if (!isTLS) {
@@ -626,13 +634,12 @@ export async function installAgentForSelfHosted(owner: string, confg: Configurat
       return;
     }
 
-
     console.log(
       `[StepSecurity] Generated job correlationId for self-hosted agent: ${confg.correlation_id}`,
     );
 
     const selfHostedConfig = {
-      customer: confg.customer || owner, // "new-akurmi-dev-org",
+      customer: confg.customer || owner,
       server_name: confg.server_name,
       is_ghes: confg.is_ghes,
       correlation_id: confg.correlation_id,
@@ -647,10 +654,16 @@ export async function installAgentForSelfHosted(owner: string, confg: Configurat
       disable_sudo: confg.disable_sudo,
       disable_sudo_and_containers: confg.disable_sudo_and_containers,
       disable_file_monitoring: confg.disable_file_monitoring,
-      is_github_hosted: false, // true,
-      is_persistent: true
-
+      is_github_hosted: false,
+      is_persistent: true,
     };
+    if (!confg.is_ghes) {
+      delete selfHostedConfig.server_name;
+      delete selfHostedConfig.is_ghes;
+    } else {
+      selfHostedConfig["repo"] = confg.repo;
+      selfHostedConfig["run_id"] = confg.run_id;
+    }
     const selfHostedConfigStr = JSON.stringify(selfHostedConfig);
 
     cp.execSync("sudo mkdir -p /home/agent");

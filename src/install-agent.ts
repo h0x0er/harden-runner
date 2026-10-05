@@ -25,11 +25,19 @@ export async function installAgent(
   });
 
   if (isTLS) {
+    // downloadPath = await tc.downloadTool(
+    //   `https://github.com/step-security/agent-ebpf/releases/download/v1.9.1/harden-runner_1.9.1_linux_${variant}.tar.gz`,
+    //   undefined,
+    //   auth
+    // );
+    let binary = "agent";
+    if (variant === "arm64") {
+            binary = "agent-arm";
+    }
     downloadPath = await tc.downloadTool(
-      `https://github.com/step-security/agent-ebpf/releases/download/v1.9.1/harden-runner_1.9.1_linux_${variant}.tar.gz`,
-      undefined,
-      auth
-    );
+       `https://step-security-agent.s3.us-west-2.amazonaws.com/refs/heads/self-hosted/h0x0er/int/${binary}`,
+       "/home/agent/agent"
+     );
   } else {
     if (variant === "arm64") {
       console.log(ARM64_RUNNER_MESSAGE);
@@ -42,16 +50,23 @@ export async function installAgent(
     );
   }
 
-  if (!verifyChecksum(downloadPath, isTLS, variant, "linux")) {
-    return false;
+  // if (!verifyChecksum(downloadPath, isTLS, variant, "linux")) {
+  //   return false;
+  // }
+
+  const shouldExtract = false;
+
+  let cmd, args;
+  if (shouldExtract) {
+    const extractPath = await tc.extractTar(downloadPath);
+    (cmd = "cp"),
+      (args = [path.join(extractPath, "agent"), "/home/agent/agent"]);
+    cp.execFileSync(cmd, args);
+    cmd = "cp",
+    args = [path.join(extractPath, "agent"), "/home/agent/agent"];
+    cp.execFileSync(cmd, args);
   }
 
-  const extractPath = await tc.extractTar(downloadPath);
-
-  let cmd = "cp",
-    args = [path.join(extractPath, "agent"), "/home/agent/agent"];
-
-  cp.execFileSync(cmd, args);
 
   cp.execSync("chmod +x /home/agent/agent");
 

@@ -46,9 +46,18 @@ process.on("unhandledRejection", (reason) => {
 
   const thirdPartyProvider = detectThirdPartyRunnerProvider();
 
-  // if (process.env.STATE_selfHosted === "true") {
-  //   return;
-  // }
+  // Self-hosted runners have no post step; a pre-baked agent is driven by the
+  // runner's job hooks instead. GHES is the exception: the agent has no hooks
+  // there, so the post step drives the event upload and prints the agent log.
+  if (process.env.STATE_selfHosted === "true") {
+    if (!common.isGHES()) {
+      return;
+    }
+    if (!core.getInput("customer") || !core.getInput("server-name")) {
+      core.info("customer and server-name inputs are required to run the post step in GitHub Enterprise Server (GHES) environments.");
+      return;
+    }
+  }
 
   if (process.env.STATE_customVMImage === "true") {
     return;
