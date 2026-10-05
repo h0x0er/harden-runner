@@ -37,7 +37,7 @@ import {
 } from "./install-agent";
 
 import { chownForFolder, getRunnerUser, getPrivilegeMode, detectThirdPartyRunnerProvider, isAgentInstalled, isPlatformSupported, shouldDeployAgentOnSelfHosted, ThirdPartyRunnerProvider } from "./utils";
-import { buildBravoConfig, ghesQualifiedRepo } from "./bravo-config";
+import { buildBravoConfig } from "./bravo-config";
 
 interface MonitorResponse {
   runner_ip_address?: string;
@@ -355,8 +355,17 @@ async function resolveCacheHost(): Promise<string | undefined> {
         }
         core.info(`Detected ${providerLabel} runner environment. Installing agent-bravo.`);
         confg.correlation_id = runnerName || confg.correlation_id;
-        confg.repo = ghesQualifiedRepo(confg);
-        await callMonitorEndpoint(api_url, confg);
+        if (confg.is_ghes) {
+          if (!common.getGHESInputs(confg)) {
+            return;
+          }
+          // GHES agents run in self-hosted mode and register their own runtime
+          // environment, so the monitor endpoint and its one-time key are not used.
+          fs.appendFileSync(process.env.GITHUB_STATE, `correlation_id=${confg.correlation_id}${EOL}`, { encoding: "utf8" });
+          console.log(`[StepSecurity] Generated job correlationId for self-hosted agent: ${confg.correlation_id}`);
+        } else {
+          await callMonitorEndpoint(api_url, confg);
+        }
         const bravoConfigStr = JSON.stringify(buildBravoConfig(confg));
         switch (process.platform) {
           case "darwin": {
@@ -569,7 +578,7 @@ async function callMonitorEndpoint(api_url: string, confg: Configuration) {
       correlation_id: confg.correlation_id,
       job: process.env["GITHUB_JOB"],
     };
-    const url = `${api_url}/github/${confg.repo}/actions/runs/${process.env["GITHUB_RUN_ID"]}/monitor`;
+    const url = `${api_url}/github/${process.env["GITHUB_REPOSITORY"]}/actions/runs/${process.env["GITHUB_RUN_ID"]}/monitor`;
     const resp = await fetch(url, {
       method: "POST",
       headers: { "content-type": "application/json" },

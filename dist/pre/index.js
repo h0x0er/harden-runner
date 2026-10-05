@@ -85890,25 +85890,9 @@ function installWindowsAgent(configStr) {
 
 ;// CONCATENATED MODULE: ./src/bravo-config.ts
 
-// ghesQualifiedRepo returns the repo agent-bravo should report events under.
-// On GHES the org name alone is not unique across tenants, and the bravo config
-// carries no customer or server-name, so the tenant is encoded into the owner
-// segment as customer::server-name::org. The agent builds every API URL from
-// this value, including the presigned raw-events upload, which the backend reads
-// back under the same qualified owner.
-function ghesQualifiedRepo(confg) {
-    if (!confg.is_ghes) {
-        return confg.repo;
-    }
-    const inputs = getGHESInputs(confg);
-    const [owner, repoName] = (confg.repo || "").split("/");
-    if (!inputs || !owner || !repoName || owner.includes("::")) {
-        return confg.repo;
-    }
-    return `${inputs.customer}::${inputs.server_name}::${owner}/${repoName}`;
-}
+
 function buildBravoConfig(confg) {
-    return {
+    const bravoConfig = {
         repo: confg.repo,
         run_id: confg.run_id,
         correlation_id: confg.correlation_id,
@@ -85926,6 +85910,15 @@ function buildBravoConfig(confg) {
         private: confg.private,
         is_github_hosted: true,
     };
+    const inputs = confg.is_ghes ? getGHESInputs(confg) : undefined;
+    if (!inputs) {
+        return bravoConfig;
+    }
+    // On GHES there is no monitor call and so no one-time key. The agent runs in
+    // self-hosted mode instead: it registers a runtime environment under the
+    // correlation id and uploads raw events through the tenant-scoped
+    // self-hosted VM path, which the backend reads back by customer.
+    return Object.assign(Object.assign({}, bravoConfig), { customer: inputs.customer, server_name: inputs.server_name, is_ghes: true, is_github_hosted: false, is_persistent: false, api_key: v4() });
 }
 
 ;// CONCATENATED MODULE: ./src/setup.ts
@@ -86232,8 +86225,18 @@ function resolveCacheHost() {
                 }
                 lib_core.info(`Detected ${providerLabel} runner environment. Installing agent-bravo.`);
                 confg.correlation_id = runnerName || confg.correlation_id;
-                confg.repo = ghesQualifiedRepo(confg);
-                yield callMonitorEndpoint(api_url, confg);
+                if (confg.is_ghes) {
+                    if (!getGHESInputs(confg)) {
+                        return;
+                    }
+                    // GHES agents run in self-hosted mode and register their own runtime
+                    // environment, so the monitor endpoint and its one-time key are not used.
+                    external_fs_.appendFileSync(process.env.GITHUB_STATE, `correlation_id=${confg.correlation_id}${external_os_.EOL}`, { encoding: "utf8" });
+                    console.log(`[StepSecurity] Generated job correlationId for self-hosted agent: ${confg.correlation_id}`);
+                }
+                else {
+                    yield callMonitorEndpoint(api_url, confg);
+                }
                 const bravoConfigStr = JSON.stringify(buildBravoConfig(confg));
                 switch (process.platform) {
                     case "darwin": {
@@ -86413,7 +86416,7 @@ function callMonitorEndpoint(api_url, confg) {
                 correlation_id: confg.correlation_id,
                 job: process.env["GITHUB_JOB"],
             };
-            const url = `${api_url}/github/${confg.repo}/actions/runs/${process.env["GITHUB_RUN_ID"]}/monitor`;
+            const url = `${api_url}/github/${process.env["GITHUB_REPOSITORY"]}/actions/runs/${process.env["GITHUB_RUN_ID"]}/monitor`;
             const resp = yield fetch(url, {
                 method: "POST",
                 headers: { "content-type": "application/json" },

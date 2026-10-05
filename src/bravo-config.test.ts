@@ -1,4 +1,4 @@
-import { buildBravoConfig, ghesQualifiedRepo } from "./bravo-config";
+import { buildBravoConfig } from "./bravo-config";
 import { Configuration } from "./interfaces";
 
 const base: Configuration = {
@@ -30,11 +30,11 @@ describe("buildBravoConfig", () => {
     expect(buildBravoConfig(base).is_github_hosted).toBe(true);
   });
 
-  test("omits api_key (agent authenticates via one_time_key, not vm-api-key)", () => {
+  test("omits api_key on github.com (agent authenticates via one_time_key, not vm-api-key)", () => {
     expect(buildBravoConfig(base)).not.toHaveProperty("api_key");
   });
 
-  test("omits customer (server infers tenant from repo)", () => {
+  test("omits customer on github.com (server infers tenant from repo)", () => {
     expect(buildBravoConfig(base)).not.toHaveProperty("customer");
   });
 
@@ -86,43 +86,57 @@ describe("buildBravoConfig", () => {
   });
 });
 
-describe("ghesQualifiedRepo", () => {
+describe("buildBravoConfig on GHES", () => {
   const ghes: Configuration = {
     ...base,
     repo: "test-org/widgets",
+    correlation_id: "depot-abc",
     is_ghes: true,
     customer: "example-customer",
     server_name: "example-server",
   };
 
-  test("leaves github.com repo unqualified", () => {
-    expect(ghesQualifiedRepo({ ...ghes, is_ghes: false })).toBe("test-org/widgets");
+  test("runs the agent in GHES self-hosted mode", () => {
+    const cfg = buildBravoConfig(ghes);
+    expect(cfg.customer).toBe("example-customer");
+    expect(cfg.server_name).toBe("example-server");
+    expect(cfg.is_ghes).toBe(true);
+    expect(cfg.is_github_hosted).toBe(false);
+    expect(cfg.is_persistent).toBe(false);
   });
 
-  test("qualifies GHES owner with customer and server-name", () => {
-    expect(ghesQualifiedRepo(ghes)).toBe("example-customer::example-server::test-org/widgets");
+  test("sets a generated api_key so the agent uses the self-hosted VM upload path", () => {
+    const cfg = buildBravoConfig(ghes);
+    expect(typeof cfg.api_key).toBe("string");
+    expect(cfg.api_key).not.toBe("");
+    expect(cfg.api_key).not.toBe(base.api_key);
   });
 
-  test("falls back to bare repo when GHES inputs are missing", () => {
-    expect(ghesQualifiedRepo({ ...ghes, customer: "" })).toBe("test-org/widgets");
-    expect(ghesQualifiedRepo({ ...ghes, server_name: undefined })).toBe("test-org/widgets");
+  test("keeps the bare repo and the runner-name correlation id", () => {
+    const cfg = buildBravoConfig(ghes);
+    expect(cfg.repo).toBe("test-org/widgets");
+    expect(cfg.correlation_id).toBe("depot-abc");
   });
 
-  test("does not double-qualify an already qualified repo", () => {
-    const repo = "example-customer::example-server::test-org/widgets";
-    expect(ghesQualifiedRepo({ ...ghes, repo })).toBe(repo);
+  test("falls back to the github.com shape when GHES inputs are missing", () => {
+    for (const cfg of [
+      buildBravoConfig({ ...ghes, customer: "" }),
+      buildBravoConfig({ ...ghes, server_name: undefined }),
+    ]) {
+      expect(cfg.is_github_hosted).toBe(true);
+      expect(cfg).not.toHaveProperty("customer");
+      expect(cfg).not.toHaveProperty("is_ghes");
+      expect(cfg).not.toHaveProperty("api_key");
+    }
   });
+});
 
-  test("leaves malformed repo untouched", () => {
-    expect(ghesQualifiedRepo({ ...ghes, repo: "" })).toBe("");
-    expect(ghesQualifiedRepo({ ...ghes, repo: "widgets" })).toBe("widgets");
-  });
-
-  test("bravo config forwards qualified repo and still omits GHES identity fields", () => {
-    const cfg = buildBravoConfig({ ...ghes, repo: ghesQualifiedRepo(ghes) });
-    expect(cfg.repo).toBe("example-customer::example-server::test-org/widgets");
-    expect(cfg).not.toHaveProperty("customer");
-    expect(cfg).not.toHaveProperty("server_name");
-    expect(cfg).not.toHaveProperty("is_ghes");
+describe("buildBravoConfig on github.com", () => {
+  test("omits GHES identity and self-hosted fields", () => {
+    const cfg = buildBravoConfig({ ...base, customer: "example-customer", server_name: "example-server" });
+    for (const key of ["customer", "server_name", "is_ghes", "is_persistent", "api_key"]) {
+      expect(cfg).not.toHaveProperty(key);
+    }
+    expect(cfg.is_github_hosted).toBe(true);
   });
 });

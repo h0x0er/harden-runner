@@ -1,28 +1,33 @@
+import { v4 as uuidv4 } from "uuid";
 import { getGHESInputs } from "./common";
 import { Configuration } from "./interfaces";
 
-// ghesQualifiedRepo returns the repo agent-bravo should report events under.
-// On GHES the org name alone is not unique across tenants, and the bravo config
-// carries no customer or server-name, so the tenant is encoded into the owner
-// segment as customer::server-name::org. The agent builds every API URL from
-// this value, including the presigned raw-events upload, which the backend reads
-// back under the same qualified owner.
-export function ghesQualifiedRepo(confg: Configuration): string {
-  if (!confg.is_ghes) {
-    return confg.repo;
-  }
-
-  const inputs = getGHESInputs(confg);
-  const [owner, repoName] = (confg.repo || "").split("/");
-  if (!inputs || !owner || !repoName || owner.includes("::")) {
-    return confg.repo;
-  }
-
-  return `${inputs.customer}::${inputs.server_name}::${owner}/${repoName}`;
+export interface BravoConfig {
+  repo: string;
+  run_id: string;
+  correlation_id: string;
+  working_directory: string;
+  api_url: string;
+  telemetry_url: string;
+  one_time_key: string;
+  allowed_endpoints: string;
+  denied_endpoints: string;
+  egress_policy: string;
+  disable_telemetry: boolean;
+  disable_sudo: boolean;
+  disable_sudo_and_containers: boolean;
+  disable_file_monitoring: boolean;
+  private: string;
+  is_github_hosted: boolean;
+  customer?: string;
+  server_name?: string;
+  is_ghes?: boolean;
+  is_persistent?: boolean;
+  api_key?: string;
 }
 
-export function buildBravoConfig(confg: Configuration) {
-  return {
+export function buildBravoConfig(confg: Configuration): BravoConfig {
+  const bravoConfig: BravoConfig = {
     repo: confg.repo,
     run_id: confg.run_id,
     correlation_id: confg.correlation_id,
@@ -39,5 +44,24 @@ export function buildBravoConfig(confg: Configuration) {
     disable_file_monitoring: confg.disable_file_monitoring,
     private: confg.private,
     is_github_hosted: true,
+  };
+
+  const inputs = confg.is_ghes ? getGHESInputs(confg) : undefined;
+  if (!inputs) {
+    return bravoConfig;
+  }
+
+  // On GHES there is no monitor call and so no one-time key. The agent runs in
+  // self-hosted mode instead: it registers a runtime environment under the
+  // correlation id and uploads raw events through the tenant-scoped
+  // self-hosted VM path, which the backend reads back by customer.
+  return {
+    ...bravoConfig,
+    customer: inputs.customer,
+    server_name: inputs.server_name,
+    is_ghes: true,
+    is_github_hosted: false,
+    is_persistent: false,
+    api_key: uuidv4(),
   };
 }
