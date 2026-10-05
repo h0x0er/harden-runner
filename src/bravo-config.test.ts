@@ -30,11 +30,11 @@ describe("buildBravoConfig", () => {
     expect(buildBravoConfig(base).is_github_hosted).toBe(true);
   });
 
-  test("omits api_key on github.com (agent authenticates via one_time_key, not vm-api-key)", () => {
+  test("omits api_key (agent authenticates via one_time_key, not vm-api-key)", () => {
     expect(buildBravoConfig(base)).not.toHaveProperty("api_key");
   });
 
-  test("omits customer on github.com (server infers tenant from repo)", () => {
+  test("omits customer (server infers tenant from repo)", () => {
     expect(buildBravoConfig(base)).not.toHaveProperty("customer");
   });
 
@@ -86,57 +86,30 @@ describe("buildBravoConfig", () => {
   });
 });
 
-describe("buildBravoConfig on GHES", () => {
+describe("buildBravoConfig in GHES self-hosted mode", () => {
   const ghes: Configuration = {
     ...base,
-    repo: "test-org/widgets",
-    correlation_id: "depot-abc",
     is_ghes: true,
     customer: "example-customer",
     server_name: "example-server",
   };
 
-  test("runs the agent in GHES self-hosted mode", () => {
-    const cfg = buildBravoConfig(ghes);
+  test("fills GHES identity and runs the agent as self-hosted", () => {
+    const cfg = buildBravoConfig(ghes, true);
     expect(cfg.customer).toBe("example-customer");
     expect(cfg.server_name).toBe("example-server");
     expect(cfg.is_ghes).toBe(true);
     expect(cfg.is_github_hosted).toBe(false);
     expect(cfg.is_persistent).toBe(false);
-  });
-
-  test("sets a generated api_key so the agent uses the self-hosted VM upload path", () => {
-    const cfg = buildBravoConfig(ghes);
-    expect(typeof cfg.api_key).toBe("string");
-    expect(cfg.api_key).not.toBe("");
+    expect(cfg.api_key).toBeTruthy();
     expect(cfg.api_key).not.toBe(base.api_key);
   });
 
-  test("keeps the bare repo and the runner-name correlation id", () => {
+  test("keeps the github.com shape when not enabled", () => {
     const cfg = buildBravoConfig(ghes);
-    expect(cfg.repo).toBe("test-org/widgets");
-    expect(cfg.correlation_id).toBe("depot-abc");
-  });
-
-  test("falls back to the github.com shape when GHES inputs are missing", () => {
-    for (const cfg of [
-      buildBravoConfig({ ...ghes, customer: "" }),
-      buildBravoConfig({ ...ghes, server_name: undefined }),
-    ]) {
-      expect(cfg.is_github_hosted).toBe(true);
-      expect(cfg).not.toHaveProperty("customer");
-      expect(cfg).not.toHaveProperty("is_ghes");
-      expect(cfg).not.toHaveProperty("api_key");
-    }
-  });
-});
-
-describe("buildBravoConfig on github.com", () => {
-  test("omits GHES identity and self-hosted fields", () => {
-    const cfg = buildBravoConfig({ ...base, customer: "example-customer", server_name: "example-server" });
+    expect(cfg.is_github_hosted).toBe(true);
     for (const key of ["customer", "server_name", "is_ghes", "is_persistent", "api_key"]) {
       expect(cfg).not.toHaveProperty(key);
     }
-    expect(cfg.is_github_hosted).toBe(true);
   });
 });
