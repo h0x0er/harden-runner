@@ -86436,8 +86436,8 @@ function installAgentForSelfHosted(owner, confg) {
                 customer: confg.customer || owner,
                 server_name: confg.server_name,
                 is_ghes: confg.is_ghes,
-                correlation_id: confg.correlation_id,
                 working_directory: confg.working_directory,
+                correlation_id: confg.correlation_id,
                 api_url: confg.api_url,
                 telemetry_url: confg.telemetry_url,
                 api_key: v4(),
@@ -86449,11 +86449,11 @@ function installAgentForSelfHosted(owner, confg) {
                 disable_sudo_and_containers: confg.disable_sudo_and_containers,
                 disable_file_monitoring: confg.disable_file_monitoring,
                 is_github_hosted: false,
-                is_persistent: !confg.is_ghes,
             };
             if (!confg.is_ghes) {
                 delete selfHostedConfig.server_name;
                 delete selfHostedConfig.is_ghes;
+                delete selfHostedConfig.correlation_id;
             }
             else {
                 console.log(`[StepSecurity] Generated job correlationId for self-hosted agent: ${confg.correlation_id}`);
