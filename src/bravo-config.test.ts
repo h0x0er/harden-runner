@@ -1,4 +1,4 @@
-import { buildBravoConfig } from "./bravo-config";
+import { buildBravoConfig, ghesQualifiedRepo } from "./bravo-config";
 import { Configuration } from "./interfaces";
 
 const base: Configuration = {
@@ -83,5 +83,46 @@ describe("buildBravoConfig", () => {
     expect(cfg.disable_sudo).toBe(true);
     expect(cfg.disable_sudo_and_containers).toBe(true);
     expect(cfg.disable_file_monitoring).toBe(true);
+  });
+});
+
+describe("ghesQualifiedRepo", () => {
+  const ghes: Configuration = {
+    ...base,
+    repo: "test-org/widgets",
+    is_ghes: true,
+    customer: "example-customer",
+    server_name: "example-server",
+  };
+
+  test("leaves github.com repo unqualified", () => {
+    expect(ghesQualifiedRepo({ ...ghes, is_ghes: false })).toBe("test-org/widgets");
+  });
+
+  test("qualifies GHES owner with customer and server-name", () => {
+    expect(ghesQualifiedRepo(ghes)).toBe("example-customer::example-server::test-org/widgets");
+  });
+
+  test("falls back to bare repo when GHES inputs are missing", () => {
+    expect(ghesQualifiedRepo({ ...ghes, customer: "" })).toBe("test-org/widgets");
+    expect(ghesQualifiedRepo({ ...ghes, server_name: undefined })).toBe("test-org/widgets");
+  });
+
+  test("does not double-qualify an already qualified repo", () => {
+    const repo = "example-customer::example-server::test-org/widgets";
+    expect(ghesQualifiedRepo({ ...ghes, repo })).toBe(repo);
+  });
+
+  test("leaves malformed repo untouched", () => {
+    expect(ghesQualifiedRepo({ ...ghes, repo: "" })).toBe("");
+    expect(ghesQualifiedRepo({ ...ghes, repo: "widgets" })).toBe("widgets");
+  });
+
+  test("bravo config forwards qualified repo and still omits GHES identity fields", () => {
+    const cfg = buildBravoConfig({ ...ghes, repo: ghesQualifiedRepo(ghes) });
+    expect(cfg.repo).toBe("example-customer::example-server::test-org/widgets");
+    expect(cfg).not.toHaveProperty("customer");
+    expect(cfg).not.toHaveProperty("server_name");
+    expect(cfg).not.toHaveProperty("is_ghes");
   });
 });

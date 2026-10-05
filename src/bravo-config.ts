@@ -1,4 +1,25 @@
+import { getGHESInputs } from "./common";
 import { Configuration } from "./interfaces";
+
+// ghesQualifiedRepo returns the repo agent-bravo should report events under.
+// On GHES the org name alone is not unique across tenants, and the bravo config
+// carries no customer or server-name, so the tenant is encoded into the owner
+// segment as customer::server-name::org. The agent builds every API URL from
+// this value, including the presigned raw-events upload, which the backend reads
+// back under the same qualified owner.
+export function ghesQualifiedRepo(confg: Configuration): string {
+  if (!confg.is_ghes) {
+    return confg.repo;
+  }
+
+  const inputs = getGHESInputs(confg);
+  const [owner, repoName] = (confg.repo || "").split("/");
+  if (!inputs || !owner || !repoName || owner.includes("::")) {
+    return confg.repo;
+  }
+
+  return `${inputs.customer}::${inputs.server_name}::${owner}/${repoName}`;
+}
 
 export function buildBravoConfig(confg: Configuration) {
   return {

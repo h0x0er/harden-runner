@@ -85889,6 +85889,24 @@ function installWindowsAgent(configStr) {
 }
 
 ;// CONCATENATED MODULE: ./src/bravo-config.ts
+
+// ghesQualifiedRepo returns the repo agent-bravo should report events under.
+// On GHES the org name alone is not unique across tenants, and the bravo config
+// carries no customer or server-name, so the tenant is encoded into the owner
+// segment as customer::server-name::org. The agent builds every API URL from
+// this value, including the presigned raw-events upload, which the backend reads
+// back under the same qualified owner.
+function ghesQualifiedRepo(confg) {
+    if (!confg.is_ghes) {
+        return confg.repo;
+    }
+    const inputs = getGHESInputs(confg);
+    const [owner, repoName] = (confg.repo || "").split("/");
+    if (!inputs || !owner || !repoName || owner.includes("::")) {
+        return confg.repo;
+    }
+    return `${inputs.customer}::${inputs.server_name}::${owner}/${repoName}`;
+}
 function buildBravoConfig(confg) {
     return {
         repo: confg.repo,
@@ -86214,6 +86232,7 @@ function resolveCacheHost() {
                 }
                 lib_core.info(`Detected ${providerLabel} runner environment. Installing agent-bravo.`);
                 confg.correlation_id = runnerName || confg.correlation_id;
+                confg.repo = ghesQualifiedRepo(confg);
                 yield callMonitorEndpoint(api_url, confg);
                 const bravoConfigStr = JSON.stringify(buildBravoConfig(confg));
                 switch (process.platform) {
@@ -86394,7 +86413,7 @@ function callMonitorEndpoint(api_url, confg) {
                 correlation_id: confg.correlation_id,
                 job: process.env["GITHUB_JOB"],
             };
-            const url = `${api_url}/github/${process.env["GITHUB_REPOSITORY"]}/actions/runs/${process.env["GITHUB_RUN_ID"]}/monitor`;
+            const url = `${api_url}/github/${confg.repo}/actions/runs/${process.env["GITHUB_RUN_ID"]}/monitor`;
             const resp = yield fetch(url, {
                 method: "POST",
                 headers: { "content-type": "application/json" },
