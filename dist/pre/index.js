@@ -86451,6 +86451,7 @@ function installAgentForSelfHosted(owner, confg) {
             if (confg.is_ghes) {
                 selfHostedConfig["customer"] = confg.customer;
                 selfHostedConfig["server_name"] = confg.server_name;
+                selfHostedConfig["api_key"] = confg.api_key;
                 selfHostedConfig["is_ghes"] = confg.is_ghes;
                 selfHostedConfig["correlation_id"] = confg.correlation_id;
                 selfHostedConfig["repo"] = getGHESRepo(confg);
