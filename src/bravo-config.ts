@@ -21,12 +21,13 @@ export function buildBravoConfig(confg: Configuration, ghesSelfHosted = false) {
     disable_sudo_and_containers: confg.disable_sudo_and_containers,
     disable_file_monitoring: confg.disable_file_monitoring,
     private: confg.private,
-    is_github_hosted: true,
+    is_github_hosted: !ghesSelfHosted,
     ...(ghesSelfHosted && {
       customer: confg.customer,
       server_name: confg.server_name,
       is_ghes: true,
-      api_key: confg.api_key,
+      is_persistent: false,
+      api_key: uuidv4(),
     }),
   };
 }
