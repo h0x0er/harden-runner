@@ -86214,6 +86214,7 @@ function resolveCacheHost() {
                     }
                     external_fs_.appendFileSync(process.env.GITHUB_STATE, `correlation_id=${confg.correlation_id}${external_os_.EOL}`, { encoding: "utf8" });
                     console.log(`[StepSecurity] Generated job correlationId for self-hosted agent: ${confg.correlation_id}`);
+                    confg.repo = getGHESRepo(confg);
                 }
                 else {
                     yield callMonitorEndpoint(api_url, confg);
@@ -86452,7 +86453,7 @@ function installAgentForSelfHosted(owner, confg) {
                 selfHostedConfig["server_name"] = confg.server_name;
                 selfHostedConfig["is_ghes"] = confg.is_ghes;
                 selfHostedConfig["correlation_id"] = confg.correlation_id;
-                selfHostedConfig["repo"] = confg.repo;
+                selfHostedConfig["repo"] = getGHESRepo(confg);
                 selfHostedConfig["run_id"] = confg.run_id;
                 console.log(`[StepSecurity] Generated job correlationId for self-hosted agent: ${confg.correlation_id}`);
             }
@@ -86525,6 +86526,12 @@ function getPolicyOwner(owner, confg) {
         throw new Error("GHES policy owner requires customer and server-name inputs.");
     }
     return `${inputs.customer}::${inputs.server_name}::${owner}`;
+}
+// agent and armour derive the api owner from repo, so in GHES it carries the
+// customer::server_name::org owner
+function getGHESRepo(confg) {
+    const [owner, repoName] = confg.repo.split("/");
+    return `${getPolicyOwner(owner, confg)}/${repoName}`;
 }
 
 })();
