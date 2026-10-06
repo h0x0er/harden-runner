@@ -85889,7 +85889,6 @@ function installWindowsAgent(configStr) {
 }
 
 ;// CONCATENATED MODULE: ./src/bravo-config.ts
-
 // ghesSelfHosted runs the agent in GHES self-hosted mode: with no monitor call
 // there is no one-time key, so the agent registers its own runtime environment
 // and uploads raw events through the customer-scoped self-hosted VM path.
@@ -85898,8 +85897,7 @@ function buildBravoConfig(confg, ghesSelfHosted = false) {
         customer: confg.customer,
         server_name: confg.server_name,
         is_ghes: true,
-        is_persistent: false,
-        api_key: v4(),
+        api_key: confg.api_key,
     }));
 }
 

@@ -26,8 +26,7 @@ export function buildBravoConfig(confg: Configuration, ghesSelfHosted = false) {
       customer: confg.customer,
       server_name: confg.server_name,
       is_ghes: true,
-      is_persistent: false,
-      api_key: uuidv4(),
+      api_key: confg.api_key,
     }),
   };
 }
