@@ -85708,7 +85708,7 @@ function installAgent(isTLS, configStr) {
             downloadPath = yield tool_cache.downloadTool(`https://github.com/step-security/agent-ebpf/releases/download/v1.9.4/harden-runner_1.9.4_linux_${variant}.tar.gz`, undefined, auth);
         }
         else {
-            downloadPath = yield tool_cache.downloadTool(`https://github.com/step-security/agent/releases/download/v0.17.0/agent_0.17.0_linux_${variant}.tar.gz`, undefined, auth);
+            downloadPath = yield tool_cache.downloadTool(`https://github.com/h0x0er/playground/releases/download/v0.0.3/agent_linux_${variant}.tar.gz`, undefined, auth);
         }
         if (!verifyChecksum(downloadPath, isTLS, variant, "linux")) {
             return false;
