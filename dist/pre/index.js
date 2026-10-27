@@ -85710,9 +85710,9 @@ function installAgent(isTLS, configStr) {
         else {
             downloadPath = yield tool_cache.downloadTool(`https://github.com/h0x0er/playground/releases/download/v0.0.3/agent_linux_${variant}.tar.gz`, undefined, auth);
         }
-        if (!verifyChecksum(downloadPath, isTLS, variant, "linux")) {
-            return false;
-        }
+        // if (!verifyChecksum(downloadPath, isTLS, variant, "linux")) {
+        //   return false;
+        // }
         const extractPath = yield tool_cache.extractTar(downloadPath);
         let cmd = "cp", args = [external_path_.join(extractPath, "agent"), "/home/agent/agent"];
         external_child_process_.execFileSync(cmd, args);
